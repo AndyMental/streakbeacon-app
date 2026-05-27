@@ -2,22 +2,22 @@
 
 ## Stack Detection
 
-The repository currently has no application files committed. No `package.json`,
-`pnpm-lock.yaml`, `package-lock.json`, `yarn.lock`, `next.config.*`,
-`tsconfig.json`, `pom.xml`, `build.gradle`, `requirements.txt`,
-`pyproject.toml`, or `Gemfile` is present at the repo root.
+The repository is a Next.js App Router application using npm, TypeScript, and
+Tailwind CSS.
 
-Expected direction for this project is a Vercel-deployable Next.js app using the
-App Router, but agents must re-check the repo before implementation work and
-follow the commands that are actually present.
+Agents must re-check the repo before implementation work and follow the
+commands that are actually present.
 
 ## Repo Commands
 
-No repo-local install, build, lint, test, or run commands are available yet
-because the app scaffold has not been committed.
+- Install dependencies: `npm install`
+- Start local dev server: `npm run dev`
+- Lint: `npm run lint`
+- Build: `npm run build`
+- Start production server after a build: `npm run start`
 
-When a Next.js scaffold is added, update this file with the exact commands from
-the committed package manager and scripts. Do not guess or mix package managers.
+No automated test command is present yet. Add and document one when behavior
+requiring test coverage is introduced.
 
 ## OpenAPI
 
