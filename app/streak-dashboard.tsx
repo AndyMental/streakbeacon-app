@@ -132,7 +132,7 @@ export function StreakDashboard() {
             role="group"
             aria-label="Recent completion history"
           >
-            <div className="grid min-w-[40rem] grid-flow-col auto-cols-[1.35rem] gap-1">
+            <div className="grid w-max min-w-full grid-flow-col auto-cols-[1.35rem] gap-1">
               {model.weeks.map((week) => (
                 <div key={week.key} className="grid grid-rows-7 gap-1">
                   {week.days.map((day) => (
