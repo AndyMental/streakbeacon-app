@@ -9,8 +9,6 @@ streak tracking.
 npm install
 npm run dev
 npm run lint
+npm run test
 npm run build
 ```
-
-There is no automated test command yet. Add one when the first behavior that
-needs test coverage lands.

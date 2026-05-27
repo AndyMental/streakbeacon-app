@@ -13,11 +13,9 @@ commands that are actually present.
 - Install dependencies: `npm install`
 - Start local dev server: `npm run dev`
 - Lint: `npm run lint`
+- Test: `npm run test`
 - Build: `npm run build`
 - Start production server after a build: `npm run start`
-
-No automated test command is present yet. Add and document one when behavior
-requiring test coverage is introduced.
 
 ## OpenAPI
 
