@@ -1,5 +1,10 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import {
+  addStreakItem,
+  createEmptyStreakData,
+  setDayCompletion
+} from "./model";
 import { LocalStreakStorageAdapter } from "./storage";
 import { StreakStore } from "./store";
 
@@ -49,5 +54,34 @@ describe("StreakStore", () => {
 
     store.reset();
     assert.deepEqual(store.getSnapshot().items, []);
+  });
+
+  it("persists a first-run in-memory snapshot before saving a toggle", () => {
+    const storage = new MemoryStorage();
+    const store = new StreakStore(new LocalStreakStorageAdapter(storage));
+    const now = new Date("2026-05-27T12:00:00.000Z");
+    const demo = addStreakItem(createEmptyStreakData(now), {
+      id: "ship-useful-change",
+      name: "Ship one useful change",
+      now
+    });
+
+    const toggled = setDayCompletion(
+      demo,
+      "ship-useful-change",
+      "2026-05-27",
+      true,
+      now
+    );
+    store.replaceData(toggled, now);
+
+    const reloaded = new StreakStore(new LocalStreakStorageAdapter(storage));
+    const snapshot = reloaded.getSnapshot();
+
+    assert.equal(snapshot.items[0]?.id, "ship-useful-change");
+    assert.equal(
+      snapshot.completions["ship-useful-change"]?.["2026-05-27"]?.source,
+      "manual"
+    );
   });
 });

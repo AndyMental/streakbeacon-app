@@ -2,6 +2,7 @@ import { CalendarCheck, Flame, ShieldCheck, Target } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SettingsPanel } from "./settings-panel";
+import { StreakDashboard } from "./streak-dashboard";
 
 const habits = [
   { name: "Morning walk", streak: "12 days", status: "Done today" },
@@ -52,6 +53,8 @@ export default function Home() {
           );
         })}
       </section>
+
+      <StreakDashboard />
 
       <SettingsPanel />
 
