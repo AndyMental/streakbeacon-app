@@ -20,9 +20,29 @@ describe("streak grid model", () => {
     assert.equal(model.currentStreak, 0);
     assert.equal(model.longestStreak, 0);
     assert.equal(model.completedDays, 0);
-    assert.equal(model.weeks.length, 26);
-    assert.equal(model.weeks.every((week) => week.days.length === 7), true);
+    assert.equal(model.totalDays, 365);
+    assert.equal(model.weeks.length, 53);
+    assert.equal(model.weeks.flatMap((week) => week.days).length, 365);
+    assert.equal(
+      model.weeks.slice(0, -1).every((week) => week.days.length === 7),
+      true
+    );
     assert.equal(getNextSelectedCompletion(model), null);
+  });
+
+  it("honors the 365-day preference when building visible summaries", () => {
+    const data = addStreakItem(createEmptyStreakData(AS_OF), {
+      id: "walk",
+      name: "Morning walk",
+      now: AS_OF
+    });
+    const model = buildStreakGridModel(data, "walk", "2026-05-27", AS_OF);
+    const visibleDays = model.weeks.flatMap((week) => week.days);
+
+    assert.equal(model.totalDays, 365);
+    assert.equal(visibleDays.at(0)?.day, "2025-05-28");
+    assert.equal(visibleDays.at(-1)?.day, "2026-05-27");
+    assert.equal(model.completionRate, 0);
   });
 
   it("renders sparse data with selected-day state and next toggle value", () => {

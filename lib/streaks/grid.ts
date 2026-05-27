@@ -1,6 +1,8 @@
 import {
   calculateCurrentStreak,
   calculateLongestStreak,
+  MAX_GRID_WINDOW_DAYS,
+  MIN_GRID_WINDOW_DAYS,
   type Completion,
   type IsoDate,
   type StreakData,
@@ -32,7 +34,6 @@ export type StreakGridModel = {
 };
 
 const WEEK_DAYS = 7;
-const DEFAULT_GRID_DAYS = 26 * WEEK_DAYS;
 
 export function buildStreakGridModel(
   data: StreakData,
@@ -96,8 +97,8 @@ function buildGridDays(
   asOf: Date
 ): GridDay[] {
   const windowDays = Math.max(
-    WEEK_DAYS,
-    Math.min(data.preferences.gridWindowDays, DEFAULT_GRID_DAYS)
+    MIN_GRID_WINDOW_DAYS,
+    Math.min(data.preferences.gridWindowDays, MAX_GRID_WINDOW_DAYS)
   );
   const end = parseIsoDay(formatIsoDay(asOf));
   const start = addDays(end, -(windowDays - 1));

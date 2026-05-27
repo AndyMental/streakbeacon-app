@@ -116,6 +116,23 @@ describe("streak domain model", () => {
     assert.equal(data.preferences.showArchived, true);
   });
 
+  it("defaults and clamps the grid window preference to the product range", () => {
+    assert.equal(createEmptyStreakData().preferences.gridWindowDays, 365);
+
+    assert.equal(
+      updatePreferences(createEmptyStreakData(), {
+        gridWindowDays: 1
+      }).preferences.gridWindowDays,
+      7
+    );
+    assert.equal(
+      updatePreferences(createEmptyStreakData(), {
+        gridWindowDays: 999
+      }).preferences.gridWindowDays,
+      365
+    );
+  });
+
   it("creates the documented versioned export envelope", () => {
     const exportedAt = new Date("2026-05-27T12:00:00.000Z");
     const data = createEmptyStreakData(exportedAt);

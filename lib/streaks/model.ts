@@ -1,6 +1,9 @@
 export const STREAK_DATA_VERSION = 1;
 export const STREAK_EXPORT_FORMAT = "streakbeacon.export";
 export const DEFAULT_ACCENT_COLOR = "#27AE60";
+export const MIN_GRID_WINDOW_DAYS = 7;
+export const MAX_GRID_WINDOW_DAYS = 365;
+export const DEFAULT_GRID_WINDOW_DAYS = 365;
 
 export type IsoDate = `${number}-${number}-${number}`;
 export type ThemePreference = "system" | "light" | "dark";
@@ -68,7 +71,7 @@ export type RenameStreakInput = {
 export const defaultPreferences: StreakPreferences = {
   theme: "system",
   weekStartsOn: 0,
-  gridWindowDays: 365,
+  gridWindowDays: DEFAULT_GRID_WINDOW_DAYS,
   showArchived: false,
   accentColor: DEFAULT_ACCENT_COLOR
 };
@@ -375,11 +378,11 @@ function normalizeTheme(value: unknown): ThemePreference {
 }
 
 function normalizeGridWindowDays(value: unknown): number {
-  if (typeof value === "number" && Number.isInteger(value) && value > 0) {
-    return value;
+  if (typeof value !== "number" || !Number.isInteger(value)) {
+    return DEFAULT_GRID_WINDOW_DAYS;
   }
 
-  return 365;
+  return Math.min(Math.max(value, MIN_GRID_WINDOW_DAYS), MAX_GRID_WINDOW_DAYS);
 }
 
 function parseIsoDay(day: IsoDate): Date {
