@@ -1,6 +1,7 @@
 "use client";
 
 import { Download, FileJson, Moon, RotateCcw, Sun, Upload } from "lucide-react";
+import { useTheme } from "next-themes";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -29,17 +30,9 @@ function createBrowserStore() {
 const STORAGE_ERROR_MESSAGE =
   "Browser storage is unavailable. Settings and import changes cannot be saved right now.";
 
-function applyTheme(theme: ThemePreference) {
-  const root = document.documentElement;
-  const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-  const isDark = theme === "dark" || (theme === "system" && systemDark);
-
-  root.classList.toggle("dark", isDark);
-  root.dataset.theme = theme;
-}
-
 export function SettingsPanel() {
   const importInputRef = useRef<HTMLInputElement>(null);
+  const { setTheme } = useTheme();
   const [data, setData] = useState<StreakData>(() => createEmptyStreakData());
   const [isReady, setIsReady] = useState(false);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
@@ -61,8 +54,8 @@ export function SettingsPanel() {
   }, []);
 
   useEffect(() => {
-    applyTheme(data.preferences.theme);
-  }, [data.preferences.theme]);
+    setTheme(data.preferences.theme);
+  }, [data.preferences.theme, setTheme]);
 
   useEffect(() => {
     let cancelled = false;
@@ -194,7 +187,7 @@ export function SettingsPanel() {
       store.reset();
       const next = createEmptyStreakData();
       setData(next);
-      applyTheme(next.preferences.theme);
+      setTheme(next.preferences.theme);
       setPreview(null);
       setImportError(null);
       setResetArmed(false);

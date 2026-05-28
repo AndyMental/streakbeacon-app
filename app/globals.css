@@ -1,13 +1,15 @@
 @import "tailwindcss";
 
 :root {
+  --beacon: #27ae60;
+  --sky: #2d9cdb;
   --background: #f8fafc;
   --foreground: #111827;
   --card: #ffffff;
   --card-foreground: #111827;
   --popover: #ffffff;
   --popover-foreground: #111827;
-  --primary: #27ae60;
+  --primary: var(--beacon);
   --primary-foreground: #f8fafc;
   --secondary: #eaf6fd;
   --secondary-foreground: #1d6f9a;
@@ -19,18 +21,30 @@
   --destructive-foreground: #fef2f2;
   --border: #dbe3ea;
   --input: #dbe3ea;
-  --ring: #27ae60;
+  --ring: var(--beacon);
+  --streak-empty: var(--muted);
+  --streak-empty-border: var(--border);
+  --streak-1: #b7ebcb;
+  --streak-1-border: #b7ebcb;
+  --streak-2: #73d99a;
+  --streak-2-border: #73d99a;
+  --streak-3: var(--beacon);
+  --streak-3-border: var(--beacon);
+  --streak-4: #1f8f4d;
+  --streak-4-border: #1f8f4d;
   --radius: 0.5rem;
 }
 
 .dark {
+  --beacon: #27ae60;
+  --sky: #2d9cdb;
   --background: #0f172a;
   --foreground: #f8fafc;
   --card: #111827;
   --card-foreground: #f8fafc;
   --popover: #111827;
   --popover-foreground: #f8fafc;
-  --primary: #27ae60;
+  --primary: var(--beacon);
   --primary-foreground: #07130c;
   --secondary: #123247;
   --secondary-foreground: #d8effd;
@@ -42,10 +56,22 @@
   --destructive-foreground: #fef2f2;
   --border: #334155;
   --input: #334155;
-  --ring: #2d9cdb;
+  --ring: var(--sky);
+  --streak-empty: var(--muted);
+  --streak-empty-border: var(--border);
+  --streak-1: #164b2b;
+  --streak-1-border: #164b2b;
+  --streak-2: #1b6b3a;
+  --streak-2-border: #1b6b3a;
+  --streak-3: var(--beacon);
+  --streak-3-border: var(--beacon);
+  --streak-4: var(--sky);
+  --streak-4-border: var(--sky);
 }
 
 @theme inline {
+  --color-beacon: var(--beacon);
+  --color-sky: var(--sky);
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -65,6 +91,16 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-streak-empty: var(--streak-empty);
+  --color-streak-empty-border: var(--streak-empty-border);
+  --color-streak-1: var(--streak-1);
+  --color-streak-1-border: var(--streak-1-border);
+  --color-streak-2: var(--streak-2);
+  --color-streak-2-border: var(--streak-2-border);
+  --color-streak-3: var(--streak-3);
+  --color-streak-3-border: var(--streak-3-border);
+  --color-streak-4: var(--streak-4);
+  --color-streak-4-border: var(--streak-4-border);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
