@@ -27,11 +27,45 @@ identify the OpenAPI/Swagger workflow and document the exact command here.
 ## Deployment
 
 The app must remain deployable on Vercel. No repo-local deployment command or
-Vercel project configuration is present yet.
+Vercel project configuration is present yet: there is no `vercel.json`, no
+committed `.vercel/` directory, and no tracked `.env*` template in the repo
+root.
 
-When deployment configuration exists, document the exact Vercel path and any
-required verification steps here. Playwright tests in `streakbeacon-tests` should
-run only against the deployed Vercel URL.
+### Current pre-deploy local checks
+
+Agents must run these against the working tree before any deploy handoff and
+report exact pass/fail:
+
+```bash
+npm install
+npm run lint
+npm run test
+npm run build
+```
+
+### Deploy blocker — admin input required
+
+A deploy URL cannot be produced from this repo alone. To unblock, a human
+admin with Vercel access must:
+
+1. Link a Vercel project to this repository (e.g. `vercel link`) and commit
+   any resulting repo-tracked configuration (such as `vercel.json`) on a
+   feature branch.
+2. Configure required environment variables in the Vercel project settings
+   and add a redacted `.env.example` to the repo root if any are needed at
+   build time.
+3. Provide the resulting Vercel production URL on the parent deployment
+   issue so workers and Playwright runs can reference it.
+
+Until that admin input lands and is recorded on the issue:
+
+- Do not claim a deploy URL.
+- Do not invent Vercel project IDs, tokens, or environment values.
+- Do not run Playwright in `streakbeacon-tests` against a guessed host —
+  the suite must target only the deployed Vercel URL once it exists.
+
+When the configuration above is present, replace this section with the exact
+deploy command and verification steps.
 
 ## Project Constraints
 
