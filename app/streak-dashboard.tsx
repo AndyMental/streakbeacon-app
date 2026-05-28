@@ -286,14 +286,14 @@ function SummaryCard({
 function getDayClassName(intensity: number) {
   switch (intensity) {
     case 1:
-      return "border-[#b7ebcb] bg-[#b7ebcb] dark:border-[#164b2b] dark:bg-[#164b2b]";
+      return "border-streak-1-border bg-streak-1";
     case 2:
-      return "border-[#73d99a] bg-[#73d99a] dark:border-[#1b6b3a] dark:bg-[#1b6b3a]";
+      return "border-streak-2-border bg-streak-2";
     case 3:
-      return "border-[#27ae60] bg-[#27ae60] dark:border-[#27ae60] dark:bg-[#27ae60]";
+      return "border-streak-3-border bg-streak-3";
     case 4:
-      return "border-[#1f8f4d] bg-[#1f8f4d] dark:border-[#2d9cdb] dark:bg-[#2d9cdb]";
+      return "border-streak-4-border bg-streak-4";
     default:
-      return "border-border bg-muted";
+      return "border-streak-empty-border bg-streak-empty";
   }
 }
