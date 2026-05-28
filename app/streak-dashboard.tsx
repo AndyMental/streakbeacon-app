@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import {
   addStreakItem,
   createEmptyStreakData,
+  DEFAULT_ACCENT_COLOR,
   setDayCompletion,
   type IsoDate,
   type StreakData
@@ -35,7 +36,7 @@ function createDemoData(): StreakData {
     id: "ship-useful-change",
     name: "Ship one useful change",
     description: "A lightweight sample habit for the recent-history grid.",
-    color: "#27AE60",
+    color: DEFAULT_ACCENT_COLOR,
     now
   });
 
@@ -260,9 +261,9 @@ function getDayClassName(intensity: number) {
     case 2:
       return "border-[#73d99a] bg-[#73d99a] dark:border-[#1b6b3a] dark:bg-[#1b6b3a]";
     case 3:
-      return "border-[#27ae60] bg-[#27ae60] dark:border-[#27ae60] dark:bg-[#27ae60]";
+      return "border-brand-green bg-brand-green dark:border-brand-green dark:bg-brand-green";
     case 4:
-      return "border-[#1f8f4d] bg-[#1f8f4d] dark:border-[#2d9cdb] dark:bg-[#2d9cdb]";
+      return "border-[#1f8f4d] bg-[#1f8f4d] dark:border-brand-blue dark:bg-brand-blue";
     default:
       return "border-border bg-muted";
   }

@@ -1,6 +1,7 @@
 import {
   createEmptyStreakData,
   createExportEnvelope,
+  DEFAULT_ACCENT_COLOR,
   isRecord,
   normalizePreferences,
   STREAK_DATA_VERSION,
@@ -202,7 +203,7 @@ function normalizeItem(value: unknown): StreakItem {
     color:
       typeof value.color === "string" && value.color.trim()
         ? value.color.trim()
-        : "#27AE60",
+        : DEFAULT_ACCENT_COLOR,
     createdAt: requireIsoTimestamp(value.createdAt, "item.createdAt"),
     updatedAt: requireIsoTimestamp(value.updatedAt, "item.updatedAt"),
     order: requireNonNegativeInteger(value.order, "item.order"),
