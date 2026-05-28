@@ -45,7 +45,13 @@ export class LocalStreakStorageAdapter {
   ) {}
 
   load(): StreakData {
-    const raw = this.storage.getItem(this.key);
+    let raw: string | null;
+
+    try {
+      raw = this.storage.getItem(this.key);
+    } catch {
+      return createEmptyStreakData();
+    }
 
     if (!raw) {
       return createEmptyStreakData();
@@ -59,13 +65,16 @@ export class LocalStreakStorageAdapter {
   }
 
   save(data: StreakData, savedAt = new Date()): void {
-    this.storage.setItem(
-      this.key,
-      JSON.stringify({
-        ...parseStreakData(data),
-        updatedAt: savedAt.toISOString()
-      })
-    );
+    const normalized = {
+      ...parseStreakData(data),
+      updatedAt: savedAt.toISOString()
+    };
+
+    try {
+      this.storage.setItem(this.key, JSON.stringify(normalized));
+    } catch {
+      // Keep app-layer state changes usable when browser persistence is denied.
+    }
   }
 
   replace(data: StreakData, savedAt = new Date()): StreakData {
@@ -74,12 +83,21 @@ export class LocalStreakStorageAdapter {
       updatedAt: savedAt.toISOString()
     };
 
-    this.storage.setItem(this.key, JSON.stringify(normalized));
+    try {
+      this.storage.setItem(this.key, JSON.stringify(normalized));
+    } catch {
+      // Keep import/reset flows non-fatal when browser persistence is denied.
+    }
+
     return normalized;
   }
 
   reset(): void {
-    this.storage.removeItem(this.key);
+    try {
+      this.storage.removeItem(this.key);
+    } catch {
+      // Reset should remain non-fatal in browsers that block storage access.
+    }
   }
 
   export(data: StreakData, exportedAt = new Date()): StreakExportEnvelope {
