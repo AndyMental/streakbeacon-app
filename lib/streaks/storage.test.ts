@@ -28,6 +28,20 @@ class MemoryStorage {
   }
 }
 
+class ThrowingStorage {
+  getItem(): string | null {
+    throw new Error("Storage access denied.");
+  }
+
+  setItem(): void {
+    throw new Error("Storage quota exceeded.");
+  }
+
+  removeItem(): void {
+    throw new Error("Storage access denied.");
+  }
+}
+
 function createSampleData() {
   const now = new Date("2026-05-27T12:00:00.000Z");
 
@@ -110,6 +124,21 @@ describe("LocalStreakStorageAdapter", () => {
 
     assert.equal(storage.getItem(STREAK_STORAGE_KEY), null);
     assert.deepEqual(adapter.load().items, []);
+  });
+
+  it("keeps storage API failures non-fatal", () => {
+    const adapter = new LocalStreakStorageAdapter(new ThrowingStorage());
+    const data = createSampleData();
+
+    assert.deepEqual(adapter.load(), createEmptyStreakData());
+    assert.doesNotThrow(() =>
+      adapter.save(data, new Date("2026-05-27T12:00:00.000Z"))
+    );
+    assert.deepEqual(
+      adapter.replace(data, new Date("2026-05-27T12:00:00.000Z")),
+      data
+    );
+    assert.doesNotThrow(() => adapter.reset());
   });
 
   it("exports and validates a restorable JSON payload", () => {
