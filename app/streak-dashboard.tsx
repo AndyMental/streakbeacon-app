@@ -1,13 +1,13 @@
 "use client";
 
-import { CalendarDays, CheckCircle2, Flame, Trophy } from "lucide-react";
-import { useMemo, useState } from "react";
+import { CalendarDays, CheckCircle2, Flame, Info, Trophy } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import {
-  addStreakItem,
   createEmptyStreakData,
   setDayCompletion,
   type IsoDate,
@@ -27,53 +27,38 @@ function createBrowserStore() {
   return new StreakStore(new LocalStreakStorageAdapter(window.localStorage));
 }
 
-function createDemoData(): StreakData {
-  const now = DEMO_AS_OF;
-  let data = createEmptyStreakData(now);
-
-  data = addStreakItem(data, {
-    id: "ship-useful-change",
-    name: "Ship one useful change",
-    description: "A lightweight sample habit for the recent-history grid.",
-    color: "#27AE60",
-    now
-  });
-
-  for (let offset = 0; offset < 80; offset += 1) {
-    if ([1, 5, 11].includes(offset % 13)) {
-      continue;
-    }
-
-    data = setDayCompletion(
-      data,
-      "ship-useful-change",
-      formatIsoDay(addDays(now, -offset)),
-      true,
-      now
-    );
-  }
-
-  return data;
-}
-
 export function StreakDashboard() {
-  const [data, setData] = useState<StreakData>(() => {
-    if (typeof window === "undefined") {
-      return createDemoData();
-    }
-
-    const stored = createBrowserStore().getSnapshot();
-    return stored.items.length > 0 ? stored : createDemoData();
-  });
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(
-    data.items[0]?.id ?? null
+  const [data, setData] = useState<StreakData>(() =>
+    createEmptyStreakData(DEMO_AS_OF)
   );
+  const [isReady, setIsReady] = useState(false);
+  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [selectedDay, setSelectedDay] = useState<IsoDate | null>(null);
   const model = useMemo(
     () => buildStreakGridModel(data, selectedItemId, selectedDay, DEMO_AS_OF),
     [data, selectedDay, selectedItemId]
   );
   const selectedCompletion = getNextSelectedCompletion(model);
+  const hasItems = data.items.length > 0;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    queueMicrotask(() => {
+      if (cancelled) {
+        return;
+      }
+
+      const stored = createBrowserStore().getSnapshot();
+      setData(stored);
+      setSelectedItemId(stored.items[0]?.id ?? null);
+      setIsReady(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   function selectDay(day: GridDay) {
     setSelectedDay(day.day);
@@ -108,7 +93,9 @@ export function StreakDashboard() {
             <div>
               <CardTitle>Streak grid</CardTitle>
               <p className="mt-1 text-sm text-muted-foreground">
-                {model.activeItem?.name ?? "No active streak"}
+                {!isReady
+                  ? "Loading local streak data"
+                  : model.activeItem?.name ?? "No active streak"}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -127,6 +114,18 @@ export function StreakDashboard() {
           </div>
         </CardHeader>
         <CardContent className="pt-4">
+          {isReady && !hasItems ? (
+            <Alert variant="muted" className="mb-4">
+              <Info className="absolute right-3 top-3 h-4 w-4 text-primary" />
+              <AlertTitle>No streaks yet</AlertTitle>
+              <AlertDescription>
+                Add a habit to start filling the local completion grid. Until
+                then, the calendar stays empty and summary metrics remain at
+                zero.
+              </AlertDescription>
+            </Alert>
+          ) : null}
+
           <div
             className="overflow-x-auto pb-2"
             role="group"
@@ -210,9 +209,13 @@ export function StreakDashboard() {
               className="mt-4 w-full"
               variant={model.selectedDay.isComplete ? "outline" : "default"}
               onClick={toggleSelectedDay}
-              disabled={!model.activeItem}
+              disabled={!model.activeItem || !isReady}
             >
-              {model.selectedDay.isComplete ? "Mark Open" : "Mark Complete"}
+              {!isReady
+                ? "Loading"
+                : model.selectedDay.isComplete
+                  ? "Mark Open"
+                  : "Mark Complete"}
             </Button>
             <p className="mt-3 text-sm text-muted-foreground">
               {model.completionRate}% of visible days complete.
@@ -266,14 +269,4 @@ function getDayClassName(intensity: number) {
     default:
       return "border-border bg-muted";
   }
-}
-
-function formatIsoDay(day: Date): IsoDate {
-  return day.toISOString().slice(0, 10) as IsoDate;
-}
-
-function addDays(day: Date, amount: number): Date {
-  const next = new Date(day);
-  next.setUTCDate(next.getUTCDate() + amount);
-  return next;
 }
