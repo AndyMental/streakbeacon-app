@@ -107,13 +107,15 @@ describe("streak domain model", () => {
       theme: "dark",
       weekStartsOn: 1,
       gridWindowDays: 180,
-      showArchived: true
+      showArchived: true,
+      accentColor: " #2D9CDB "
     });
 
     assert.equal(data.preferences.theme, "dark");
     assert.equal(data.preferences.weekStartsOn, 1);
     assert.equal(data.preferences.gridWindowDays, 180);
     assert.equal(data.preferences.showArchived, true);
+    assert.equal(data.preferences.accentColor, "#2D9CDB");
   });
 
   it("defaults and clamps the grid window preference to the product range", () => {
@@ -131,6 +133,60 @@ describe("streak domain model", () => {
       }).preferences.gridWindowDays,
       365
     );
+  });
+
+  it("rejects duplicate items and completion updates for unknown streaks", () => {
+    const now = new Date("2026-05-27T12:00:00.000Z");
+    const data = addStreakItem(createEmptyStreakData(now), {
+      id: "read",
+      name: "Read",
+      now
+    });
+
+    assert.throws(
+      () =>
+        addStreakItem(data, {
+          id: "read",
+          name: "Read again",
+          now
+        }),
+      /Streak item already exists: read/
+    );
+    assert.throws(
+      () => setDayCompletion(data, "missing", "2026-05-27", true, now),
+      /Streak item not found: missing/
+    );
+  });
+
+  it("normalizes optional item fields without overwriting omitted values", () => {
+    const now = new Date("2026-05-27T12:00:00.000Z");
+    const data = addStreakItem(createEmptyStreakData(now), {
+      id: "journal",
+      name: "Journal",
+      description: "  Capture notes  ",
+      color: " #2D9CDB ",
+      now
+    });
+
+    const renamed = renameStreakItem(data, {
+      id: "journal",
+      name: "Daily journal",
+      now: new Date("2026-05-27T13:00:00.000Z")
+    });
+
+    assert.equal(renamed.items[0]?.description, "Capture notes");
+    assert.equal(renamed.items[0]?.color, "#2D9CDB");
+
+    const updated = renameStreakItem(renamed, {
+      id: "journal",
+      name: "Daily journal",
+      description: "  ",
+      color: "  ",
+      now: new Date("2026-05-27T14:00:00.000Z")
+    });
+
+    assert.equal(updated.items[0]?.description, "");
+    assert.equal(updated.items[0]?.color, "#27AE60");
   });
 
   it("creates the documented versioned export envelope", () => {

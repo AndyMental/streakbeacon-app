@@ -8,6 +8,7 @@ import {
 } from "./model";
 import {
   LocalStreakStorageAdapter,
+  parseExportEnvelope,
   STREAK_STORAGE_KEY,
   validateImportText
 } from "./storage";
@@ -141,6 +142,31 @@ describe("LocalStreakStorageAdapter", () => {
     assert.doesNotThrow(() => adapter.reset());
   });
 
+  it("uses the configured storage key and normalizes saved payloads", () => {
+    const storage = new MemoryStorage();
+    const adapter = new LocalStreakStorageAdapter(storage, "custom:key");
+    const data = {
+      ...createSampleData(),
+      completions: {
+        read: {
+          "2026-05-27": {
+            completedAt: "2026-05-27T12:00:00.000Z",
+            source: "unexpected"
+          }
+        }
+      }
+    };
+
+    adapter.save(data, new Date("2026-05-27T14:00:00.000Z"));
+
+    assert.equal(storage.getItem(STREAK_STORAGE_KEY), null);
+    assert.equal(adapter.load().updatedAt, "2026-05-27T14:00:00.000Z");
+    assert.equal(
+      adapter.load().completions.read["2026-05-27"]?.source,
+      "manual"
+    );
+  });
+
   it("exports and validates a restorable JSON payload", () => {
     const adapter = new LocalStreakStorageAdapter(new MemoryStorage());
     const exported = adapter.export(
@@ -197,6 +223,82 @@ describe("LocalStreakStorageAdapter", () => {
         })
       ).ok,
       false
+    );
+  });
+
+  it("rejects malformed import metadata and completion structures", () => {
+    const adapter = new LocalStreakStorageAdapter(new MemoryStorage());
+    const exported = adapter.export(createSampleData());
+
+    assert.deepEqual(
+      validateImportText(JSON.stringify({ ...exported, app: { name: "Other" } }))
+        .ok,
+      false
+    );
+    assert.deepEqual(
+      validateImportText(
+        JSON.stringify({ ...exported, exportedAt: "not a date" })
+      ).ok,
+      false
+    );
+    assert.deepEqual(
+      validateImportText(
+        JSON.stringify({
+          ...exported,
+          data: {
+            ...exported.data,
+            completions: {
+              read: []
+            }
+          }
+        })
+      ).ok,
+      false
+    );
+  });
+
+  it("normalizes accepted import payload fields for local-first restores", () => {
+    const adapter = new LocalStreakStorageAdapter(new MemoryStorage());
+    const exported = adapter.export(createSampleData());
+    const result = parseExportEnvelope({
+      ...exported,
+      data: {
+        ...exported.data,
+        preferences: {
+          theme: "invalid",
+          weekStartsOn: 3,
+          gridWindowDays: 999,
+          showArchived: "yes",
+          accentColor: " #2D9CDB "
+        },
+        items: [
+          {
+            ...exported.data.items[0],
+            description: 123,
+            color: " "
+          }
+        ],
+        completions: {
+          read: {
+            "2026-05-27": {
+              completedAt: "2026-05-27T12:00:00.000Z",
+              source: "import"
+            }
+          }
+        }
+      }
+    });
+
+    assert.equal(result.envelope.data.preferences.theme, "system");
+    assert.equal(result.envelope.data.preferences.weekStartsOn, 0);
+    assert.equal(result.envelope.data.preferences.gridWindowDays, 365);
+    assert.equal(result.envelope.data.preferences.showArchived, false);
+    assert.equal(result.envelope.data.preferences.accentColor, "#2D9CDB");
+    assert.equal(result.envelope.data.items[0]?.description, "");
+    assert.equal(result.envelope.data.items[0]?.color, "#27AE60");
+    assert.equal(
+      result.envelope.data.completions.read["2026-05-27"]?.source,
+      "import"
     );
   });
 
