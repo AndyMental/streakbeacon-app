@@ -2,8 +2,14 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function Loading() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-5 py-10 text-foreground">
-      <Card className="w-full max-w-md">
+    <main
+      role="status"
+      aria-busy="true"
+      aria-live="polite"
+      className="flex min-h-screen items-center justify-center bg-background px-5 py-10 text-foreground"
+    >
+      <span className="sr-only">Loading StreakBeacon</span>
+      <Card className="w-full max-w-md" aria-hidden="true">
         <CardHeader className="gap-3 border-b">
           <div className="h-4 w-28 animate-pulse rounded bg-muted" />
           <div className="h-8 w-3/4 animate-pulse rounded bg-muted" />
