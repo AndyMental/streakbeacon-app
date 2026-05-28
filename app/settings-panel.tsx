@@ -1,13 +1,6 @@
 "use client";
 
-import {
-  Download,
-  FileJson,
-  Moon,
-  RotateCcw,
-  Sun,
-  Upload
-} from "lucide-react";
+import { Download, FileJson, RotateCcw, Sun, Upload } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -306,12 +299,13 @@ export function SettingsPanel() {
               </AlertDescription>
             </Alert>
           ) : null}
-          {message ? (
-            <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-              <Moon className="h-4 w-4" aria-hidden="true" />
-              {message}
-            </p>
-          ) : null}
+          <p
+            role="status"
+            aria-live="polite"
+            className="mt-4 min-h-5 text-sm text-muted-foreground"
+          >
+            {message ?? ""}
+          </p>
         </CardContent>
       </Card>
     </section>

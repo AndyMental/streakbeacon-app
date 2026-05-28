@@ -144,8 +144,8 @@ export function StreakDashboard() {
                       aria-pressed={day.isComplete}
                       onClick={() => selectDay(day)}
                       className={cn(
-                        "h-5 w-5 rounded-sm border outline-none transition-transform focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                        day.isSelected && "scale-110 border-foreground",
+                        "h-5 w-5 rounded-sm border outline-none transition-transform motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                        day.isSelected && "scale-110 motion-reduce:scale-100 border-foreground",
                         getDayClassName(day.intensity)
                       )}
                     />
