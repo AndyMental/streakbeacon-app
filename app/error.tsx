@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,8 +15,16 @@ type ErrorPageProps = {
 };
 
 export default function ErrorPage({ error, reset }: ErrorPageProps) {
+  useEffect(() => {
+    console.error(error);
+  }, [error]);
+
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-5 py-10 text-foreground">
+    <main
+      role="alert"
+      aria-live="assertive"
+      className="flex min-h-screen items-center justify-center bg-background px-5 py-10 text-foreground"
+    >
       <Card className="w-full max-w-md">
         <CardHeader className="gap-3 border-b">
           <p className="text-sm font-medium uppercase text-muted-foreground">
