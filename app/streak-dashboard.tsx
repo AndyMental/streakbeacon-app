@@ -2,6 +2,7 @@
 
 import { CalendarDays, CheckCircle2, Flame, Info, Trophy } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -96,6 +97,12 @@ export function StreakDashboard() {
     }
 
     setData(next);
+    toast.success(
+      selectedCompletion ? "Marked complete" : "Completion cleared",
+      {
+        description: `${model.activeItem.name} - ${model.selectedDay.label}`
+      }
+    );
   }
 
   return (
