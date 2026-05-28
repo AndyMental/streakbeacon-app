@@ -1,7 +1,7 @@
 "use client";
 
 import { CalendarDays, CheckCircle2, Flame, Trophy } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -69,14 +69,99 @@ export function StreakDashboard() {
     data.items[0]?.id ?? null
   );
   const [selectedDay, setSelectedDay] = useState<IsoDate | null>(null);
+  const [focusedDay, setFocusedDay] = useState<IsoDate | null>(null);
+  const cellRefs = useRef(new Map<IsoDate, HTMLButtonElement | null>());
   const model = useMemo(
     () => buildStreakGridModel(data, selectedItemId, selectedDay, DEMO_AS_OF),
     [data, selectedDay, selectedItemId]
   );
   const selectedCompletion = getNextSelectedCompletion(model);
+  const rovingDay = focusedDay ?? model.selectedDay.day;
 
   function selectDay(day: GridDay) {
     setSelectedDay(day.day);
+    setFocusedDay(day.day);
+  }
+
+  function moveFocus(weekIndex: number, dayIndex: number) {
+    const target = model.weeks[weekIndex]?.days[dayIndex];
+    if (!target) {
+      return;
+    }
+    setFocusedDay(target.day);
+    cellRefs.current.get(target.day)?.focus();
+  }
+
+  function handleCellKeyDown(
+    event: KeyboardEvent<HTMLButtonElement>,
+    weekIndex: number,
+    dayIndex: number
+  ) {
+    const weeks = model.weeks;
+    const week = weeks[weekIndex];
+    if (!week) {
+      return;
+    }
+
+    switch (event.key) {
+      case "ArrowDown": {
+        if (dayIndex + 1 < week.days.length) {
+          event.preventDefault();
+          moveFocus(weekIndex, dayIndex + 1);
+        } else if (weekIndex + 1 < weeks.length) {
+          event.preventDefault();
+          moveFocus(weekIndex + 1, 0);
+        }
+        return;
+      }
+      case "ArrowUp": {
+        if (dayIndex - 1 >= 0) {
+          event.preventDefault();
+          moveFocus(weekIndex, dayIndex - 1);
+        } else if (weekIndex - 1 >= 0) {
+          event.preventDefault();
+          const prev = weeks[weekIndex - 1];
+          moveFocus(weekIndex - 1, prev.days.length - 1);
+        }
+        return;
+      }
+      case "ArrowRight": {
+        const nextWeek = weeks[weekIndex + 1];
+        if (!nextWeek) {
+          return;
+        }
+        event.preventDefault();
+        moveFocus(
+          weekIndex + 1,
+          Math.min(dayIndex, nextWeek.days.length - 1)
+        );
+        return;
+      }
+      case "ArrowLeft": {
+        const prevWeek = weeks[weekIndex - 1];
+        if (!prevWeek) {
+          return;
+        }
+        event.preventDefault();
+        moveFocus(
+          weekIndex - 1,
+          Math.min(dayIndex, prevWeek.days.length - 1)
+        );
+        return;
+      }
+      case "Home": {
+        event.preventDefault();
+        moveFocus(weekIndex, 0);
+        return;
+      }
+      case "End": {
+        event.preventDefault();
+        moveFocus(weekIndex, week.days.length - 1);
+        return;
+      }
+      default:
+        return;
+    }
   }
 
   function toggleSelectedDay() {
@@ -127,26 +212,44 @@ export function StreakDashboard() {
           </div>
         </CardHeader>
         <CardContent className="pt-4">
-          <div
-            className="overflow-x-auto pb-2"
-            role="group"
-            aria-label="Recent completion history"
-          >
-            <div className="grid w-max min-w-full grid-flow-col auto-cols-[1.35rem] gap-1">
-              {model.weeks.map((week) => (
-                <div key={week.key} className="grid grid-rows-7 gap-1">
-                  {week.days.map((day) => (
+          <div className="overflow-x-auto pb-2">
+            <div
+              role="grid"
+              aria-label="Recent completion history"
+              aria-readonly="true"
+              className="grid w-max min-w-full grid-flow-col auto-cols-[1.5rem] gap-1"
+            >
+              {model.weeks.map((week, weekIndex) => (
+                <div
+                  key={week.key}
+                  role="row"
+                  className="grid grid-rows-7 gap-1"
+                >
+                  {week.days.map((day, dayIndex) => (
                     <button
                       key={day.day}
+                      ref={(node) => {
+                        if (node) {
+                          cellRefs.current.set(day.day, node);
+                        } else {
+                          cellRefs.current.delete(day.day);
+                        }
+                      }}
                       type="button"
+                      role="gridcell"
+                      tabIndex={day.day === rovingDay ? 0 : -1}
                       aria-label={`${day.label}: ${
                         day.isComplete ? "completed" : "not completed"
                       }`}
-                      aria-pressed={day.isComplete}
+                      aria-selected={day.isSelected}
                       onClick={() => selectDay(day)}
+                      onKeyDown={(event) =>
+                        handleCellKeyDown(event, weekIndex, dayIndex)
+                      }
                       className={cn(
-                        "h-5 w-5 rounded-sm border outline-none transition-transform focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                        day.isSelected && "scale-110 border-foreground",
+                        "h-6 w-6 rounded-sm border outline-none motion-safe:transition-transform focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
+                        day.isSelected &&
+                          "border-foreground motion-safe:scale-110",
                         getDayClassName(day.intensity)
                       )}
                     />
@@ -262,7 +365,7 @@ function getDayClassName(intensity: number) {
     case 3:
       return "border-[#27ae60] bg-[#27ae60] dark:border-[#27ae60] dark:bg-[#27ae60]";
     case 4:
-      return "border-[#1f8f4d] bg-[#1f8f4d] dark:border-[#2d9cdb] dark:bg-[#2d9cdb]";
+      return "border-[#1f8f4d] bg-[#1f8f4d] dark:border-[#39d353] dark:bg-[#39d353]";
     default:
       return "border-border bg-muted";
   }
