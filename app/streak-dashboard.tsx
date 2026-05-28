@@ -22,6 +22,8 @@ import { LocalStreakStorageAdapter } from "@/lib/streaks/storage";
 import { StreakStore } from "@/lib/streaks/store";
 
 const DEMO_AS_OF = new Date("2026-05-27T12:00:00.000Z");
+const STORAGE_ERROR_MESSAGE =
+  "Local streak data is unavailable in this browser. You can still review the page, but completion changes will not be saved.";
 
 function createBrowserStore() {
   return new StreakStore(new LocalStreakStorageAdapter(window.localStorage));
@@ -32,6 +34,7 @@ export function StreakDashboard() {
     createEmptyStreakData(DEMO_AS_OF)
   );
   const [isReady, setIsReady] = useState(false);
+  const [storageError, setStorageError] = useState<string | null>(null);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [selectedDay, setSelectedDay] = useState<IsoDate | null>(null);
   const model = useMemo(
@@ -49,9 +52,15 @@ export function StreakDashboard() {
         return;
       }
 
-      const stored = createBrowserStore().getSnapshot();
-      setData(stored);
-      setSelectedItemId(stored.items[0]?.id ?? null);
+      try {
+        const stored = createBrowserStore().getSnapshot();
+        setData(stored);
+        setSelectedItemId(stored.items[0]?.id ?? null);
+        setStorageError(null);
+      } catch {
+        setStorageError(STORAGE_ERROR_MESSAGE);
+      }
+
       setIsReady(true);
     });
 
@@ -78,8 +87,12 @@ export function StreakDashboard() {
       now
     );
 
-    if (typeof window !== "undefined") {
+    try {
       createBrowserStore().replaceData(next, now);
+      setStorageError(null);
+    } catch {
+      setStorageError(STORAGE_ERROR_MESSAGE);
+      return;
     }
 
     setData(next);
@@ -114,6 +127,13 @@ export function StreakDashboard() {
           </div>
         </CardHeader>
         <CardContent className="pt-4">
+          {storageError ? (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTitle>Storage unavailable</AlertTitle>
+              <AlertDescription>{storageError}</AlertDescription>
+            </Alert>
+          ) : null}
+
           {isReady && !hasItems ? (
             <Alert variant="muted" className="mb-4">
               <Info className="absolute right-3 top-3 h-4 w-4 text-primary" />
@@ -209,7 +229,7 @@ export function StreakDashboard() {
               className="mt-4 w-full"
               variant={model.selectedDay.isComplete ? "outline" : "default"}
               onClick={toggleSelectedDay}
-              disabled={!model.activeItem || !isReady}
+              disabled={!model.activeItem || !isReady || Boolean(storageError)}
             >
               {!isReady
                 ? "Loading"

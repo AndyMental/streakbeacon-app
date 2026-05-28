@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, FileJson, RotateCcw, Sun, Upload } from "lucide-react";
+import { Download, FileJson, Moon, RotateCcw, Sun, Upload } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
+  createExportEnvelope,
   createEmptyStreakData,
   type StreakData,
   type ThemePreference
@@ -25,6 +26,9 @@ function createBrowserStore() {
   return new StreakStore(new LocalStreakStorageAdapter(window.localStorage));
 }
 
+const STORAGE_ERROR_MESSAGE =
+  "Browser storage is unavailable. Settings and import changes cannot be saved right now.";
+
 function applyTheme(theme: ThemePreference) {
   const root = document.documentElement;
   const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
@@ -36,43 +40,76 @@ function applyTheme(theme: ThemePreference) {
 
 export function SettingsPanel() {
   const importInputRef = useRef<HTMLInputElement>(null);
-  const [data, setData] = useState<StreakData>(() =>
-    typeof window === "undefined"
-      ? createEmptyStreakData()
-      : createBrowserStore().getSnapshot()
-  );
+  const [data, setData] = useState<StreakData>(() => createEmptyStreakData());
+  const [isReady, setIsReady] = useState(false);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [storageError, setStorageError] = useState<string | null>(null);
   const [resetArmed, setResetArmed] = useState(false);
 
-  const store = useMemo(
-    () => (typeof window === "undefined" ? null : createBrowserStore()),
-    []
-  );
+  const store = useMemo(() => {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    try {
+      return createBrowserStore();
+    } catch {
+      return null;
+    }
+  }, []);
 
   useEffect(() => {
     applyTheme(data.preferences.theme);
   }, [data.preferences.theme]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    queueMicrotask(() => {
+      if (cancelled) {
+        return;
+      }
+
+      if (!store) {
+        setIsReady(true);
+        return;
+      }
+
+      try {
+        setData(store.getSnapshot());
+        setStorageError(null);
+      } catch {
+        setStorageError(STORAGE_ERROR_MESSAGE);
+      } finally {
+        setIsReady(true);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [store]);
+
   function updateTheme(theme: ThemePreference) {
     if (!store) {
+      setStorageError(STORAGE_ERROR_MESSAGE);
       return;
     }
 
-    const next = store.updatePreferences({ theme });
-    setData(next);
-    setMessage("Theme preference saved.");
+    try {
+      const next = store.updatePreferences({ theme });
+      setData(next);
+      setStorageError(null);
+      setMessage("Theme preference saved.");
+    } catch {
+      setStorageError(STORAGE_ERROR_MESSAGE);
+    }
   }
 
   function exportData() {
-    if (!store) {
-      return;
-    }
-
-    const envelope = new LocalStreakStorageAdapter(window.localStorage).export(
-      data
-    );
+    const envelope = createExportEnvelope(data, new Date());
     const blob = new Blob([JSON.stringify(envelope, null, 2)], {
       type: "application/json"
     });
@@ -112,13 +149,19 @@ export function SettingsPanel() {
 
   function confirmImport() {
     if (!store || !preview) {
+      setStorageError(STORAGE_ERROR_MESSAGE);
       return;
     }
 
-    const next = store.replaceData(preview.data);
-    setData(next);
-    setPreview(null);
-    setMessage("Import complete. Local data was replaced.");
+    try {
+      const next = store.replaceData(preview.data);
+      setData(next);
+      setPreview(null);
+      setStorageError(null);
+      setMessage("Import complete. Local data was replaced.");
+    } catch {
+      setStorageError(STORAGE_ERROR_MESSAGE);
+    }
 
     if (importInputRef.current) {
       importInputRef.current.value = "";
@@ -137,6 +180,7 @@ export function SettingsPanel() {
 
   function resetLocalData() {
     if (!store) {
+      setStorageError(STORAGE_ERROR_MESSAGE);
       return;
     }
 
@@ -146,14 +190,19 @@ export function SettingsPanel() {
       return;
     }
 
-    store.reset();
-    const next = createEmptyStreakData();
-    setData(next);
-    applyTheme(next.preferences.theme);
-    setPreview(null);
-    setImportError(null);
-    setResetArmed(false);
-    setMessage("Local data cleared.");
+    try {
+      store.reset();
+      const next = createEmptyStreakData();
+      setData(next);
+      applyTheme(next.preferences.theme);
+      setPreview(null);
+      setImportError(null);
+      setResetArmed(false);
+      setStorageError(null);
+      setMessage("Local data cleared.");
+    } catch {
+      setStorageError(STORAGE_ERROR_MESSAGE);
+    }
   }
 
   return (
@@ -164,6 +213,13 @@ export function SettingsPanel() {
           <CardTitle>Theme</CardTitle>
         </CardHeader>
         <CardContent>
+          {storageError ? (
+            <Alert variant="destructive" className="mb-4">
+              <AlertTitle>Storage unavailable</AlertTitle>
+              <AlertDescription>{storageError}</AlertDescription>
+            </Alert>
+          ) : null}
+
           <ToggleGroup
             type="single"
             value={data.preferences.theme}
@@ -173,6 +229,7 @@ export function SettingsPanel() {
               }
             }}
             aria-label="Theme preference"
+            disabled={!isReady}
           >
             {(["system", "light", "dark"] as const).map((theme) => (
               <ToggleGroupItem
@@ -193,6 +250,13 @@ export function SettingsPanel() {
           <CardTitle>Data</CardTitle>
         </CardHeader>
         <CardContent>
+          {storageError ? (
+            <Alert variant="destructive" className="mb-5">
+              <AlertTitle>Storage unavailable</AlertTitle>
+              <AlertDescription>{storageError}</AlertDescription>
+            </Alert>
+          ) : null}
+
           <dl className="grid grid-cols-3 gap-3 text-sm">
             <Badge
               asChild
@@ -249,6 +313,7 @@ export function SettingsPanel() {
                   type="file"
                   accept="application/json,.json"
                   className="sr-only"
+                  disabled={!isReady || Boolean(storageError)}
                   onChange={(event) =>
                     handleImportFile(event.target.files?.[0])
                   }
@@ -260,6 +325,7 @@ export function SettingsPanel() {
               variant={resetArmed ? "destructive" : "outline"}
               size="lg"
               onClick={resetLocalData}
+              disabled={!isReady || Boolean(storageError)}
             >
               <RotateCcw className="h-4 w-4" aria-hidden="true" />
               {resetArmed ? "Confirm Reset" : "Reset"}
@@ -302,8 +368,9 @@ export function SettingsPanel() {
           <p
             role="status"
             aria-live="polite"
-            className="mt-4 min-h-5 text-sm text-muted-foreground"
+            className="mt-4 flex min-h-5 items-center gap-2 text-sm text-muted-foreground"
           >
+            {message ? <Moon className="h-4 w-4" aria-hidden="true" /> : null}
             {message ?? ""}
           </p>
         </CardContent>
