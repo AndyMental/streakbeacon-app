@@ -29,7 +29,10 @@ import {
   getNextSelectedCompletion,
   type GridDay
 } from "@/lib/streaks/grid";
-import { LocalStreakStorageAdapter } from "@/lib/streaks/storage";
+import {
+  LocalStreakStorageAdapter,
+  STREAK_DATA_CHANGED_EVENT
+} from "@/lib/streaks/storage";
 import { StreakStore } from "@/lib/streaks/store";
 
 const DEMO_AS_OF = new Date("2026-05-27T12:00:00.000Z");
@@ -60,7 +63,7 @@ export function StreakDashboard() {
   useEffect(() => {
     let cancelled = false;
 
-    queueMicrotask(() => {
+    const loadSnapshot = () => {
       if (cancelled) {
         return;
       }
@@ -68,17 +71,25 @@ export function StreakDashboard() {
       try {
         const stored = createBrowserStore().getSnapshot();
         setData(stored);
-        setSelectedItemId(stored.items[0]?.id ?? null);
+        setSelectedItemId((current) =>
+          current && stored.items.some((item) => item.id === current)
+            ? current
+            : stored.items[0]?.id ?? null
+        );
         setStorageError(null);
       } catch {
         setStorageError(STORAGE_ERROR_MESSAGE);
       }
 
       setIsReady(true);
-    });
+    };
+
+    queueMicrotask(loadSnapshot);
+    window.addEventListener(STREAK_DATA_CHANGED_EVENT, loadSnapshot);
 
     return () => {
       cancelled = true;
+      window.removeEventListener(STREAK_DATA_CHANGED_EVENT, loadSnapshot);
     };
   }, []);
 
@@ -109,6 +120,7 @@ export function StreakDashboard() {
     }
 
     setData(next);
+    window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
     toast.success(
       selectedCompletion ? "Marked complete" : "Completion cleared",
       {
@@ -142,6 +154,7 @@ export function StreakDashboard() {
       setNewItemName("");
       setCreateError(null);
       setStorageError(null);
+      window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
       toast.success("Habit added", {
         description: `${name} is ready to track.`
       });
