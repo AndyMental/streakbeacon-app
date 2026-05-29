@@ -6,7 +6,8 @@ import { ThemeProvider } from "./theme-provider";
 export const metadata: Metadata = {
   applicationName: "StreakBeacon",
   title: "StreakBeacon",
-  description: "Local-first streak tracking for habits that need visibility."
+  description: "Local-first streak tracking for habits that need visibility.",
+  manifest: "/manifest.webmanifest"
 };
 
 export const viewport: Viewport = {
