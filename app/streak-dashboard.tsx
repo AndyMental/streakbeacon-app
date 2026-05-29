@@ -1,12 +1,21 @@
 "use client";
 
-import { CalendarDays, CheckCircle2, Flame, Info, Trophy } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import {
+  CalendarDays,
+  CheckCircle2,
+  Flame,
+  Info,
+  Plus,
+  Trophy
+} from "lucide-react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import {
   createEmptyStreakData,
@@ -38,6 +47,7 @@ export function StreakDashboard() {
   const [storageError, setStorageError] = useState<string | null>(null);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [selectedDay, setSelectedDay] = useState<IsoDate | null>(null);
+  const [newItemName, setNewItemName] = useState("");
   const model = useMemo(
     () => buildStreakGridModel(data, selectedItemId, selectedDay, DEMO_AS_OF),
     [data, selectedDay, selectedItemId]
@@ -105,6 +115,36 @@ export function StreakDashboard() {
     );
   }
 
+  function createItemId() {
+    return `streak-${crypto.randomUUID()}`;
+  }
+
+  function addStreakItem(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    const name = newItemName.trim();
+
+    if (!name) {
+      return;
+    }
+
+    const now = new Date();
+    const id = createItemId();
+
+    try {
+      const next = createBrowserStore().createItem({ id, name, now });
+      setData(next);
+      setSelectedItemId(id);
+      setNewItemName("");
+      setStorageError(null);
+      toast.success("Habit added", {
+        description: `${name} is ready for today's completion.`
+      });
+    } catch {
+      setStorageError(STORAGE_ERROR_MESSAGE);
+    }
+  }
+
   return (
     <section className="grid gap-6 lg:grid-cols-[1fr_18rem]">
       <Card>
@@ -134,6 +174,33 @@ export function StreakDashboard() {
           </div>
         </CardHeader>
         <CardContent className="pt-4">
+          <form
+            className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end"
+            onSubmit={addStreakItem}
+          >
+            <div className="grid flex-1 gap-2">
+              <Label htmlFor="new-streak-name">Add habit</Label>
+              <Input
+                id="new-streak-name"
+                type="text"
+                value={newItemName}
+                onChange={(event) => setNewItemName(event.target.value)}
+                placeholder="e.g. Morning walk"
+                maxLength={80}
+                disabled={!isReady || Boolean(storageError)}
+              />
+            </div>
+            <Button
+              type="submit"
+              disabled={
+                !isReady || Boolean(storageError) || !newItemName.trim()
+              }
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              Add Habit
+            </Button>
+          </form>
+
           {storageError ? (
             <Alert variant="destructive" className="mb-4">
               <AlertTitle>Storage unavailable</AlertTitle>
