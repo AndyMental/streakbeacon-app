@@ -18,6 +18,7 @@ import {
 } from "@/lib/streaks/model";
 import {
   LocalStreakStorageAdapter,
+  STREAK_DATA_CHANGED_EVENT,
   validateImportText,
   type ImportPreview
 } from "@/lib/streaks/storage";
@@ -60,7 +61,7 @@ export function SettingsPanel() {
   useEffect(() => {
     let cancelled = false;
 
-    queueMicrotask(() => {
+    const loadSnapshot = () => {
       if (cancelled) {
         return;
       }
@@ -78,10 +79,14 @@ export function SettingsPanel() {
       } finally {
         setIsReady(true);
       }
-    });
+    };
+
+    queueMicrotask(loadSnapshot);
+    window.addEventListener(STREAK_DATA_CHANGED_EVENT, loadSnapshot);
 
     return () => {
       cancelled = true;
+      window.removeEventListener(STREAK_DATA_CHANGED_EVENT, loadSnapshot);
     };
   }, [store]);
 
@@ -152,6 +157,7 @@ export function SettingsPanel() {
       setPreview(null);
       setStorageError(null);
       setMessage("Import complete. Local data was replaced.");
+      window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
     } catch {
       setStorageError(STORAGE_ERROR_MESSAGE);
     }
@@ -193,6 +199,7 @@ export function SettingsPanel() {
       setResetArmed(false);
       setStorageError(null);
       setMessage("Local data cleared.");
+      window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
     } catch {
       setStorageError(STORAGE_ERROR_MESSAGE);
     }
