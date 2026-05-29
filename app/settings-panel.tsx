@@ -4,12 +4,27 @@ import { Download, FileJson, Moon, RotateCcw, Sun, Upload } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  confirmResetAllData,
+  dispatchStreakDataReset
+} from "@/lib/streaks/reset";
 import {
   createExportEnvelope,
   createEmptyStreakData,
@@ -40,7 +55,6 @@ export function SettingsPanel() {
   const [importError, setImportError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [storageError, setStorageError] = useState<string | null>(null);
-  const [resetArmed, setResetArmed] = useState(false);
 
   const store = useMemo(() => {
     if (typeof window === "undefined") {
@@ -183,23 +197,15 @@ export function SettingsPanel() {
       return;
     }
 
-    if (!resetArmed) {
-      setResetArmed(true);
-      setMessage("Confirm reset to clear local data.");
-      return;
-    }
-
     try {
-      store.reset();
-      const next = createEmptyStreakData();
+      const next = confirmResetAllData(store);
       setData(next);
       setTheme(next.preferences.theme);
       setPreview(null);
       setImportError(null);
-      setResetArmed(false);
       setStorageError(null);
       setMessage("Local data cleared.");
-      window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
+      dispatchStreakDataReset(window);
     } catch {
       setStorageError(STORAGE_ERROR_MESSAGE);
     }
@@ -320,16 +326,37 @@ export function SettingsPanel() {
                 />
               </Label>
             </Button>
-            <Button
-              type="button"
-              variant={resetArmed ? "destructive" : "outline"}
-              size="lg"
-              onClick={resetLocalData}
-              disabled={!isReady || Boolean(storageError)}
-            >
-              <RotateCcw className="h-4 w-4" aria-hidden="true" />
-              {resetArmed ? "Confirm Reset" : "Reset"}
-            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  disabled={!isReady || Boolean(storageError)}
+                >
+                  <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                  Reset all data
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Reset all local data?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This clears every saved habit, completion, and preference
+                    from this browser. Export first if you need a backup.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    className="bg-destructive text-destructive-foreground hover:opacity-90"
+                    onClick={resetLocalData}
+                  >
+                    Confirm reset all data
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
 
           {preview ? (
