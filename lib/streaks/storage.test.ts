@@ -200,6 +200,48 @@ describe("LocalStreakStorageAdapter", () => {
     );
   });
 
+  it("rejects empty import text without affecting existing data", () => {
+    const storage = new MemoryStorage();
+    const adapter = new LocalStreakStorageAdapter(storage);
+    const data = createSampleData();
+
+    adapter.save(data, new Date("2026-05-27T12:00:00.000Z"));
+
+    const result = validateImportText("");
+
+    assert.equal(result.ok, false);
+
+    if (!result.ok) {
+      assert.equal(result.errors.length, 1);
+    }
+
+    assert.deepEqual(adapter.load(), data);
+  });
+
+  it("round trips an exported envelope back through replace and load", () => {
+    const storage = new MemoryStorage();
+    const adapter = new LocalStreakStorageAdapter(storage);
+    const original = createSampleData();
+    const envelope = adapter.export(
+      original,
+      new Date("2026-05-27T13:00:00.000Z")
+    );
+    const result = validateImportText(JSON.stringify(envelope));
+
+    assert.equal(result.ok, true);
+
+    if (result.ok) {
+      const replaced = adapter.replace(
+        result.preview.data,
+        new Date("2026-05-27T14:00:00.000Z")
+      );
+
+      assert.deepEqual(adapter.load(), replaced);
+      assert.equal(replaced.items[0]?.id, "read");
+      assert.equal(replaced.preferences.theme, "dark");
+    }
+  });
+
   it("allows duplicate imported names as preview warnings", () => {
     const adapter = new LocalStreakStorageAdapter(new MemoryStorage());
     const now = new Date("2026-05-27T12:00:00.000Z");
