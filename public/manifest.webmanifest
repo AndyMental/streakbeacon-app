@@ -1,0 +1,12 @@
+{
+  "name": "StreakBeacon",
+  "short_name": "StreakBeacon",
+  "description": "Local-first streak tracking for habits that need visibility.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f8fafc",
+  "theme_color": "#27ae60",
+  "icons": []
+}
