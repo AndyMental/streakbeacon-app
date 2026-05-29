@@ -25,7 +25,9 @@ export default function NotFound() {
             review today&apos;s plan and keep the signal clear.
           </p>
           <Button asChild>
-            <Link href="/">Back to home</Link>
+            <Link href="/" data-testid="not-found-home-link">
+              Back to home
+            </Link>
           </Button>
         </CardContent>
       </Card>
