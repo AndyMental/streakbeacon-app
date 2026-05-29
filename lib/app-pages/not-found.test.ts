@@ -7,8 +7,8 @@ import NotFound from "../../app/not-found";
 describe("404 not-found page", () => {
   const markup = renderToStaticMarkup(createElement(NotFound));
 
-  it("renders the off-the-streak-grid heading", () => {
-    assert.match(markup, /404 — off the streak grid/);
+  it("renders the not-found heading", () => {
+    assert.match(markup, /Page not found/);
   });
 
   it("renders the back-to-home link pointing to /", () => {
