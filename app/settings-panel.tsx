@@ -15,7 +15,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -267,24 +266,16 @@ export function SettingsPanel() {
           ) : null}
 
           <dl className="grid grid-cols-3 gap-3 text-sm">
-            <Badge
-              asChild
-              variant="outline"
-              className="block rounded-md bg-muted p-3 font-normal"
-            >
-              <div>
+            <Card className="bg-muted">
+              <CardContent className="p-3">
                 <dt className="text-muted-foreground">Items</dt>
                 <dd className="mt-1 text-xl font-semibold">
                   {data.items.length}
                 </dd>
-              </div>
-            </Badge>
-            <Badge
-              asChild
-              variant="outline"
-              className="block rounded-md bg-muted p-3 font-normal"
-            >
-              <div>
+              </CardContent>
+            </Card>
+            <Card className="bg-muted">
+              <CardContent className="p-3">
                 <dt className="text-muted-foreground">Days</dt>
                 <dd className="mt-1 text-xl font-semibold">
                   {Object.values(data.completions).reduce(
@@ -292,20 +283,16 @@ export function SettingsPanel() {
                     0
                   )}
                 </dd>
-              </div>
-            </Badge>
-            <Badge
-              asChild
-              variant="outline"
-              className="block rounded-md bg-muted p-3 font-normal"
-            >
-              <div>
+              </CardContent>
+            </Card>
+            <Card className="bg-muted">
+              <CardContent className="p-3">
                 <dt className="text-muted-foreground">Window</dt>
                 <dd className="mt-1 text-xl font-semibold">
                   {data.preferences.gridWindowDays}
                 </dd>
-              </div>
-            </Badge>
+              </CardContent>
+            </Card>
           </dl>
 
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
