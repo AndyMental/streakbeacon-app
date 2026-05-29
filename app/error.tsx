@@ -44,7 +44,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
               Error reference: {error.digest}
             </p>
           ) : null}
-          <Button type="button" onClick={reset}>
+          <Button type="button" data-testid="error-reset" onClick={reset}>
             Try again
           </Button>
         </CardContent>
