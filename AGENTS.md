@@ -16,6 +16,7 @@ commands that are actually present.
 - Test: `npm run test`
 - Build: `npm run build`
 - Start production server after a build: `npm run start`
+- Preview/preflight gate: `npm run preview:preflight` (runs `npm run lint && npm run test && npm run build` in that order; the same script is invoked by the `Preview Preflight` GitHub Actions workflow on every pull request and push)
 
 ## OpenAPI
 
@@ -38,10 +39,13 @@ report exact pass/fail:
 
 ```bash
 npm install
-npm run lint
-npm run test
-npm run build
+npm run preview:preflight
 ```
+
+`npm run preview:preflight` runs `npm run lint && npm run test && npm run
+build` in the same order as the `Preview Preflight` GitHub Actions workflow
+(`.github/workflows/preview-preflight.yml`), so passing it locally matches
+the deploy-adjacent CI gate.
 
 ### Deploy blocker — admin input required
 
