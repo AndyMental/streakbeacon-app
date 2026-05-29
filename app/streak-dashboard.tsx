@@ -6,12 +6,24 @@ import {
   Flame,
   Info,
   Plus,
+  Trash2,
   Trophy
 } from "lucide-react";
 import type { FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -131,6 +143,36 @@ export function StreakDashboard() {
     );
   }
 
+  function deleteSelectedItem() {
+    if (!model.activeItem) {
+      return;
+    }
+
+    const removedId = model.activeItem.id;
+    const removedName = model.activeItem.name;
+    const now = new Date();
+
+    let next: StreakData;
+    try {
+      next = createBrowserStore().deleteItem(removedId, now);
+      setStorageError(null);
+    } catch {
+      setStorageError(STORAGE_ERROR_MESSAGE);
+      return;
+    }
+
+    const remaining = next.items.filter((item) => !item.archivedAt);
+    const fallbackId = remaining[0]?.id ?? null;
+
+    setData(next);
+    setSelectedItemId(fallbackId);
+    setSelectedDay(null);
+    window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
+    toast.success("Habit deleted", {
+      description: `${removedName} was removed from local storage.`
+    });
+  }
+
   function createItem(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -184,7 +226,7 @@ export function StreakDashboard() {
                   : model.activeItem?.name ?? "No active streak"}
               </p>
             </div>
-            <div className="flex flex-wrap gap-2" aria-label="Streak selector">
+            <div className="flex flex-wrap items-center gap-2" aria-label="Streak selector">
               {data.items.map((item) => (
                 <Button
                   key={item.id}
@@ -196,6 +238,42 @@ export function StreakDashboard() {
                   {item.name}
                 </Button>
               ))}
+              {model.activeItem ? (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      aria-label={`Delete ${model.activeItem.name}`}
+                      disabled={!isReady || Boolean(storageError)}
+                    >
+                      <Trash2 className="h-4 w-4" aria-hidden="true" />
+                      Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>
+                        Delete {model.activeItem.name}?
+                      </AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This removes the habit and all of its completion
+                        history from this browser. Other habits stay intact.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        className="bg-destructive text-destructive-foreground hover:opacity-90"
+                        onClick={deleteSelectedItem}
+                      >
+                        Confirm delete
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              ) : null}
             </div>
           </div>
         </CardHeader>

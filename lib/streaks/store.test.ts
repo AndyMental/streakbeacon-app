@@ -56,6 +56,32 @@ describe("StreakStore", () => {
     assert.deepEqual(store.getSnapshot().items, []);
   });
 
+  it("removes a streak item and persists the remaining active items", () => {
+    const storage = new MemoryStorage();
+    const store = new StreakStore(new LocalStreakStorageAdapter(storage));
+    const now = new Date("2026-05-27T12:00:00.000Z");
+
+    store.createItem({ id: "hydrate", name: "Hydrate", now });
+    store.createItem({ id: "walk", name: "Walk", now });
+    store.setCompletion("hydrate", "2026-05-27", true, now);
+
+    const afterDelete = store.deleteItem("hydrate", now);
+    const remainingActive = afterDelete.items.filter(
+      (item) => !item.archivedAt
+    );
+
+    assert.equal(remainingActive.length, 1);
+    assert.equal(remainingActive[0]?.id, "walk");
+
+    const reloaded = new StreakStore(new LocalStreakStorageAdapter(storage));
+    const snapshot = reloaded.getSnapshot();
+    const reloadedActive = snapshot.items.filter((item) => !item.archivedAt);
+
+    assert.equal(reloadedActive.length, 1);
+    assert.equal(reloadedActive[0]?.id, "walk");
+    assert.equal(snapshot.completions.hydrate, undefined);
+  });
+
   it("persists a first-run in-memory snapshot before saving a toggle", () => {
     const storage = new MemoryStorage();
     const store = new StreakStore(new LocalStreakStorageAdapter(storage));
