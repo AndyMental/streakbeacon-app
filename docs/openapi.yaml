@@ -1,0 +1,27 @@
+openapi: 3.1.0
+info:
+  title: StreakBeacon API
+  version: 0.1.0
+  summary: Backend HTTP surface for the StreakBeacon Next.js App Router app.
+  description: |
+    StreakBeacon is a local-first Next.js App Router app. All streak state is
+    held in the browser via `lib/streaks/storage.ts`; the app does not yet
+    require a server-side data API.
+
+    This document is the authoritative contract for the StreakBeacon backend
+    HTTP surface. It currently advertises no operations because no
+    `app/api/**/route.ts` handlers are committed in the repository.
+
+    When a route handler is added, changed, or removed, update this file in
+    the same change so the spec and the running handlers stay in sync. See
+    `README.md` ("API contract") for the maintenance note and
+    `AGENTS.md` ("OpenAPI") for agent workflow rules.
+  contact:
+    name: StreakBeacon
+    url: https://github.com/AndyMental/streakbeacon-app
+servers:
+  - url: /
+    description: Same-origin Next.js App Router deployment (e.g. Vercel production URL).
+paths: {}
+components:
+  schemas: {}

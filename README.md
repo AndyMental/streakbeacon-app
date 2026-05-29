@@ -26,3 +26,14 @@ Vercel should use the Next.js framework preset with the repo defaults:
 - Build command: `npm run build`
 - Output directory: Next.js default `.next`
 - Required secrets: none for the current local-first app
+
+## API contract
+
+The backend HTTP surface is described by an OpenAPI 3.1 contract at
+[`docs/openapi.yaml`](docs/openapi.yaml). The contract currently advertises
+no operations because StreakBeacon is local-first and no
+`app/api/**/route.ts` handlers are committed.
+
+When a route handler is added, changed, or removed, update
+`docs/openapi.yaml` in the same change so the spec and the running handlers
+stay in sync. See `AGENTS.md` ("OpenAPI") for the agent workflow rule.

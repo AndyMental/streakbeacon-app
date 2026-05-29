@@ -19,10 +19,17 @@ commands that are actually present.
 
 ## OpenAPI
 
-No OpenAPI or Swagger generation/update command is present yet.
+The backend HTTP contract lives at `docs/openapi.yaml` (OpenAPI 3.1). It is
+hand-maintained — there is no generation script yet.
 
-Before adding frontend code or black-box tests that consume API routes, add or
-identify the OpenAPI/Swagger workflow and document the exact command here.
+Maintenance rule: when an `app/api/**/route.ts` handler is added, changed,
+or removed, update `docs/openapi.yaml` in the same change so the spec and
+the running handlers stay in sync. The contract currently advertises no
+operations because StreakBeacon is local-first and no route handlers are
+committed.
+
+Before adding frontend code or black-box tests that consume API routes,
+update `docs/openapi.yaml` first so the consumer has a contract to read.
 
 ## Deployment
 
