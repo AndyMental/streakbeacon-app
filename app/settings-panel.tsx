@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   createExportEnvelope,
@@ -40,6 +41,7 @@ export function SettingsPanel() {
   const [message, setMessage] = useState<string | null>(null);
   const [storageError, setStorageError] = useState<string | null>(null);
   const [resetArmed, setResetArmed] = useState(false);
+  const [pastedJson, setPastedJson] = useState("");
 
   const store = useMemo(() => {
     if (typeof window === "undefined") {
@@ -126,6 +128,29 @@ export function SettingsPanel() {
     }
 
     const text = await file.text();
+
+    if (!text.trim()) {
+      setPreview(null);
+      setImportError("The selected file is empty.");
+      setMessage(null);
+      return;
+    }
+
+    applyImportText(text);
+  }
+
+  function handleImportPaste() {
+    if (!pastedJson.trim()) {
+      setPreview(null);
+      setImportError("Paste exported JSON before previewing.");
+      setMessage(null);
+      return;
+    }
+
+    applyImportText(pastedJson);
+  }
+
+  function applyImportText(text: string) {
     const result = validateImportText(text);
 
     setMessage(null);
@@ -150,6 +175,7 @@ export function SettingsPanel() {
       const next = store.replaceData(preview.data);
       setData(next);
       setPreview(null);
+      setPastedJson("");
       setStorageError(null);
       setMessage("Import complete. Local data was replaced.");
     } catch {
@@ -164,6 +190,7 @@ export function SettingsPanel() {
   function cancelImport() {
     setPreview(null);
     setImportError(null);
+    setPastedJson("");
     setMessage("Import cancelled.");
 
     if (importInputRef.current) {
@@ -293,12 +320,17 @@ export function SettingsPanel() {
           </dl>
 
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-            <Button type="button" size="lg" onClick={exportData}>
+            <Button
+              type="button"
+              size="lg"
+              onClick={exportData}
+              data-testid="export-json-button"
+            >
               <Download className="h-4 w-4" aria-hidden="true" />
               Export JSON
             </Button>
             <Button asChild variant="outline" size="lg">
-              <Label className="cursor-pointer">
+              <Label className="cursor-pointer" data-testid="import-json-label">
                 <Upload className="h-4 w-4" aria-hidden="true" />
                 Import JSON
                 <Input
@@ -310,6 +342,7 @@ export function SettingsPanel() {
                   onChange={(event) =>
                     handleImportFile(event.target.files?.[0])
                   }
+                  data-testid="import-json-file"
                 />
               </Label>
             </Button>
@@ -319,14 +352,43 @@ export function SettingsPanel() {
               size="lg"
               onClick={resetLocalData}
               disabled={!isReady || Boolean(storageError)}
+              data-testid="reset-data-button"
             >
               <RotateCcw className="h-4 w-4" aria-hidden="true" />
               {resetArmed ? "Confirm Reset" : "Reset"}
             </Button>
           </div>
 
+          <div className="mt-5 grid gap-2">
+            <Label htmlFor="import-json-paste">Or paste exported JSON</Label>
+            <Textarea
+              id="import-json-paste"
+              value={pastedJson}
+              onChange={(event) => setPastedJson(event.target.value)}
+              placeholder='{"format":"streakbeacon.export", ...}'
+              disabled={!isReady || Boolean(storageError)}
+              rows={5}
+              data-testid="import-json-textarea"
+            />
+            <div>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleImportPaste}
+                disabled={!isReady || Boolean(storageError)}
+                data-testid="import-json-paste-button"
+              >
+                Preview pasted JSON
+              </Button>
+            </div>
+          </div>
+
           {preview ? (
-            <Alert variant="muted" className="mt-5">
+            <Alert
+              variant="muted"
+              className="mt-5"
+              data-testid="import-preview"
+            >
               <AlertTitle>Import preview</AlertTitle>
               <AlertDescription>
                 {preview.itemCount} items, {preview.completionCount} completed
@@ -341,10 +403,19 @@ export function SettingsPanel() {
                 </ul>
               ) : null}
               <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                <Button type="button" onClick={confirmImport}>
+                <Button
+                  type="button"
+                  onClick={confirmImport}
+                  data-testid="import-replace-button"
+                >
                   Replace Data
                 </Button>
-                <Button type="button" variant="outline" onClick={cancelImport}>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={cancelImport}
+                  data-testid="import-cancel-button"
+                >
                   Cancel
                 </Button>
               </div>
@@ -352,7 +423,11 @@ export function SettingsPanel() {
           ) : null}
 
           {importError ? (
-            <Alert variant="destructive" className="mt-4">
+            <Alert
+              variant="destructive"
+              className="mt-4"
+              data-testid="import-error"
+            >
               <AlertDescription className="mt-0">
                 {importError}
               </AlertDescription>
