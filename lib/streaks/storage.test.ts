@@ -200,6 +200,76 @@ describe("LocalStreakStorageAdapter", () => {
     );
   });
 
+  it("treats reset as idempotent on empty and previously-saved storage", () => {
+    const storage = new MemoryStorage();
+    const adapter = new LocalStreakStorageAdapter(storage);
+
+    assert.doesNotThrow(() => adapter.reset());
+    assert.equal(storage.getItem(STREAK_STORAGE_KEY), null);
+    assert.deepEqual(adapter.load().items, []);
+
+    adapter.save(createSampleData());
+    adapter.reset();
+    adapter.reset();
+
+    assert.equal(storage.getItem(STREAK_STORAGE_KEY), null);
+    assert.deepEqual(adapter.load().items, []);
+  });
+
+  it("rejects malformed completion entries and a missing data field", () => {
+    const adapter = new LocalStreakStorageAdapter(new MemoryStorage());
+    const exported = adapter.export(createSampleData());
+
+    assert.equal(validateImportText("null").ok, false);
+    assert.equal(validateImportText("[]").ok, false);
+    assert.equal(
+      validateImportText(
+        JSON.stringify({ ...exported, data: undefined })
+      ).ok,
+      false
+    );
+    assert.equal(
+      validateImportText(
+        JSON.stringify({
+          ...exported,
+          data: {
+            ...exported.data,
+            completions: { read: { "not-a-date": { completedAt: exported.exportedAt } } }
+          }
+        })
+      ).ok,
+      false
+    );
+    assert.equal(
+      validateImportText(
+        JSON.stringify({
+          ...exported,
+          data: {
+            ...exported.data,
+            completions: { read: { "2026-05-27": { completedAt: "not-a-timestamp" } } }
+          }
+        })
+      ).ok,
+      false
+    );
+    assert.equal(
+      validateImportText(
+        JSON.stringify({ ...exported, app: { name: "Other" } })
+      ).ok,
+      false
+    );
+  });
+
+  it("does not mutate the input data when building an export envelope", () => {
+    const adapter = new LocalStreakStorageAdapter(new MemoryStorage());
+    const data = createSampleData();
+    const snapshot = JSON.parse(JSON.stringify(data));
+
+    adapter.export(data, new Date("2026-05-27T13:00:00.000Z"));
+
+    assert.deepEqual(data, snapshot);
+  });
+
   it("allows duplicate imported names as preview warnings", () => {
     const adapter = new LocalStreakStorageAdapter(new MemoryStorage());
     const now = new Date("2026-05-27T12:00:00.000Z");

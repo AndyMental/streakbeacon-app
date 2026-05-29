@@ -56,6 +56,19 @@ describe("StreakStore", () => {
     assert.deepEqual(store.getSnapshot().items, []);
   });
 
+  it("keeps reset idempotent across repeated calls", () => {
+    const storage = new MemoryStorage();
+    const store = new StreakStore(new LocalStreakStorageAdapter(storage));
+    const now = new Date("2026-05-27T12:00:00.000Z");
+
+    store.createItem({ id: "hydrate", name: "Hydrate", now });
+    store.reset();
+    store.reset();
+
+    assert.deepEqual(store.getSnapshot().items, []);
+    assert.equal(store.getSnapshot().preferences.theme, "system");
+  });
+
   it("persists a first-run in-memory snapshot before saving a toggle", () => {
     const storage = new MemoryStorage();
     const store = new StreakStore(new LocalStreakStorageAdapter(storage));
