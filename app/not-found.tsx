@@ -16,7 +16,7 @@ export default function NotFound() {
             StreakBeacon
           </p>
           <CardTitle className="text-2xl leading-tight sm:text-3xl">
-            404 — off the streak grid
+            Page not found
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-5 pt-4">
@@ -25,7 +25,9 @@ export default function NotFound() {
             review today&apos;s plan and keep the signal clear.
           </p>
           <Button asChild>
-            <Link href="/">Back to home</Link>
+            <Link href="/" data-testid="not-found-home-link">
+              Back to home
+            </Link>
           </Button>
         </CardContent>
       </Card>
