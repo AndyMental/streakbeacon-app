@@ -2,12 +2,16 @@
   "name": "streakbeacon-app",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20.9.0"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test": "node --import tsx --test \"lib/**/*.test.ts\""
+    "test": "node --import tsx --test lib/**/*.test.ts",
+    "preview:preflight": "npm run lint && npm run test && npm run build"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.8",
