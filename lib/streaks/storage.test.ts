@@ -7,6 +7,7 @@ import {
   updatePreferences
 } from "./model";
 import {
+  assertStorageWritable,
   LocalStreakStorageAdapter,
   STREAK_STORAGE_KEY,
   validateImportText
@@ -39,6 +40,12 @@ class ThrowingStorage {
 
   removeItem(): void {
     throw new Error("Storage access denied.");
+  }
+}
+
+class WriteThrowingStorage extends MemoryStorage {
+  setItem(): void {
+    throw new Error("Storage quota exceeded.");
   }
 }
 
@@ -139,6 +146,26 @@ describe("LocalStreakStorageAdapter", () => {
       data
     );
     assert.doesNotThrow(() => adapter.reset());
+  });
+
+  it("detects writable storage and removes a new probe key", () => {
+    const storage = new MemoryStorage();
+
+    assert.doesNotThrow(() => assertStorageWritable(storage, "probe"));
+    assert.equal(storage.getItem("probe"), null);
+  });
+
+  it("restores an existing probe key value", () => {
+    const storage = new MemoryStorage();
+
+    storage.setItem("probe", "existing");
+    assert.doesNotThrow(() => assertStorageWritable(storage, "probe"));
+    assert.equal(storage.getItem("probe"), "existing");
+  });
+
+  it("throws when storage cannot persist writes", () => {
+    assert.throws(() => assertStorageWritable(new WriteThrowingStorage()));
+    assert.throws(() => assertStorageWritable(new ThrowingStorage()));
   });
 
   it("exports and validates a restorable JSON payload", () => {

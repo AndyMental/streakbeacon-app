@@ -14,6 +14,7 @@ import {
 
 export const STREAK_STORAGE_KEY = "streakbeacon:data:v1";
 export const STREAK_DATA_CHANGED_EVENT = "streakbeacon:data-changed";
+const STREAK_STORAGE_PROBE_KEY = `${STREAK_STORAGE_KEY}:probe`;
 
 export type KeyValueStorage = {
   getItem(key: string): string | null;
@@ -38,6 +39,21 @@ export type ImportValidationResult =
       ok: false;
       errors: string[];
     };
+
+export function assertStorageWritable(
+  storage: KeyValueStorage,
+  probeKey = STREAK_STORAGE_PROBE_KEY
+): void {
+  const previous = storage.getItem(probeKey);
+
+  storage.setItem(probeKey, "1");
+
+  if (previous === null) {
+    storage.removeItem(probeKey);
+  } else {
+    storage.setItem(probeKey, previous);
+  }
+}
 
 export class LocalStreakStorageAdapter {
   constructor(
