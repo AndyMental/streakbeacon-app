@@ -30,6 +30,7 @@ import {
   type GridDay
 } from "@/lib/streaks/grid";
 import {
+  assertStorageWritable,
   LocalStreakStorageAdapter,
   STREAK_DATA_CHANGED_EVENT
 } from "@/lib/streaks/storage";
@@ -40,6 +41,7 @@ const STORAGE_ERROR_MESSAGE =
   "Local streak data is unavailable in this browser. You can still review the page, but completion changes will not be saved.";
 
 function createBrowserStore() {
+  assertStorageWritable(window.localStorage);
   return new StreakStore(new LocalStreakStorageAdapter(window.localStorage));
 }
 
