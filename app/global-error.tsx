@@ -20,7 +20,14 @@ export default function GlobalErrorPage({
   return (
     <html lang="en">
       <body>
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-foreground focus:shadow focus:outline-none focus:ring-2 focus:ring-ring"
+        >
+          Skip to main content
+        </a>
         <main
+          id="main"
           role="alert"
           aria-live="assertive"
           className="flex min-h-screen items-center justify-center bg-background px-5 py-10 text-foreground"

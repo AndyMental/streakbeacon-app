@@ -46,6 +46,36 @@ describe("error page fallbacks", () => {
     assert.match(markup, /Try again/);
   });
 
+  it("exposes a skip-to-main-content anchor before the main landmark on the route error page", () => {
+    const markup = renderToStaticMarkup(
+      createElement(ErrorPage, {
+        error: new Error("route failure"),
+        reset: () => undefined
+      })
+    );
+
+    const skipIndex = markup.search(/<a[^>]*href="#main"[^>]*>\s*Skip to main content/);
+    const mainIndex = markup.search(/<main[^>]*id="main"/);
+    assert.ok(skipIndex >= 0, "skip-to-main-content anchor must render");
+    assert.ok(mainIndex >= 0, "main landmark with id=\"main\" must render");
+    assert.ok(skipIndex < mainIndex, "skip link must precede the main landmark");
+  });
+
+  it("exposes a skip-to-main-content anchor before the main landmark on the global error page", () => {
+    const markup = renderToStaticMarkup(
+      createElement(GlobalErrorPage, {
+        error: new Error("global failure"),
+        reset: () => undefined
+      })
+    );
+
+    const skipIndex = markup.search(/<a[^>]*href="#main"[^>]*>\s*Skip to main content/);
+    const mainIndex = markup.search(/<main[^>]*id="main"/);
+    assert.ok(skipIndex >= 0, "skip-to-main-content anchor must render");
+    assert.ok(mainIndex >= 0, "main landmark with id=\"main\" must render");
+    assert.ok(skipIndex < mainIndex, "skip link must precede the main landmark");
+  });
+
   it("invokes the reset prop when the route error Reset action fires", () => {
     let resetCalls = 0;
     let captured: ReactElement | null = null;

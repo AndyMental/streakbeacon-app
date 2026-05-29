@@ -20,35 +20,44 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
   }, [error]);
 
   return (
-    <main
-      role="alert"
-      aria-live="assertive"
-      className="flex min-h-screen items-center justify-center bg-background px-5 py-10 text-foreground"
-    >
-      <Card className="w-full max-w-md">
-        <CardHeader className="gap-3 border-b">
-          <p className="text-sm font-medium uppercase text-muted-foreground">
-            StreakBeacon
-          </p>
-          <CardTitle className="text-2xl leading-tight sm:text-3xl">
-            Signal dropped
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-5 pt-4">
-          <p className="text-sm leading-6 text-muted-foreground">
-            Something interrupted your streak map. Try again to reload the
-            current view and keep today&apos;s plan moving.
-          </p>
-          {error.digest ? (
-            <p className="text-xs font-medium text-secondary-foreground">
-              Error reference: {error.digest}
+    <>
+      <a
+        href="#main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-foreground focus:shadow focus:outline-none focus:ring-2 focus:ring-ring"
+      >
+        Skip to main content
+      </a>
+      <main
+        id="main"
+        role="alert"
+        aria-live="assertive"
+        className="flex min-h-screen items-center justify-center bg-background px-5 py-10 text-foreground"
+      >
+        <Card className="w-full max-w-md">
+          <CardHeader className="gap-3 border-b">
+            <p className="text-sm font-medium uppercase text-muted-foreground">
+              StreakBeacon
             </p>
-          ) : null}
-          <Button type="button" data-testid="error-reset" onClick={reset}>
-            Try again
-          </Button>
-        </CardContent>
-      </Card>
-    </main>
+            <CardTitle className="text-2xl leading-tight sm:text-3xl">
+              Signal dropped
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-5 pt-4">
+            <p className="text-sm leading-6 text-muted-foreground">
+              Something interrupted your streak map. Try again to reload the
+              current view and keep today&apos;s plan moving.
+            </p>
+            {error.digest ? (
+              <p className="text-xs font-medium text-secondary-foreground">
+                Error reference: {error.digest}
+              </p>
+            ) : null}
+            <Button type="button" data-testid="error-reset" onClick={reset}>
+              Try again
+            </Button>
+          </CardContent>
+        </Card>
+      </main>
+    </>
   );
 }
