@@ -13,6 +13,7 @@ import {
 } from "./model";
 
 export const STREAK_STORAGE_KEY = "streakbeacon:data:v1";
+export const STREAK_DATA_CHANGED_EVENT = "streakbeacon:data-changed";
 
 export type KeyValueStorage = {
   getItem(key: string): string | null;
