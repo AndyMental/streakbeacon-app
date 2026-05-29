@@ -17,6 +17,7 @@ import {
   type ThemePreference
 } from "@/lib/streaks/model";
 import {
+  assertStorageWritable,
   LocalStreakStorageAdapter,
   STREAK_DATA_CHANGED_EVENT,
   validateImportText,
@@ -25,6 +26,7 @@ import {
 import { StreakStore } from "@/lib/streaks/store";
 
 function createBrowserStore() {
+  assertStorageWritable(window.localStorage);
   return new StreakStore(new LocalStreakStorageAdapter(window.localStorage));
 }
 
@@ -67,6 +69,7 @@ export function SettingsPanel() {
       }
 
       if (!store) {
+        setStorageError(STORAGE_ERROR_MESSAGE);
         setIsReady(true);
         return;
       }
