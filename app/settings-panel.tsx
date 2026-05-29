@@ -19,9 +19,12 @@ import {
 } from "@/lib/streaks/model";
 import {
   LocalStreakStorageAdapter,
-  validateImportText,
   type ImportPreview
 } from "@/lib/streaks/storage";
+import {
+  evaluateImportInput,
+  type ImportInput
+} from "@/lib/streaks/import-input";
 import { StreakStore } from "@/lib/streaks/store";
 
 function createBrowserStore() {
@@ -129,40 +132,19 @@ export function SettingsPanel() {
 
     const text = await file.text();
 
-    if (!text.trim()) {
-      setPreview(null);
-      setImportError("The selected file is empty.");
-      setMessage(null);
-      return;
-    }
-
-    applyImportText(text);
+    applyImportInput({ kind: "file", text });
   }
 
   function handleImportPaste() {
-    if (!pastedJson.trim()) {
-      setPreview(null);
-      setImportError("Paste exported JSON before previewing.");
-      setMessage(null);
-      return;
-    }
-
-    applyImportText(pastedJson);
+    applyImportInput({ kind: "paste", text: pastedJson });
   }
 
-  function applyImportText(text: string) {
-    const result = validateImportText(text);
+  function applyImportInput(input: ImportInput) {
+    const result = evaluateImportInput(input);
 
     setMessage(null);
-
-    if (!result.ok) {
-      setPreview(null);
-      setImportError(result.errors.join(" "));
-      return;
-    }
-
-    setImportError(null);
     setPreview(result.preview);
+    setImportError(result.importError);
   }
 
   function confirmImport() {
