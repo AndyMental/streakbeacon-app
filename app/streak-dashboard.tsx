@@ -19,16 +19,13 @@ import {
   getNextSelectedCompletion,
   type GridDay
 } from "@/lib/streaks/grid";
-import { LocalStreakStorageAdapter } from "@/lib/streaks/storage";
-import { StreakStore } from "@/lib/streaks/store";
+import {
+  DASHBOARD_STORAGE_UNAVAILABLE_MESSAGE,
+  resolveBrowserStreakStore,
+  STORAGE_UNAVAILABLE_TITLE
+} from "@/lib/streaks/browser-store";
 
 const DEMO_AS_OF = new Date("2026-05-27T12:00:00.000Z");
-const STORAGE_ERROR_MESSAGE =
-  "Local streak data is unavailable in this browser. You can still review the page, but completion changes will not be saved.";
-
-function createBrowserStore() {
-  return new StreakStore(new LocalStreakStorageAdapter(window.localStorage));
-}
 
 export function StreakDashboard() {
   const [data, setData] = useState<StreakData>(() =>
@@ -53,13 +50,24 @@ export function StreakDashboard() {
         return;
       }
 
+      const storeResult = resolveBrowserStreakStore(
+        () => window.localStorage,
+        DASHBOARD_STORAGE_UNAVAILABLE_MESSAGE
+      );
+
+      if (!storeResult.ok) {
+        setStorageError(storeResult.alert.description);
+        setIsReady(true);
+        return;
+      }
+
       try {
-        const stored = createBrowserStore().getSnapshot();
+        const stored = storeResult.store.getSnapshot();
         setData(stored);
         setSelectedItemId(stored.items[0]?.id ?? null);
         setStorageError(null);
       } catch {
-        setStorageError(STORAGE_ERROR_MESSAGE);
+        setStorageError(DASHBOARD_STORAGE_UNAVAILABLE_MESSAGE);
       }
 
       setIsReady(true);
@@ -88,11 +96,21 @@ export function StreakDashboard() {
       now
     );
 
+    const storeResult = resolveBrowserStreakStore(
+      () => window.localStorage,
+      DASHBOARD_STORAGE_UNAVAILABLE_MESSAGE
+    );
+
+    if (!storeResult.ok) {
+      setStorageError(storeResult.alert.description);
+      return;
+    }
+
     try {
-      createBrowserStore().replaceData(next, now);
+      storeResult.store.replaceData(next, now);
       setStorageError(null);
     } catch {
-      setStorageError(STORAGE_ERROR_MESSAGE);
+      setStorageError(DASHBOARD_STORAGE_UNAVAILABLE_MESSAGE);
       return;
     }
 
@@ -136,7 +154,7 @@ export function StreakDashboard() {
         <CardContent className="pt-4">
           {storageError ? (
             <Alert variant="destructive" className="mb-4">
-              <AlertTitle>Storage unavailable</AlertTitle>
+              <AlertTitle>{STORAGE_UNAVAILABLE_TITLE}</AlertTitle>
               <AlertDescription>{storageError}</AlertDescription>
             </Alert>
           ) : null}

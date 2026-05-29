@@ -22,13 +22,14 @@ import {
   type ImportPreview
 } from "@/lib/streaks/storage";
 import { StreakStore } from "@/lib/streaks/store";
+import {
+  SETTINGS_STORAGE_UNAVAILABLE_MESSAGE,
+  STORAGE_UNAVAILABLE_TITLE
+} from "@/lib/streaks/browser-store";
 
 function createBrowserStore() {
   return new StreakStore(new LocalStreakStorageAdapter(window.localStorage));
 }
-
-const STORAGE_ERROR_MESSAGE =
-  "Browser storage is unavailable. Settings and import changes cannot be saved right now.";
 
 export function SettingsPanel() {
   const importInputRef = useRef<HTMLInputElement>(null);
@@ -74,7 +75,7 @@ export function SettingsPanel() {
         setData(store.getSnapshot());
         setStorageError(null);
       } catch {
-        setStorageError(STORAGE_ERROR_MESSAGE);
+        setStorageError(SETTINGS_STORAGE_UNAVAILABLE_MESSAGE);
       } finally {
         setIsReady(true);
       }
@@ -87,7 +88,7 @@ export function SettingsPanel() {
 
   function updateTheme(theme: ThemePreference) {
     if (!store) {
-      setStorageError(STORAGE_ERROR_MESSAGE);
+      setStorageError(SETTINGS_STORAGE_UNAVAILABLE_MESSAGE);
       return;
     }
 
@@ -97,7 +98,7 @@ export function SettingsPanel() {
       setStorageError(null);
       setMessage("Theme preference saved.");
     } catch {
-      setStorageError(STORAGE_ERROR_MESSAGE);
+      setStorageError(SETTINGS_STORAGE_UNAVAILABLE_MESSAGE);
     }
   }
 
@@ -142,7 +143,7 @@ export function SettingsPanel() {
 
   function confirmImport() {
     if (!store || !preview) {
-      setStorageError(STORAGE_ERROR_MESSAGE);
+      setStorageError(SETTINGS_STORAGE_UNAVAILABLE_MESSAGE);
       return;
     }
 
@@ -153,7 +154,7 @@ export function SettingsPanel() {
       setStorageError(null);
       setMessage("Import complete. Local data was replaced.");
     } catch {
-      setStorageError(STORAGE_ERROR_MESSAGE);
+      setStorageError(SETTINGS_STORAGE_UNAVAILABLE_MESSAGE);
     }
 
     if (importInputRef.current) {
@@ -173,7 +174,7 @@ export function SettingsPanel() {
 
   function resetLocalData() {
     if (!store) {
-      setStorageError(STORAGE_ERROR_MESSAGE);
+      setStorageError(SETTINGS_STORAGE_UNAVAILABLE_MESSAGE);
       return;
     }
 
@@ -194,7 +195,7 @@ export function SettingsPanel() {
       setStorageError(null);
       setMessage("Local data cleared.");
     } catch {
-      setStorageError(STORAGE_ERROR_MESSAGE);
+      setStorageError(SETTINGS_STORAGE_UNAVAILABLE_MESSAGE);
     }
   }
 
@@ -208,7 +209,7 @@ export function SettingsPanel() {
         <CardContent>
           {storageError ? (
             <Alert variant="destructive" className="mb-4">
-              <AlertTitle>Storage unavailable</AlertTitle>
+              <AlertTitle>{STORAGE_UNAVAILABLE_TITLE}</AlertTitle>
               <AlertDescription>{storageError}</AlertDescription>
             </Alert>
           ) : null}
@@ -245,7 +246,7 @@ export function SettingsPanel() {
         <CardContent>
           {storageError ? (
             <Alert variant="destructive" className="mb-5">
-              <AlertTitle>Storage unavailable</AlertTitle>
+              <AlertTitle>{STORAGE_UNAVAILABLE_TITLE}</AlertTitle>
               <AlertDescription>{storageError}</AlertDescription>
             </Alert>
           ) : null}
