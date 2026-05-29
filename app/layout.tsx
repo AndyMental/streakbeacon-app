@@ -7,6 +7,18 @@ export const metadata: Metadata = {
   applicationName: "StreakBeacon",
   title: "StreakBeacon",
   description: "Local-first streak tracking for habits that need visibility.",
+  openGraph: {
+    title: "StreakBeacon",
+    description: "Local-first streak tracking for habits that need visibility.",
+    type: "website",
+    siteName: "StreakBeacon",
+    locale: "en_US"
+  },
+  twitter: {
+    card: "summary",
+    title: "StreakBeacon",
+    description: "Local-first streak tracking for habits that need visibility."
+  },
   manifest: "/manifest.webmanifest"
 };
 
