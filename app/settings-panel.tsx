@@ -1,8 +1,9 @@
 "use client";
 
-import { AlertCircle, CheckCircle2, ClipboardPaste, Download, FileJson, Monitor, Moon, RotateCcw, Sun, Upload } from "lucide-react";
+import { AlertCircle, CheckCircle2, ClipboardPaste, Download, FileJson, Loader2, Monitor, Moon, RotateCcw, Sun, Upload } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   AlertDialog,
@@ -53,6 +54,7 @@ export function SettingsPanel() {
   const { setTheme, resolvedTheme } = useTheme();
   const [data, setData] = useState<StreakData>(() => createEmptyStreakData());
   const [isReady, setIsReady] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -149,8 +151,18 @@ export function SettingsPanel() {
       return;
     }
 
-    const text = await file.text();
-    processImportText(text);
+    setIsImporting(true);
+    setImportError(null);
+    setMessage(null);
+
+    try {
+      const text = await file.text();
+      processImportText(text);
+    } catch {
+      setImportError("Failed to read the selected file.");
+    } finally {
+      setIsImporting(false);
+    }
   }
 
   function handlePasteImport() {
@@ -161,8 +173,6 @@ export function SettingsPanel() {
 
   function processImportText(text: string) {
     const result = validateImportText(text);
-
-    setMessage(null);
 
     if (!result.ok) {
       setPreview(null);
@@ -227,7 +237,7 @@ export function SettingsPanel() {
   }
 
   const StatusIcon = resolvedTheme === "dark" ? Moon : Sun;
-  const isActionDisabled = !isReady || Boolean(storageError);
+  const isActionDisabled = !isReady || Boolean(storageError) || isImporting;
 
   return (
     <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
@@ -331,9 +341,13 @@ export function SettingsPanel() {
               Export JSON
             </Button>
             <Button asChild variant="outline" size="lg" disabled={isActionDisabled}>
-              <Label className={isActionDisabled ? "pointer-events-none opacity-50" : "cursor-pointer"}>
-                <Upload className="h-4 w-4" aria-hidden="true" />
-                Import JSON
+              <Label className={cn("cursor-pointer", isActionDisabled && "opacity-50 pointer-events-none")}>
+                {isImporting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                ) : (
+                  <Upload className="h-4 w-4" aria-hidden="true" />
+                )}
+                {isImporting ? "Reading file..." : "Import JSON"}
                 <Input
                   ref={importInputRef}
                   type="file"
