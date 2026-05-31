@@ -250,7 +250,6 @@ export function StreakDashboard() {
                   size="sm"
                   className="max-w-full truncate sm:max-w-48"
                   onClick={() => setSelectedItemId(item.id)}
-                  aria-pressed={item.id === model.activeItem?.id}
                 >
                   {item.name}
                 </Button>
