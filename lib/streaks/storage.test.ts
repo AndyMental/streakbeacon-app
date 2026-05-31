@@ -223,7 +223,7 @@ describe("LocalStreakStorageAdapter", () => {
           }
         })
       ).ok,
-      false
+      true
     );
   });
 

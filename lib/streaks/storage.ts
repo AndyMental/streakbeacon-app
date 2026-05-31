@@ -264,7 +264,7 @@ function normalizeCompletions(
 
   for (const [itemId, days] of Object.entries(value)) {
     if (!itemIds.has(itemId)) {
-      throw new Error(`Completion data references an unknown item: ${itemId}.`);
+      continue;
     }
 
     if (!isRecord(days)) {

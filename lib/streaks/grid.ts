@@ -54,8 +54,12 @@ export function buildStreakGridModel(
     selectedDay ?? formatIsoDay(asOf),
     asOf
   );
+  const asOfIso = formatIsoDay(asOf);
   const completions = activeItem ? data.completions[activeItem.id] ?? {} : {};
-  const completedDays = Object.keys(completions).length;
+  const groundedCompletions = Object.fromEntries(
+    Object.entries(completions).filter(([date]) => date <= asOfIso)
+  );
+  const completedDays = Object.keys(groundedCompletions).length;
   const selected =
     days.find((day) => day.day === selectedDay) ??
     days.find((day) => day.day === formatIsoDay(asOf)) ??
@@ -71,9 +75,9 @@ export function buildStreakGridModel(
             (days.filter((day) => day.isComplete).length / days.length) * 100
           ),
     currentStreak: activeItem
-      ? calculateCurrentStreak(completions, formatIsoDay(asOf))
+      ? calculateCurrentStreak(groundedCompletions, asOfIso)
       : 0,
-    longestStreak: activeItem ? calculateLongestStreak(completions) : 0,
+    longestStreak: activeItem ? calculateLongestStreak(groundedCompletions) : 0,
     selectedDay: selected,
     totalDays: days.length,
     weeks: chunkWeeks(days)
