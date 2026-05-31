@@ -9,17 +9,10 @@ import {
 
 export default function NotFound() {
   return (
-    <>
-      <a
-        href="#main"
-        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-background focus:px-4 focus:py-2 focus:text-foreground focus:shadow focus:outline-none focus:ring-2 focus:ring-ring"
-      >
-        Skip to main content
-      </a>
-      <main
-        id="main"
-        className="flex min-h-screen items-center justify-center bg-background px-5 py-10 text-foreground"
-      >
+    <main
+      id="main"
+      className="flex min-h-screen items-center justify-center bg-background px-5 py-10 text-foreground"
+    >
         <Card className="w-full max-w-md">
           <CardHeader className="gap-3 border-b">
             <p className="text-sm font-medium uppercase text-muted-foreground">
@@ -42,6 +35,5 @@ export default function NotFound() {
           </CardContent>
         </Card>
       </main>
-    </>
   );
 }
