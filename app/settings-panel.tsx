@@ -395,6 +395,7 @@ export function SettingsPanel() {
                   <AlertDialogAction
                     onClick={handlePasteImport}
                     disabled={!pasteValue.trim()}
+                    data-testid="settings-import-paste-confirm"
                   >
                     Preview Import
                   </AlertDialogAction>
