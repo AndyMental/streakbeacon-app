@@ -294,7 +294,7 @@ export function StreakDashboard() {
                 aria-describedby={
                   createError ? "new-streak-error" : "new-streak-help"
                 }
-                disabled={!isReady}
+                disabled={!isReady || Boolean(storageError)}
                 onChange={(event) => {
                   setNewItemName(event.target.value);
                   setCreateError(null);
@@ -312,10 +312,16 @@ export function StreakDashboard() {
             <Button
               type="submit"
               className="w-full sm:w-auto"
-              disabled={!isReady || !newItemName.trim()}
+              disabled={!isReady || Boolean(storageError) || !newItemName.trim()}
             >
-              <Plus className="h-4 w-4" aria-hidden="true" />
-              Add habit
+              {!isReady ? (
+                "Loading"
+              ) : (
+                <>
+                  <Plus className="h-4 w-4" aria-hidden="true" />
+                  Add habit
+                </>
+              )}
             </Button>
           </form>
 
