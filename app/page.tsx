@@ -19,7 +19,11 @@ const signals = [
 
 export default function Home() {
   return (
-    <main id="main-content" tabIndex={-1} className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 px-5 py-6 sm:px-8 lg:px-10">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 px-5 py-6 sm:px-8 lg:px-10"
+    >
       <header className="flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-medium uppercase text-muted-foreground">

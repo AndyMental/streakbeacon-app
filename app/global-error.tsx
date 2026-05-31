@@ -20,7 +20,16 @@ export default function GlobalErrorPage({
   return (
     <html lang="en">
       <body>
+        <a
+          href="#main-content"
+          data-testid="skip-link"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-beacon focus:px-4 focus:py-2 focus:text-primary-foreground focus:outline-hidden focus:ring-2 focus:ring-sky focus:ring-offset-2"
+        >
+          Skip to main content
+        </a>
         <main
+          id="main-content"
+          tabIndex={-1}
           role="alert"
           aria-live="assertive"
           className="flex min-h-screen items-center justify-center bg-background px-5 py-10 text-foreground"
