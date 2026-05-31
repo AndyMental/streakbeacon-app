@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Download, FileJson, Monitor, Moon, RotateCcw, Sun, Upload } from "lucide-react";
+import { AlertCircle, CheckCircle2, Download, FileJson, Info, Monitor, Moon, RotateCcw, Sun, Upload } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -222,7 +222,8 @@ export function SettingsPanel() {
         </CardHeader>
         <CardContent>
           {storageError ? (
-            <Alert variant="destructive" className="mb-4">
+            <Alert variant="destructive" className="relative mb-4 pl-10">
+              <AlertCircle className="absolute left-4 top-4 h-4 w-4" />
               <AlertTitle>Storage unavailable</AlertTitle>
               <AlertDescription>{storageError}</AlertDescription>
             </Alert>
@@ -264,7 +265,8 @@ export function SettingsPanel() {
         </CardHeader>
         <CardContent>
           {storageError ? (
-            <Alert variant="destructive" className="mb-5">
+            <Alert variant="destructive" className="relative mb-5 pl-10">
+              <AlertCircle className="absolute left-4 top-4 h-4 w-4" />
               <AlertTitle>Storage unavailable</AlertTitle>
               <AlertDescription>{storageError}</AlertDescription>
             </Alert>
@@ -360,7 +362,8 @@ export function SettingsPanel() {
           </div>
 
           {preview ? (
-            <Alert variant="muted" role="status" className="mt-5">
+            <Alert variant="muted" role="status" className="relative mt-5 pl-10">
+              <Info className="absolute left-4 top-4 h-4 w-4 text-primary" />
               <AlertTitle>Import preview</AlertTitle>
               <AlertDescription>
                 {preview.itemCount} items, {preview.completionCount} completed
@@ -386,7 +389,8 @@ export function SettingsPanel() {
           ) : null}
 
           {importError ? (
-            <Alert variant="destructive" className="mt-4">
+            <Alert variant="destructive" className="relative mt-4 pl-10">
+              <AlertCircle className="absolute left-4 top-4 h-4 w-4" />
               <AlertDescription className="mt-0">
                 {importError}
               </AlertDescription>
