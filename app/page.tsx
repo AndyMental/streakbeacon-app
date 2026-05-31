@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SettingsPanel } from "./settings-panel";
 import { StreakDashboard } from "./streak-dashboard";
+import { ThemeToggle } from "./theme-toggle";
 
 const habits = [
   { name: "Morning walk", streak: "12 days", status: "Done today" },
@@ -28,10 +29,13 @@ export default function Home() {
             Local-first streak visibility
           </h1>
         </div>
-        <Badge variant="outline" className="gap-2 text-muted-foreground">
-          <CalendarCheck className="h-4 w-4 text-primary" aria-hidden="true" />
-          Browser-local settings
-        </Badge>
+        <div className="flex flex-wrap items-center gap-3">
+          <ThemeToggle />
+          <Badge variant="outline" className="gap-2 text-muted-foreground">
+            <CalendarCheck className="h-4 w-4 text-primary" aria-hidden="true" />
+            Browser-local settings
+          </Badge>
+        </div>
       </header>
 
       <section className="grid gap-4 sm:grid-cols-3">
