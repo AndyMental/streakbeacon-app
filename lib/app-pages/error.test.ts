@@ -46,7 +46,7 @@ describe("error page fallbacks", () => {
     assert.match(markup, /Try again/);
   });
 
-  it("exposes the main landmark with id=\"main\" for skip-link targeting on the route error page", () => {
+  it("exposes the main landmark with id=\"main-content\" for skip-link targeting on the route error page", () => {
     const markup = renderToStaticMarkup(
       createElement(ErrorPage, {
         error: new Error("route failure"),
@@ -54,7 +54,7 @@ describe("error page fallbacks", () => {
       })
     );
 
-    assert.match(markup, /<main[^>]*id="main"/);
+    assert.match(markup, /<main[^>]*id="main-content"/);
   });
 
   it("exposes a skip-to-main-content anchor before the main landmark on the global error page", () => {
@@ -65,10 +65,10 @@ describe("error page fallbacks", () => {
       })
     );
 
-    const skipIndex = markup.search(/<a[^>]*href="#main"[^>]*>\s*Skip to main content/);
-    const mainIndex = markup.search(/<main[^>]*id="main"/);
+    const skipIndex = markup.search(/<a[^>]*href="#main-content"[^>]*>\s*Skip to main content/);
+    const mainIndex = markup.search(/<main[^>]*id="main-content"/);
     assert.ok(skipIndex >= 0, "skip-to-main-content anchor must render");
-    assert.ok(mainIndex >= 0, "main landmark with id=\"main\" must render");
+    assert.ok(mainIndex >= 0, "main landmark with id=\"main-content\" must render");
     assert.ok(skipIndex < mainIndex, "skip link must precede the main landmark");
   });
 

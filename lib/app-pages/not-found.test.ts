@@ -17,7 +17,7 @@ describe("404 not-found page", () => {
     assert.match(markup, /Back to home/);
   });
 
-  it("exposes the main landmark with id=\"main\" for skip-link targeting", () => {
-    assert.match(markup, /<main[^>]*id="main"/);
+  it("exposes the main landmark with id=\"main-content\" for skip-link targeting", () => {
+    assert.match(markup, /<main[^>]*id="main-content"/);
   });
 });

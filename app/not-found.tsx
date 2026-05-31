@@ -10,7 +10,7 @@ import {
 export default function NotFound() {
   return (
     <main
-      id="main"
+      id="main-content"
       className="flex min-h-screen items-center justify-center bg-background px-5 py-10 text-foreground"
     >
         <Card className="w-full max-w-md">

@@ -21,7 +21,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
 
   return (
     <main
-      id="main"
+      id="main-content"
       role="alert"
       aria-live="assertive"
       className="flex min-h-screen items-center justify-center bg-background px-5 py-10 text-foreground"
