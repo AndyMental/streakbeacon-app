@@ -240,6 +240,7 @@ export function StreakDashboard() {
                   variant={item.id === model.activeItem?.id ? "default" : "outline"}
                   size="sm"
                   className="max-w-full truncate sm:max-w-48"
+                  aria-pressed={item.id === model.activeItem?.id}
                   onClick={() => setSelectedItemId(item.id)}
                 >
                   {item.name}
