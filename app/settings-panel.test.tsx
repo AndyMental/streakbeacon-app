@@ -32,7 +32,7 @@ function setupDom() {
   });
   globalThis.localStorage = window.localStorage;
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-  (window as any).IS_REACT_ACT_ENVIRONMENT = true;
+  (window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
   
   window.matchMedia = (query) => ({
     matches: false,
@@ -57,10 +57,10 @@ function setupDom() {
 
   // Mock PointerEvent which is used by Radix UI
   globalThis.PointerEvent = class PointerEvent extends window.MouseEvent {
-    constructor(type: string, props: any = {}) {
+    constructor(type: string, props: MouseEventInit = {}) {
       super(type, props);
     }
-  } as any;
+  } as unknown as typeof PointerEvent;
 
   // Mock URL.createObjectURL and revokeObjectURL
   globalThis.URL.createObjectURL = () => "blob:test";
@@ -168,13 +168,13 @@ describe("SettingsPanel Interaction Evidence", () => {
       download: "",
       click: () => {},
       remove: () => {}
-    } as any;
+    } as unknown as HTMLAnchorElement;
     
     const originalCreate = document.createElement.bind(document);
     document.createElement = ((tagName: string) => {
       if (tagName === "a") return link;
       return originalCreate(tagName);
-    }) as any;
+    }) as unknown as typeof document.createElement;
 
     const container = document.createElement("div");
     document.body.append(container);
