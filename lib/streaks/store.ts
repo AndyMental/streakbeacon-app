@@ -10,7 +10,7 @@ import {
   type StreakData,
   type StreakPreferences
 } from "./model";
-import { LocalStreakStorageAdapter } from "./storage";
+import { LocalStreakStorageAdapter, mergeStreaks } from "./storage";
 
 export class StreakStore {
   constructor(private readonly storage: LocalStreakStorageAdapter) {}
@@ -55,6 +55,10 @@ export class StreakStore {
 
   replaceData(data: StreakData, now = new Date()): StreakData {
     return this.storage.replace(data, now);
+  }
+
+  mergeData(data: StreakData, now = new Date()): StreakData {
+    return this.commit(mergeStreaks(this.storage.load(), data, now), now);
   }
 
   reset(): void {
