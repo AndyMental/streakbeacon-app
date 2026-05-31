@@ -1,6 +1,6 @@
 "use client";
 
-import { CheckCircle2, Download, FileJson, Monitor, Moon, RotateCcw, Sun, Upload } from "lucide-react";
+import { AlertCircle, CheckCircle2, ClipboardPaste, Download, FileJson, Monitor, Moon, RotateCcw, Sun, Upload } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   confirmResetAllData,
@@ -49,13 +50,15 @@ const STORAGE_ERROR_MESSAGE =
 
 export function SettingsPanel() {
   const importInputRef = useRef<HTMLInputElement>(null);
-  const { setTheme } = useTheme();
+  const { setTheme, resolvedTheme } = useTheme();
   const [data, setData] = useState<StreakData>(() => createEmptyStreakData());
   const [isReady, setIsReady] = useState(false);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [storageError, setStorageError] = useState<string | null>(null);
+  const [pasteValue, setPasteValue] = useState("");
+  const [isPasteOpen, setIsPasteOpen] = useState(false);
 
   const store = useMemo(() => {
     if (typeof window === "undefined") {
@@ -147,6 +150,16 @@ export function SettingsPanel() {
     }
 
     const text = await file.text();
+    processImportText(text);
+  }
+
+  function handlePasteImport() {
+    processImportText(pasteValue);
+    setPasteValue("");
+    setIsPasteOpen(false);
+  }
+
+  function processImportText(text: string) {
     const result = validateImportText(text);
 
     setMessage(null);
@@ -213,16 +226,20 @@ export function SettingsPanel() {
     }
   }
 
+  const StatusIcon = resolvedTheme === "dark" ? Moon : Sun;
+  const isActionDisabled = !isReady || Boolean(storageError);
+
   return (
     <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
       <Card>
         <CardHeader className="flex-row items-center gap-2 space-y-0">
-          <Sun className="h-5 w-5 text-primary" aria-hidden="true" />
+          <StatusIcon className="h-5 w-5 text-primary" aria-hidden="true" />
           <CardTitle>Theme</CardTitle>
         </CardHeader>
         <CardContent>
           {storageError ? (
             <Alert variant="destructive" className="mb-4">
+              <AlertCircle className="h-4 w-4" />
               <AlertTitle>Storage unavailable</AlertTitle>
               <AlertDescription>{storageError}</AlertDescription>
             </Alert>
@@ -237,7 +254,7 @@ export function SettingsPanel() {
               }
             }}
             aria-label="Theme preference"
-            disabled={!isReady || Boolean(storageError)}
+            disabled={isActionDisabled}
             className="justify-start"
           >
             {(["system", "light", "dark"] as const).map((theme) => (
@@ -245,6 +262,7 @@ export function SettingsPanel() {
                 key={theme}
                 value={theme}
                 aria-label={`${theme} theme`}
+                data-testid={`settings-theme-${theme}`}
                 className="gap-2"
               >
                 {theme === "light" && <Sun className="h-4 w-4" aria-hidden="true" />}
@@ -265,6 +283,7 @@ export function SettingsPanel() {
         <CardContent>
           {storageError ? (
             <Alert variant="destructive" className="mb-5">
+              <AlertCircle className="h-4 w-4" />
               <AlertTitle>Storage unavailable</AlertTitle>
               <AlertDescription>{storageError}</AlertDescription>
             </Alert>
@@ -300,18 +319,19 @@ export function SettingsPanel() {
             </Card>
           </dl>
 
-          <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-5 flex flex-wrap gap-3">
             <Button
               type="button"
               size="lg"
               onClick={exportData}
-              disabled={!isReady || Boolean(storageError)}
+              disabled={isActionDisabled}
+              data-testid="settings-export-json"
             >
               <Download className="h-4 w-4" aria-hidden="true" />
               Export JSON
             </Button>
-            <Button asChild variant="outline" size="lg">
-              <Label className="cursor-pointer">
+            <Button asChild variant="outline" size="lg" disabled={isActionDisabled}>
+              <Label className={isActionDisabled ? "pointer-events-none opacity-50" : "cursor-pointer"}>
                 <Upload className="h-4 w-4" aria-hidden="true" />
                 Import JSON
                 <Input
@@ -319,20 +339,63 @@ export function SettingsPanel() {
                   type="file"
                   accept="application/json,.json"
                   className="sr-only"
-                  disabled={!isReady || Boolean(storageError)}
+                  disabled={isActionDisabled}
                   onChange={(event) =>
                     handleImportFile(event.target.files?.[0])
                   }
+                  data-testid="settings-import-json"
                 />
               </Label>
             </Button>
+            <AlertDialog open={isPasteOpen} onOpenChange={setIsPasteOpen}>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  disabled={isActionDisabled}
+                  data-testid="settings-import-paste"
+                >
+                  <ClipboardPaste className="h-4 w-4" aria-hidden="true" />
+                  Paste JSON
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Paste export JSON</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Paste the content of a StreakBeacon export file below to preview the import.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="py-4">
+                  <Textarea
+                    placeholder='{"format": "streakbeacon.export", ...}'
+                    className="min-h-32 font-mono text-xs"
+                    value={pasteValue}
+                    onChange={(e) => setPasteValue(e.target.value)}
+                    data-testid="settings-import-paste-textarea"
+                  />
+                </div>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handlePasteImport}
+                    disabled={!pasteValue.trim()}
+                  >
+                    Preview Import
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
                   type="button"
                   variant="outline"
                   size="lg"
-                  disabled={!isReady || Boolean(storageError)}
+                  className="text-destructive hover:bg-destructive/10"
+                  disabled={isActionDisabled}
+                  data-testid="settings-reset-data"
                 >
                   <RotateCcw className="h-4 w-4" aria-hidden="true" />
                   Reset all data
@@ -361,6 +424,7 @@ export function SettingsPanel() {
 
           {preview ? (
             <Alert variant="muted" role="status" className="mt-5">
+              <CheckCircle2 className="h-4 w-4 text-primary" />
               <AlertTitle>Import preview</AlertTitle>
               <AlertDescription>
                 {preview.itemCount} items, {preview.completionCount} completed
@@ -375,10 +439,19 @@ export function SettingsPanel() {
                 </ul>
               ) : null}
               <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-                <Button type="button" onClick={confirmImport}>
+                <Button 
+                  type="button" 
+                  onClick={confirmImport}
+                  data-testid="settings-import-confirm"
+                >
                   Replace Data
                 </Button>
-                <Button type="button" variant="outline" onClick={cancelImport}>
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={cancelImport}
+                  data-testid="settings-import-cancel"
+                >
                   Cancel
                 </Button>
               </div>
@@ -387,7 +460,9 @@ export function SettingsPanel() {
 
           {importError ? (
             <Alert variant="destructive" className="mt-4">
-              <AlertDescription className="mt-0">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Import Error</AlertTitle>
+              <AlertDescription>
                 {importError}
               </AlertDescription>
             </Alert>
@@ -395,7 +470,7 @@ export function SettingsPanel() {
           <p
             role="status"
             aria-live="polite"
-            className="mt-4 flex min-h-5 items-center gap-2 text-sm text-muted-foreground"
+            className="mt-4 flex min-h-5 items-center gap-2 text-sm text-muted-foreground font-medium"
           >
             {message ? <CheckCircle2 className="h-4 w-4 text-primary" aria-hidden="true" /> : null}
             {message ?? ""}
