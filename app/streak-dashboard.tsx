@@ -29,6 +29,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
   createEmptyStreakData,
@@ -349,29 +355,38 @@ export function StreakDashboard() {
             role="group"
             aria-label="Recent completion history"
           >
-            <div className="grid w-max min-w-full grid-flow-col auto-cols-[1.35rem] gap-1">
-              {model.weeks.map((week) => (
-                <div key={week.key} className="grid grid-rows-7 gap-1">
-                  {week.days.map((day) => (
-                    <button
-                      key={day.day}
-                      type="button"
-                      aria-label={`${day.label}: ${
-                        day.isComplete ? "completed" : "not completed"
-                      }`}
-                      aria-pressed={day.isComplete}
-                      onClick={() => selectDay(day)}
-                      className={cn(
-                        "h-5 w-5 rounded-sm border outline-none transition-transform motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                        day.isSelected &&
-                          "scale-110 border-foreground motion-reduce:scale-100",
-                        getDayClassName(day.intensity)
-                      )}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
+            <TooltipProvider>
+              <div className="grid w-max min-w-full grid-flow-col auto-cols-[1.35rem] gap-1">
+                {model.weeks.map((week) => (
+                  <div key={week.key} className="grid grid-rows-7 gap-1">
+                    {week.days.map((day) => (
+                      <Tooltip key={day.day}>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            aria-label={`${day.label}: ${
+                              day.isComplete ? "completed" : "not completed"
+                            }`}
+                            aria-pressed={day.isComplete}
+                            onClick={() => selectDay(day)}
+                            className={cn(
+                              "h-5 w-5 rounded-sm border outline-none transition-transform motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                              day.isSelected &&
+                                "scale-110 border-foreground motion-reduce:scale-100",
+                              getDayClassName(day.intensity)
+                            )}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {day.label} -{" "}
+                          {day.isComplete ? "Complete" : "Open"}
+                        </TooltipContent>
+                      </Tooltip>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </TooltipProvider>
           </div>
 
           <div className="mt-4 flex items-center justify-between gap-3 text-xs text-muted-foreground">
