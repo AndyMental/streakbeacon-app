@@ -20,10 +20,18 @@ commands that are actually present.
 
 ## OpenAPI
 
-No OpenAPI or Swagger generation/update command is present yet.
+StreakBeacon is local-first; there are no Next.js API route handlers under
+`app/api/`, and no OpenAPI/Swagger workflow is required. Persistence lives in
+the browser via `lib/streaks/storage.ts`, not behind an HTTP API.
 
-Before adding frontend code or black-box tests that consume API routes, add or
-identify the OpenAPI/Swagger workflow and document the exact command here.
+This reflects the deliberate architecture decision recorded by Jyro on
+[AND-5288](mention://issue/2472a8e8-377a-4dd2-9861-f6c6c68b835a): the product
+ships as a local-first Next.js App Router app with no separate backend
+service. Do not add OpenAPI tooling, generators, or schemas under the current
+architecture.
+
+If API route handlers are ever introduced under `app/api/`, this section must
+be revisited and an OpenAPI generator pinned before any consumer code lands.
 
 ## Deployment
 
