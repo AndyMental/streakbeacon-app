@@ -1,17 +1,27 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
-import { createElement } from "react";
-import { renderToStaticMarkup } from "react-dom/server";
-import { SkipLink } from "../../components/skip-link";
 
-describe("SkipLink component", () => {
-  it("renders the skip-to-main-content link with correct attributes", () => {
-    const markup = renderToStaticMarkup(createElement(SkipLink));
+const layoutSource = readFileSync("app/layout.tsx", "utf8");
+const pageSource = readFileSync("app/page.tsx", "utf8");
 
-    assert.match(markup, /href="#main-content"/);
-    assert.match(markup, /data-testid="skip-link"/);
-    assert.match(markup, /Skip to main content/);
-    assert.match(markup, /sr-only/);
-    assert.match(markup, /focus:not-sr-only/);
+describe("skip-to-main-content link", () => {
+  it("is the first layout child and points to the main landmark", () => {
+    const linkIndex = layoutSource.indexOf('data-testid="skip-link"');
+    const childrenIndex = layoutSource.indexOf("{children}");
+
+    assert.ok(linkIndex > -1, "skip link must exist in the root layout");
+    assert.ok(childrenIndex > -1, "layout must render children");
+    assert.ok(linkIndex < childrenIndex, "skip link must render before children");
+    assert.match(layoutSource, /<a\s+href="#main-content"[\s\S]*data-testid="skip-link"/);
+    assert.match(layoutSource, /className="[^"]*\bsr-only\b[^"]*"/);
+    assert.match(layoutSource, /className="[^"]*\bfocus:not-sr-only\b[^"]*"/);
+    assert.doesNotMatch(layoutSource, /<SkipLink\s*\/>/);
+  });
+
+  it("pairs the skip-link href with the dashboard main id", () => {
+    assert.match(layoutSource, /href="#main-content"/);
+    assert.match(pageSource, /<main[^>]*id="main-content"/);
+    assert.match(pageSource, /<main[^>]*tabIndex=\{-1\}/);
   });
 });
