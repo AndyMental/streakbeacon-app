@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, FileJson, Moon, RotateCcw, Sun, Upload } from "lucide-react";
+import { CheckCircle2, Download, FileJson, Monitor, Moon, RotateCcw, Sun, Upload } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -238,14 +238,19 @@ export function SettingsPanel() {
             }}
             aria-label="Theme preference"
             disabled={!isReady || Boolean(storageError)}
+            className="justify-start"
           >
             {(["system", "light", "dark"] as const).map((theme) => (
               <ToggleGroupItem
                 key={theme}
                 value={theme}
                 aria-label={`${theme} theme`}
+                className="gap-2"
               >
-                {theme}
+                {theme === "light" && <Sun className="h-4 w-4" aria-hidden="true" />}
+                {theme === "dark" && <Moon className="h-4 w-4" aria-hidden="true" />}
+                {theme === "system" && <Monitor className="h-4 w-4" aria-hidden="true" />}
+                <span className="capitalize">{theme}</span>
               </ToggleGroupItem>
             ))}
           </ToggleGroup>
@@ -265,7 +270,7 @@ export function SettingsPanel() {
             </Alert>
           ) : null}
 
-          <dl className="grid gap-3 text-sm sm:grid-cols-3">
+          <dl className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
             <Card className="bg-muted">
               <CardContent className="p-3">
                 <dt className="truncate text-muted-foreground">Items</dt>
@@ -392,7 +397,7 @@ export function SettingsPanel() {
             aria-live="polite"
             className="mt-4 flex min-h-5 items-center gap-2 text-sm text-muted-foreground"
           >
-            {message ? <Moon className="h-4 w-4" aria-hidden="true" /> : null}
+            {message ? <CheckCircle2 className="h-4 w-4 text-primary" aria-hidden="true" /> : null}
             {message ?? ""}
           </p>
         </CardContent>
