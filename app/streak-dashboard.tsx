@@ -29,6 +29,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
   createEmptyStreakData,
@@ -217,22 +223,23 @@ export function StreakDashboard() {
     <section className="grid gap-6 lg:grid-cols-[1fr_18rem]">
       <Card>
         <CardHeader className="border-b">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <CardTitle>Streak grid</CardTitle>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 truncate text-sm text-muted-foreground">
                 {!isReady
                   ? "Loading local streak data"
                   : model.activeItem?.name ?? "No active streak"}
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2" aria-label="Streak selector">
+            <div className="flex min-w-0 flex-wrap items-center gap-2" aria-label="Streak selector">
               {data.items.map((item) => (
                 <Button
                   key={item.id}
                   type="button"
                   variant={item.id === model.activeItem?.id ? "default" : "outline"}
                   size="sm"
+                  className="max-w-full truncate sm:max-w-48"
                   onClick={() => setSelectedItemId(item.id)}
                 >
                   {item.name}
@@ -294,7 +301,7 @@ export function StreakDashboard() {
                 aria-describedby={
                   createError ? "new-streak-error" : "new-streak-help"
                 }
-                disabled={!isReady}
+                disabled={!isReady || Boolean(storageError)}
                 onChange={(event) => {
                   setNewItemName(event.target.value);
                   setCreateError(null);
@@ -312,10 +319,16 @@ export function StreakDashboard() {
             <Button
               type="submit"
               className="w-full sm:w-auto"
-              disabled={!isReady || !newItemName.trim()}
+              disabled={!isReady || Boolean(storageError) || !newItemName.trim()}
             >
-              <Plus className="h-4 w-4" aria-hidden="true" />
-              Add habit
+              {!isReady ? (
+                "Loading"
+              ) : (
+                <>
+                  <Plus className="h-4 w-4" aria-hidden="true" />
+                  Add habit
+                </>
+              )}
             </Button>
           </form>
 
@@ -343,29 +356,38 @@ export function StreakDashboard() {
             role="group"
             aria-label="Recent completion history"
           >
-            <div className="grid w-max min-w-full grid-flow-col auto-cols-[1.35rem] gap-1">
-              {model.weeks.map((week) => (
-                <div key={week.key} className="grid grid-rows-7 gap-1">
-                  {week.days.map((day) => (
-                    <button
-                      key={day.day}
-                      type="button"
-                      aria-label={`${day.label}: ${
-                        day.isComplete ? "completed" : "not completed"
-                      }`}
-                      aria-pressed={day.isComplete}
-                      onClick={() => selectDay(day)}
-                      className={cn(
-                        "h-5 w-5 rounded-sm border outline-none transition-transform motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                        day.isSelected &&
-                          "scale-110 border-foreground motion-reduce:scale-100",
-                        getDayClassName(day.intensity)
-                      )}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
+            <TooltipProvider>
+              <div className="grid w-max min-w-full grid-flow-col auto-cols-[1.35rem] gap-1">
+                {model.weeks.map((week) => (
+                  <div key={week.key} className="grid grid-rows-7 gap-1">
+                    {week.days.map((day) => (
+                      <Tooltip key={day.day}>
+                        <TooltipTrigger asChild>
+                          <button
+                            type="button"
+                            aria-label={`${day.label}: ${
+                              day.isComplete ? "completed" : "not completed"
+                            }`}
+                            aria-pressed={day.isComplete}
+                            onClick={() => selectDay(day)}
+                            className={cn(
+                              "h-5 w-5 rounded-sm border outline-none transition-transform motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                              day.isSelected &&
+                                "scale-110 border-foreground motion-reduce:scale-100",
+                              getDayClassName(day.intensity)
+                            )}
+                          />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {day.label} -{" "}
+                          {day.isComplete ? "Complete" : "Open"}
+                        </TooltipContent>
+                      </Tooltip>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </TooltipProvider>
           </div>
 
           <div className="mt-4 flex items-center justify-between gap-3 text-xs text-muted-foreground">
@@ -472,11 +494,13 @@ function SummaryCard({
   return (
     <Card>
       <CardContent className="pt-4">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">{label}</p>
-          <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
+        <div className="flex min-w-0 items-center justify-between gap-3">
+          <p className="min-w-0 truncate text-sm text-muted-foreground">
+            {label}
+          </p>
+          <Icon className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
         </div>
-        <p className="mt-3 text-2xl font-semibold">
+        <p className="mt-3 truncate text-2xl font-semibold">
           {value}
           <span className="ml-2 text-sm font-normal text-muted-foreground">
             {suffix}

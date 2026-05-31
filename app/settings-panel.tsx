@@ -237,7 +237,7 @@ export function SettingsPanel() {
               }
             }}
             aria-label="Theme preference"
-            disabled={!isReady}
+            disabled={!isReady || Boolean(storageError)}
           >
             {(["system", "light", "dark"] as const).map((theme) => (
               <ToggleGroupItem
@@ -265,19 +265,19 @@ export function SettingsPanel() {
             </Alert>
           ) : null}
 
-          <dl className="grid grid-cols-3 gap-3 text-sm">
+          <dl className="grid gap-3 text-sm sm:grid-cols-3">
             <Card className="bg-muted">
               <CardContent className="p-3">
-                <dt className="text-muted-foreground">Items</dt>
-                <dd className="mt-1 text-xl font-semibold">
+                <dt className="truncate text-muted-foreground">Items</dt>
+                <dd className="mt-1 truncate text-xl font-semibold">
                   {data.items.length}
                 </dd>
               </CardContent>
             </Card>
             <Card className="bg-muted">
               <CardContent className="p-3">
-                <dt className="text-muted-foreground">Days</dt>
-                <dd className="mt-1 text-xl font-semibold">
+                <dt className="truncate text-muted-foreground">Days</dt>
+                <dd className="mt-1 truncate text-xl font-semibold">
                   {Object.values(data.completions).reduce(
                     (total, itemDays) => total + Object.keys(itemDays).length,
                     0
@@ -287,8 +287,8 @@ export function SettingsPanel() {
             </Card>
             <Card className="bg-muted">
               <CardContent className="p-3">
-                <dt className="text-muted-foreground">Window</dt>
-                <dd className="mt-1 text-xl font-semibold">
+                <dt className="truncate text-muted-foreground">Window</dt>
+                <dd className="mt-1 truncate text-xl font-semibold">
                   {data.preferences.gridWindowDays}
                 </dd>
               </CardContent>
@@ -296,7 +296,12 @@ export function SettingsPanel() {
           </dl>
 
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-            <Button type="button" size="lg" onClick={exportData}>
+            <Button
+              type="button"
+              size="lg"
+              onClick={exportData}
+              disabled={!isReady || Boolean(storageError)}
+            >
               <Download className="h-4 w-4" aria-hidden="true" />
               Export JSON
             </Button>
