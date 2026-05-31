@@ -4,6 +4,23 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import Home from "../../app/page";
 
+describe("home page accessibility", () => {
+  const markup = renderToStaticMarkup(createElement(Home));
+
+  it("renders the main landmark with the standard main-content ID", () => {
+    assert.match(
+      markup,
+      /<main[^>]*id="main-content"[^>]*>/,
+      "expected main-content ID on the home page main element"
+    );
+    assert.match(
+      markup,
+      /tabindex="-1"/,
+      "expected tabindex=-1 on the main element for skip-link targeting"
+    );
+  });
+});
+
 describe("home page JSON-LD structured data", () => {
   const markup = renderToStaticMarkup(createElement(Home));
 
