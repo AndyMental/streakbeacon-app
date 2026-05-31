@@ -27,10 +27,9 @@ identify the OpenAPI/Swagger workflow and document the exact command here.
 
 ## Deployment
 
-The app must remain deployable on Vercel. No repo-local deployment command or
-Vercel project configuration is present yet: there is no `vercel.json`, no
-committed `.vercel/` directory, and no tracked `.env*` template in the repo
-root.
+The app must remain deployable on Vercel. The project is configured via
+`vercel.json`. No committed `.vercel/` directory and no tracked `.env*`
+template is present in the repo root yet.
 
 ### Current pre-deploy local checks
 
@@ -52,13 +51,10 @@ the deploy-adjacent CI gate.
 A deploy URL cannot be produced from this repo alone. To unblock, a human
 admin with Vercel access must:
 
-1. Link a Vercel project to this repository (e.g. `vercel link`) and commit
-   any resulting repo-tracked configuration (such as `vercel.json`) on a
-   feature branch.
-2. Configure required environment variables in the Vercel project settings
+1. Configure required environment variables in the Vercel project settings
    and add a redacted `.env.example` to the repo root if any are needed at
    build time.
-3. Provide the resulting Vercel production URL on the parent deployment
+2. Provide the resulting Vercel production URL on the parent deployment
    issue so workers and Playwright runs can reference it.
 
 Until that admin input lands and is recorded on the issue:
