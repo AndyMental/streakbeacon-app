@@ -18,6 +18,11 @@ describe("dashboard loading page", () => {
     assert.match(markup, /Loading StreakBeacon/);
   });
 
+  it("preserves the skip-link target", () => {
+    assert.match(markup, /id="main-content"/);
+    assert.match(markup, /tabindex="-1"/i);
+  });
+
   it("renders skeleton placeholders for the three dashboard regions", () => {
     const pulseMatches = markup.match(/animate-pulse/g) ?? [];
     assert.ok(
