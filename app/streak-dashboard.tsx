@@ -111,6 +111,53 @@ export function StreakDashboard() {
     setSelectedDay(day.day);
   }
 
+  function handleKeyDown(e: React.KeyboardEvent<HTMLButtonElement>, weekIndex: number, dayIndex: number) {
+    let targetWeek = weekIndex;
+    let targetDay = dayIndex;
+
+    switch (e.key) {
+      case "ArrowUp":
+        targetDay = dayIndex - 1;
+        if (targetDay < 0) {
+          targetDay = 6;
+          targetWeek = weekIndex - 1;
+        }
+        break;
+      case "ArrowDown":
+        targetDay = dayIndex + 1;
+        if (targetDay > 6) {
+          targetDay = 0;
+          targetWeek = weekIndex + 1;
+        }
+        break;
+      case "ArrowLeft":
+        targetWeek = weekIndex - 1;
+        break;
+      case "ArrowRight":
+        targetWeek = weekIndex + 1;
+        break;
+      case "Home":
+        targetWeek = 0;
+        targetDay = 0;
+        break;
+      case "End":
+        targetWeek = model.weeks.length - 1;
+        targetDay = 6;
+        break;
+      default:
+        return;
+    }
+
+    const target = document.querySelector(
+      `button[data-week="${targetWeek}"][data-day="${targetDay}"]`
+    ) as HTMLButtonElement;
+
+    if (target) {
+      e.preventDefault();
+      target.focus();
+    }
+  }
+
   function toggleSelectedDay() {
     if (!model.activeItem || selectedCompletion === null) {
       return;
@@ -233,6 +280,7 @@ export function StreakDashboard() {
                   type="button"
                   variant={item.id === model.activeItem?.id ? "default" : "outline"}
                   size="sm"
+                  aria-pressed={item.id === model.activeItem?.id}
                   onClick={() => setSelectedItemId(item.id)}
                 >
                   {item.name}
@@ -338,33 +386,52 @@ export function StreakDashboard() {
             </Alert>
           ) : null}
 
-          <div
-            className="overflow-x-auto pb-2"
-            role="group"
-            aria-label="Recent completion history"
-          >
-            <div className="grid w-max min-w-full grid-flow-col auto-cols-[1.35rem] gap-1">
-              {model.weeks.map((week) => (
-                <div key={week.key} className="grid grid-rows-7 gap-1">
-                  {week.days.map((day) => (
-                    <button
-                      key={day.day}
-                      type="button"
-                      aria-label={`${day.label}: ${
-                        day.isComplete ? "completed" : "not completed"
-                      }`}
-                      aria-pressed={day.isComplete}
-                      onClick={() => selectDay(day)}
-                      className={cn(
-                        "h-5 w-5 rounded-sm border outline-none transition-transform motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
-                        day.isSelected &&
-                          "scale-110 border-foreground motion-reduce:scale-100",
-                        getDayClassName(day.intensity)
-                      )}
-                    />
-                  ))}
-                </div>
-              ))}
+          <div className="flex gap-2">
+            <div
+              className="grid grid-rows-7 gap-1 pt-1 text-[10px] font-medium text-muted-foreground/60 select-none"
+              aria-hidden="true"
+            >
+              <span className="flex h-5 items-center">Sun</span>
+              <span className="flex h-5 items-center" />
+              <span className="flex h-5 items-center">Tue</span>
+              <span className="flex h-5 items-center" />
+              <span className="flex h-5 items-center">Thu</span>
+              <span className="flex h-5 items-center" />
+              <span className="flex h-5 items-center">Sat</span>
+            </div>
+            <div
+              className="overflow-x-auto pb-2 focus-visible:outline-none"
+              role="grid"
+              aria-label="Recent completion history"
+              tabIndex={-1}
+            >
+              <div className="grid w-max min-w-full grid-flow-col auto-cols-[1.35rem] gap-1">
+                {model.weeks.map((week, weekIndex) => (
+                  <div key={week.key} className="grid grid-rows-7 gap-1" role="row">
+                    {week.days.map((day, dayIndex) => (
+                      <button
+                        key={day.day}
+                        type="button"
+                        data-week={weekIndex}
+                        data-day={dayIndex}
+                        tabIndex={day.isSelected ? 0 : -1}
+                        aria-label={`${day.label}: ${
+                          day.isComplete ? "completed" : "not completed"
+                        }`}
+                        aria-pressed={day.isComplete}
+                        onClick={() => selectDay(day)}
+                        onKeyDown={(e) => handleKeyDown(e, weekIndex, dayIndex)}
+                        className={cn(
+                          "h-5 w-5 rounded-sm border outline-none transition-transform motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                          day.isSelected &&
+                            "scale-110 border-foreground motion-reduce:scale-100",
+                          getDayClassName(day.intensity)
+                        )}
+                      />
+                    ))}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
