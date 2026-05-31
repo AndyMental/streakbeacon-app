@@ -10,12 +10,12 @@ export default function Loading() {
       aria-busy="true"
       aria-live="polite"
       data-testid="dashboard-loading"
-      className="min-h-screen bg-background px-5 py-10 text-foreground"
+      className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 bg-background px-5 py-6 text-foreground sm:px-8 lg:px-10"
     >
       <span className="sr-only">Loading StreakBeacon</span>
       <div
         aria-hidden="true"
-        className="mx-auto flex w-full max-w-3xl flex-col gap-6"
+        className="flex w-full flex-col gap-8"
       >
         <Card>
           <CardHeader className="gap-3 border-b">

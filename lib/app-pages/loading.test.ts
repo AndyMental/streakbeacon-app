@@ -25,4 +25,10 @@ describe("dashboard loading page", () => {
       `expected at least 3 skeleton placeholders, got ${pulseMatches.length}`
     );
   });
+
+  it("provides a stable #main-content anchor for the skip-link target", () => {
+    assert.match(markup, /id="main-content"/);
+    // Ensure it's the main tag or a direct wrapper with the ID
+    assert.match(markup, /<main[^>]*id="main-content"/);
+  });
 });
