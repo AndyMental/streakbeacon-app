@@ -295,60 +295,6 @@ export function StreakDashboard() {
           </div>
         </CardHeader>
         <CardContent className="pt-4">
-          <form
-            className="mb-4 rounded-md border bg-muted/30 p-3"
-            onSubmit={createItem}
-          >
-            <div className="grid gap-2">
-              <Label htmlFor="new-streak-name">Add habit</Label>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Input
-                  id="new-streak-name"
-                  name="name"
-                  type="text"
-                  value={newItemName}
-                  maxLength={80}
-                  placeholder="Read for 20 minutes"
-                  aria-describedby={
-                    createError ? "new-streak-error" : "new-streak-help"
-                  }
-                  disabled={!isReady || Boolean(storageError)}
-                  className="flex-1"
-                  onChange={(event) => {
-                    setNewItemName(event.target.value);
-                    setCreateError(null);
-                  }}
-                />
-                <Button
-                  type="submit"
-                  className="w-full sm:w-auto"
-                  disabled={!isReady || Boolean(storageError) || !newItemName.trim()}
-                >
-                  {!isReady ? (
-                    "Loading"
-                  ) : (
-                    <>
-                      <Plus className="h-4 w-4" aria-hidden="true" />
-                      Add habit
-                    </>
-                  )}
-                </Button>
-              </div>
-              <p id="new-streak-help" className="text-sm text-muted-foreground">
-                Create the first streak in local storage.
-              </p>
-              {createError ? (
-                <p
-                  id="new-streak-error"
-                  role="alert"
-                  className="text-sm text-destructive"
-                >
-                  {createError}
-                </p>
-              ) : null}
-            </div>
-          </form>
-
           {storageError ? (
             <Alert variant="destructive" className="relative mb-4 pl-10">
               <AlertCircle className="absolute left-4 top-4 h-4 w-4" />
@@ -424,6 +370,60 @@ export function StreakDashboard() {
             </div>
             <span>More</span>
           </div>
+
+          <form
+            className="mt-6 rounded-md border bg-muted/30 p-3"
+            onSubmit={createItem}
+          >
+            <div className="grid gap-2">
+              <Label htmlFor="new-streak-name">Add habit</Label>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <Input
+                  id="new-streak-name"
+                  name="name"
+                  type="text"
+                  value={newItemName}
+                  maxLength={80}
+                  placeholder="Read for 20 minutes"
+                  aria-describedby={
+                    createError ? "new-streak-error" : "new-streak-help"
+                  }
+                  disabled={!isReady || Boolean(storageError)}
+                  className="flex-1"
+                  onChange={(event) => {
+                    setNewItemName(event.target.value);
+                    setCreateError(null);
+                  }}
+                />
+                <Button
+                  type="submit"
+                  className="w-full sm:w-auto"
+                  disabled={!isReady || Boolean(storageError) || !newItemName.trim()}
+                >
+                  {!isReady ? (
+                    "Loading"
+                  ) : (
+                    <>
+                      <Plus className="h-4 w-4" aria-hidden="true" />
+                      Add habit
+                    </>
+                  )}
+                </Button>
+              </div>
+              <p id="new-streak-help" className="text-sm text-muted-foreground">
+                Create the first streak in local storage.
+              </p>
+              {createError ? (
+                <p
+                  id="new-streak-error"
+                  role="alert"
+                  className="text-sm text-destructive"
+                >
+                  {createError}
+                </p>
+              ) : null}
+            </div>
+          </form>
         </CardContent>
       </Card>
 
