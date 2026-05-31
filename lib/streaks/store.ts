@@ -1,6 +1,7 @@
 import {
   addStreakItem,
   deleteStreakItem,
+  mergeStreaks,
   renameStreakItem,
   setDayCompletion,
   updatePreferences,
@@ -10,7 +11,7 @@ import {
   type StreakData,
   type StreakPreferences
 } from "./model";
-import { LocalStreakStorageAdapter, mergeStreaks } from "./storage";
+import { LocalStreakStorageAdapter } from "./storage";
 
 export class StreakStore {
   constructor(private readonly storage: LocalStreakStorageAdapter) {}

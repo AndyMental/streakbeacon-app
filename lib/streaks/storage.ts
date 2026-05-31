@@ -310,50 +310,6 @@ function collectImportWarnings(data: StreakData): string[] {
   return warnings;
 }
 
-export function mergeStreaks(
-  existing: StreakData,
-  incoming: StreakData,
-  now = new Date()
-): StreakData {
-  const mergedItems = [...existing.items];
-  const itemIds = new Set(existing.items.map((i) => i.id));
-
-  for (const item of incoming.items) {
-    if (itemIds.has(item.id)) {
-      const index = mergedItems.findIndex((i) => i.id === item.id);
-      // Prefer the version with the most recent updatedAt
-      if (
-        new Date(item.updatedAt).getTime() >
-        new Date(mergedItems[index].updatedAt).getTime()
-      ) {
-        mergedItems[index] = item;
-      }
-    } else {
-      mergedItems.push(item);
-      itemIds.add(item.id);
-    }
-  }
-
-  const mergedCompletions: Record<string, Record<IsoDate, Completion>> = {};
-
-  for (const itemId of itemIds) {
-    const existingCompletions = existing.completions[itemId] || {};
-    const incomingCompletions = incoming.completions[itemId] || {};
-
-    mergedCompletions[itemId] = {
-      ...existingCompletions,
-      ...incomingCompletions
-    };
-  }
-
-  return {
-    ...existing,
-    items: mergedItems,
-    completions: mergedCompletions,
-    updatedAt: now.toISOString()
-  };
-}
-
 function countCompletions(
   completions: Record<string, Record<IsoDate, Completion>>
 ): number {

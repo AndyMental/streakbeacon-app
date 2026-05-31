@@ -3,13 +3,13 @@ import { describe, it } from "node:test";
 import {
   addStreakItem,
   createEmptyStreakData,
+  mergeStreaks,
   setDayCompletion,
   updatePreferences
 } from "./model";
 import {
   assertStorageWritable,
   LocalStreakStorageAdapter,
-  mergeStreaks,
   STREAK_STORAGE_KEY,
   validateImportText
 } from "./storage";
