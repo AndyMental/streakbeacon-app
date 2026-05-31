@@ -355,7 +355,7 @@ export function SettingsPanel() {
           </div>
 
           {preview ? (
-            <Alert variant="muted" className="mt-5">
+            <Alert variant="muted" role="status" className="mt-5">
               <AlertTitle>Import preview</AlertTitle>
               <AlertDescription>
                 {preview.itemCount} items, {preview.completionCount} completed

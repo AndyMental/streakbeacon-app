@@ -226,21 +226,31 @@ export function StreakDashboard() {
           <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div className="min-w-0">
               <CardTitle>Streak grid</CardTitle>
-              <p className="mt-1 truncate text-sm text-muted-foreground">
+              <p
+                className="mt-1 truncate text-sm text-muted-foreground"
+                aria-live="polite"
+              >
                 {!isReady
                   ? "Loading local streak data"
                   : model.activeItem?.name ?? "No active streak"}
               </p>
             </div>
-            <div className="flex min-w-0 flex-wrap items-center gap-2" aria-label="Streak selector">
+            <div
+              className="flex min-w-0 flex-wrap items-center gap-2"
+              role="group"
+              aria-label="Streak selector"
+            >
               {data.items.map((item) => (
                 <Button
                   key={item.id}
                   type="button"
-                  variant={item.id === model.activeItem?.id ? "default" : "outline"}
+                  variant={
+                    item.id === model.activeItem?.id ? "default" : "outline"
+                  }
                   size="sm"
                   className="max-w-full truncate sm:max-w-48"
                   onClick={() => setSelectedItemId(item.id)}
+                  aria-pressed={item.id === model.activeItem?.id}
                 >
                   {item.name}
                 </Button>
@@ -311,7 +321,11 @@ export function StreakDashboard() {
                 Create the first streak in local storage.
               </p>
               {createError ? (
-                <p id="new-streak-error" className="text-sm text-destructive">
+                <p
+                  id="new-streak-error"
+                  role="alert"
+                  className="text-sm text-destructive"
+                >
                   {createError}
                 </p>
               ) : null}
@@ -340,7 +354,7 @@ export function StreakDashboard() {
           ) : null}
 
           {isReady && !hasItems ? (
-            <Alert variant="muted" className="mb-4">
+            <Alert variant="muted" role="status" className="mb-4">
               <Info className="absolute right-3 top-3 h-4 w-4 text-primary" />
               <AlertTitle>No streaks yet</AlertTitle>
               <AlertDescription>
@@ -369,6 +383,7 @@ export function StreakDashboard() {
                               day.isComplete ? "completed" : "not completed"
                             }`}
                             aria-pressed={day.isComplete}
+                            aria-current={day.isSelected ? "true" : undefined}
                             onClick={() => selectDay(day)}
                             className={cn(
                               "h-5 w-5 rounded-sm border outline-none transition-transform motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
