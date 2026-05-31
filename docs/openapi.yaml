@@ -1,0 +1,152 @@
+openapi: 3.0.3
+info:
+  title: StreakBeacon Sync API
+  description: API for syncing local streak data with a remote backup.
+  version: 1.0.0
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+  - url: /api
+paths:
+  /sync:
+    get:
+      summary: Fetch the latest synced streak data
+      operationId: getSync
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreakData'
+        '401':
+          description: Unauthorized
+    post:
+      summary: Upsert streak data
+      operationId: postSync
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StreakData'
+      responses:
+        '200':
+          description: Data successfully synced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StreakData'
+        '400':
+          description: Invalid data provided
+        '401':
+          description: Unauthorized
+security:
+  - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    StreakData:
+      type: object
+      required:
+        - schemaVersion
+        - createdAt
+        - updatedAt
+        - items
+        - completions
+        - preferences
+      properties:
+        schemaVersion:
+          type: integer
+          example: 1
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/StreakItem'
+        completions:
+          type: object
+          additionalProperties:
+            type: object
+            description: Map of IsoDate (YYYY-MM-DD) to Completion
+            additionalProperties:
+              $ref: '#/components/schemas/Completion'
+          description: Map of streak ID to a map of IsoDate to Completion
+        preferences:
+          $ref: '#/components/schemas/StreakPreferences'
+    StreakItem:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - color
+        - createdAt
+        - updatedAt
+        - order
+        - archivedAt
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        color:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        order:
+          type: integer
+        archivedAt:
+          type: string
+          format: date-time
+          nullable: true
+    Completion:
+      type: object
+      required:
+        - completedAt
+      properties:
+        completedAt:
+          type: string
+          format: date-time
+        source:
+          type: string
+          enum: [manual, import]
+    StreakPreferences:
+      type: object
+      required:
+        - theme
+        - weekStartsOn
+        - gridWindowDays
+        - showArchived
+        - accentColor
+      properties:
+        theme:
+          type: string
+          enum: [system, light, dark]
+        weekStartsOn:
+          type: integer
+          enum: [0, 1]
+          description: 0 for Sunday, 1 for Monday
+        gridWindowDays:
+          type: integer
+          minimum: 7
+          maximum: 365
+        showArchived:
+          type: boolean
+        accentColor:
+          type: string
