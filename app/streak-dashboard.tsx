@@ -7,7 +7,8 @@ import {
   Info,
   Plus,
   Trash2,
-  Trophy
+  Trophy,
+  type LucideIcon
 } from "lucide-react";
 import type { FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
@@ -233,6 +234,7 @@ export function StreakDashboard() {
                   type="button"
                   variant={item.id === model.activeItem?.id ? "default" : "outline"}
                   size="sm"
+                  aria-current={item.id === model.activeItem?.id ? "true" : undefined}
                   onClick={() => setSelectedItemId(item.id)}
                 >
                   {item.name}
@@ -473,7 +475,7 @@ function SummaryCard({
   label: string;
   value: number;
   suffix: string;
-  icon: typeof Flame;
+  icon: LucideIcon;
 }) {
   return (
     <Card>
