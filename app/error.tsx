@@ -21,6 +21,8 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
 
   return (
     <main
+      id="main-content"
+      tabIndex={-1}
       role="alert"
       aria-live="assertive"
       className="flex min-h-screen items-center justify-center bg-background px-5 py-10 text-foreground"

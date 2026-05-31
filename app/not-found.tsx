@@ -9,7 +9,11 @@ import {
 
 export default function NotFound() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-5 py-10 text-foreground">
+    <main
+      id="main-content"
+      tabIndex={-1}
+      className="flex min-h-screen items-center justify-center bg-background px-5 py-10 text-foreground"
+    >
       <Card className="w-full max-w-md">
         <CardHeader className="gap-3 border-b">
           <p className="text-sm font-medium uppercase text-muted-foreground">

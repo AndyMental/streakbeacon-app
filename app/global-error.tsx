@@ -13,6 +13,8 @@ type GlobalErrorPageProps = {
   reset: () => void;
 };
 
+import { SkipLink } from "@/components/skip-link";
+
 export default function GlobalErrorPage({
   error,
   reset
@@ -20,7 +22,10 @@ export default function GlobalErrorPage({
   return (
     <html lang="en">
       <body>
+        <SkipLink />
         <main
+          id="main-content"
+          tabIndex={-1}
           role="alert"
           aria-live="assertive"
           className="flex min-h-screen items-center justify-center bg-background px-5 py-10 text-foreground"

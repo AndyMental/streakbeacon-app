@@ -35,6 +35,8 @@ export const viewport: Viewport = {
   ]
 };
 
+import { SkipLink } from "@/components/skip-link";
+
 export default function RootLayout({
   children
 }: Readonly<{
@@ -49,6 +51,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <SkipLink />
           {children}
           <Toaster richColors />
         </ThemeProvider>

@@ -4,6 +4,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function Loading() {
   return (
     <main
+      id="main-content"
+      tabIndex={-1}
       role="status"
       aria-busy="true"
       aria-live="polite"
