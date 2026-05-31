@@ -4,7 +4,6 @@ import {
   CalendarDays,
   CheckCircle2,
   Flame,
-  Info,
   Plus,
   Trash2,
   Trophy
@@ -213,6 +212,59 @@ export function StreakDashboard() {
     }
   }
 
+  if (isReady && !hasItems) {
+    return (
+      <Card className="flex flex-col items-center justify-center py-12 text-center">
+        <CardHeader>
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+            <Plus className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
+          </div>
+          <CardTitle className="text-xl">No habits tracked yet</CardTitle>
+          <p className="mx-auto mt-2 max-w-sm text-sm text-muted-foreground">
+            Add your first habit to start filling the local completion grid.
+            Everything stays in this browser.
+          </p>
+        </CardHeader>
+        <CardContent className="w-full max-w-sm">
+          <form className="grid gap-3" onSubmit={createItem}>
+            <div className="grid gap-2 text-left">
+              <Label htmlFor="new-streak-name-empty">Habit name</Label>
+              <Input
+                id="new-streak-name-empty"
+                name="name"
+                type="text"
+                value={newItemName}
+                maxLength={80}
+                placeholder="Read for 20 minutes"
+                disabled={Boolean(storageError)}
+                onChange={(event) => {
+                  setNewItemName(event.target.value);
+                  setCreateError(null);
+                }}
+              />
+              {createError ? (
+                <p className="text-sm text-destructive">{createError}</p>
+              ) : null}
+            </div>
+            <Button
+              type="submit"
+              disabled={Boolean(storageError) || !newItemName.trim()}
+            >
+              <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
+              Add first habit
+            </Button>
+          </form>
+          {storageError ? (
+            <Alert variant="destructive" className="mt-4 text-left">
+              <AlertTitle>Storage unavailable</AlertTitle>
+              <AlertDescription>{storageError}</AlertDescription>
+            </Alert>
+          ) : null}
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <section className="grid gap-6 lg:grid-cols-[1fr_18rem]">
       <Card>
@@ -329,18 +381,6 @@ export function StreakDashboard() {
             <Alert variant="destructive" className="mb-4">
               <AlertTitle>Storage unavailable</AlertTitle>
               <AlertDescription>{storageError}</AlertDescription>
-            </Alert>
-          ) : null}
-
-          {isReady && !hasItems ? (
-            <Alert variant="muted" className="mb-4">
-              <Info className="absolute right-3 top-3 h-4 w-4 text-primary" />
-              <AlertTitle>No streaks yet</AlertTitle>
-              <AlertDescription>
-                Add a habit to start filling the local completion grid. Until
-                then, the calendar stays empty and summary metrics remain at
-                zero.
-              </AlertDescription>
             </Alert>
           ) : null}
 
