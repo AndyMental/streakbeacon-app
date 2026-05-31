@@ -49,6 +49,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <a
+            href="#main-content"
+            className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 z-50 rounded-md bg-primary px-4 py-2 text-primary-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            data-testid="skip-link"
+          >
+            Skip to main content
+          </a>
           {children}
           <Toaster richColors />
         </ThemeProvider>
