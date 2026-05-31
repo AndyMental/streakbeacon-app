@@ -406,6 +406,44 @@ export function StreakDashboard() {
           icon={CheckCircle2}
         />
         <Card>
+          <CardHeader className="flex-row items-center gap-2 space-y-0 pb-3">
+            <CalendarDays className="h-5 w-5 text-primary" aria-hidden="true" />
+            <CardTitle>This week</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-xs text-muted-foreground">
+                {model.weeklyOverview.rangeLabel}
+              </p>
+              <Badge variant="secondary" className="font-mono text-[10px]">
+                {model.weeklyOverview.completedCount}/{model.weeklyOverview.totalCount}
+              </Badge>
+            </div>
+            <div className="mt-3 grid grid-cols-7 gap-1" aria-label="Weekly progress">
+              {model.weeklyOverview.days.map((day) => (
+                <div
+                  key={day.day}
+                  className={cn(
+                    "flex h-7 w-full items-center justify-center rounded-sm border text-[10px] font-bold uppercase",
+                    day.isComplete
+                      ? "border-streak-4-border bg-streak-4 text-primary-foreground"
+                      : "border-streak-empty-border bg-streak-empty text-muted-foreground",
+                    day.isSelected && "ring-2 ring-ring ring-offset-1"
+                  )}
+                  title={day.label}
+                >
+                  {day.label.slice(0, 1)}
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 text-sm text-muted-foreground">
+              {model.weeklyOverview.completedCount === model.weeklyOverview.totalCount
+                ? "Perfect week! Keep it up."
+                : `${model.weeklyOverview.totalCount - model.weeklyOverview.completedCount} days to go this week.`}
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
           <CardHeader className="flex-row items-center gap-2 space-y-0">
             <CalendarDays className="h-5 w-5 text-primary" aria-hidden="true" />
             <CardTitle>Selected day</CardTitle>

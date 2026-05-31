@@ -97,6 +97,53 @@ describe("streak grid model", () => {
     );
     assert.equal(getNextSelectedCompletion(model), false);
   });
+
+  it("derives a compact weekly overview for the current week", () => {
+    let data = addStreakItem(createEmptyStreakData(AS_OF), {
+      id: "read",
+      name: "Read",
+      now: AS_OF
+    });
+
+    // AS_OF is 2026-05-27 (Wednesday)
+    // Sunday start: May 24 - May 30
+    data = setDayCompletion(data, "read", "2026-05-24", true, AS_OF); // Sun
+    data = setDayCompletion(data, "read", "2026-05-27", true, AS_OF); // Wed
+
+    const model = buildStreakGridModel(data, "read", "2026-05-27", AS_OF);
+
+    assert.equal(model.weeklyOverview.totalCount, 7);
+    assert.equal(model.weeklyOverview.completedCount, 2);
+    assert.equal(model.weeklyOverview.days.length, 7);
+    assert.equal(model.weeklyOverview.days[0].day, "2026-05-24");
+    assert.equal(model.weeklyOverview.days[0].isComplete, true);
+    assert.equal(model.weeklyOverview.days[3].day, "2026-05-27");
+    assert.equal(model.weeklyOverview.days[3].isComplete, true);
+    assert.equal(model.weeklyOverview.days[3].isSelected, true);
+    assert.equal(model.weeklyOverview.rangeLabel, "Sun, May 24 – Sat, May 30");
+  });
+
+  it("honors weekStartsOn preference in weekly overview", () => {
+    let data = addStreakItem(createEmptyStreakData(AS_OF), {
+      id: "read",
+      name: "Read",
+      now: AS_OF
+    });
+    data.preferences.weekStartsOn = 1; // Monday
+
+    // AS_OF is 2026-05-27 (Wednesday)
+    // Monday start: May 25 - May 31
+    data = setDayCompletion(data, "read", "2026-05-25", true, AS_OF); // Mon
+    data = setDayCompletion(data, "read", "2026-05-27", true, AS_OF); // Wed
+
+    const model = buildStreakGridModel(data, "read", "2026-05-27", AS_OF);
+
+    assert.equal(model.weeklyOverview.days[0].day, "2026-05-25");
+    assert.equal(model.weeklyOverview.days[0].isComplete, true);
+    assert.equal(model.weeklyOverview.days[2].day, "2026-05-27");
+    assert.equal(model.weeklyOverview.days[2].isComplete, true);
+    assert.equal(model.weeklyOverview.rangeLabel, "Mon, May 25 – Sun, May 31");
+  });
 });
 
 function isoOffset(offset: number) {

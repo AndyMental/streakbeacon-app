@@ -22,6 +22,13 @@ export type GridWeek = {
   days: GridDay[];
 };
 
+export type WeeklyOverview = {
+  days: GridDay[];
+  rangeLabel: string;
+  completedCount: number;
+  totalCount: number;
+};
+
 export type StreakGridModel = {
   activeItem: StreakItem | null;
   completedDays: number;
@@ -31,6 +38,7 @@ export type StreakGridModel = {
   selectedDay: GridDay;
   totalDays: number;
   weeks: GridWeek[];
+  weeklyOverview: WeeklyOverview;
 };
 
 const WEEK_DAYS = 7;
@@ -54,12 +62,18 @@ export function buildStreakGridModel(
     selectedDay ?? formatIsoDay(asOf),
     asOf
   );
-  const completions = activeItem ? data.completions[activeItem.id] ?? {} : {};
-  const completedDays = Object.keys(completions).length;
+  const completions = activeItem ? data.completions[activeItem.id] : {};
+  const completedDays = completions ? Object.keys(completions).length : 0;
   const selected =
     days.find((day) => day.day === selectedDay) ??
     days.find((day) => day.day === formatIsoDay(asOf)) ??
     days[days.length - 1];
+
+  const weeklyOverview = buildWeeklyOverview(
+    data,
+    activeItem?.id ?? null,
+    asOf
+  );
 
   return {
     activeItem,
@@ -71,12 +85,13 @@ export function buildStreakGridModel(
             (days.filter((day) => day.isComplete).length / days.length) * 100
           ),
     currentStreak: activeItem
-      ? calculateCurrentStreak(completions, formatIsoDay(asOf))
+      ? calculateCurrentStreak(completions ?? {}, formatIsoDay(asOf))
       : 0,
-    longestStreak: activeItem ? calculateLongestStreak(completions) : 0,
+    longestStreak: activeItem ? calculateLongestStreak(completions ?? {}) : 0,
     selectedDay: selected,
     totalDays: days.length,
-    weeks: chunkWeeks(days)
+    weeks: chunkWeeks(days),
+    weeklyOverview
   };
 }
 
@@ -88,6 +103,53 @@ export function getNextSelectedCompletion(
   }
 
   return !model.selectedDay.isComplete;
+}
+
+function buildWeeklyOverview(
+  data: StreakData,
+  itemId: string | null,
+  asOf: Date
+): WeeklyOverview {
+  const weekStartsOn = data.preferences.weekStartsOn;
+  const endOfToday = parseIsoDay(formatIsoDay(asOf));
+  const startOfWeek = getStartOfWeek(endOfToday, weekStartsOn);
+  const completions = itemId ? data.completions[itemId] ?? {} : {};
+  const days: GridDay[] = [];
+
+  for (let index = 0; index < WEEK_DAYS; index += 1) {
+    const date = addDays(startOfWeek, index);
+    const day = formatIsoDay(date);
+    const completion = completions[day];
+
+    days.push({
+      day,
+      label: date.toLocaleDateString("en", {
+        month: "short",
+        day: "numeric",
+        timeZone: "UTC",
+        weekday: "short"
+      }),
+      isComplete: Boolean(completion),
+      intensity: getIntensity(completion, index),
+      isSelected: day === formatIsoDay(asOf)
+    });
+  }
+
+  const firstDay = days[0];
+  const lastDay = days[days.length - 1];
+
+  return {
+    days,
+    rangeLabel: `${firstDay.label} – ${lastDay.label}`,
+    completedCount: days.filter((d) => d.isComplete).length,
+    totalCount: WEEK_DAYS
+  };
+}
+
+function getStartOfWeek(date: Date, weekStartsOn: 0 | 1): Date {
+  const day = date.getUTCDay();
+  const diff = (day < weekStartsOn ? 7 : 0) + day - weekStartsOn;
+  return addDays(date, -diff);
 }
 
 function buildGridDays(
