@@ -233,6 +233,7 @@ export function StreakDashboard() {
                   type="button"
                   variant={item.id === model.activeItem?.id ? "default" : "outline"}
                   size="sm"
+                  aria-pressed={item.id === model.activeItem?.id}
                   onClick={() => setSelectedItemId(item.id)}
                 >
                   {item.name}
