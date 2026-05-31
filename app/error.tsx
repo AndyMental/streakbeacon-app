@@ -27,7 +27,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
     >
       <Card className="w-full max-w-md">
         <CardHeader className="gap-3 border-b">
-          <p className="text-sm font-medium uppercase text-muted-foreground">
+          <p className="text-sm font-medium uppercase text-beacon">
             StreakBeacon
           </p>
           <CardTitle className="text-2xl leading-tight sm:text-3xl">
@@ -40,7 +40,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
             current view and keep today&apos;s plan moving.
           </p>
           {error.digest ? (
-            <p className="text-xs font-medium text-secondary-foreground">
+            <p className="text-xs font-medium text-sky">
               Error reference: {error.digest}
             </p>
           ) : null}

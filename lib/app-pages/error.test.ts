@@ -89,7 +89,7 @@ describe("error page fallbacks", () => {
     );
 
     assert.match(markup, /<html lang="en">/);
-    assert.match(markup, /<body>/);
+    assert.match(markup, /<body[^>]*>/);
     assert.match(markup, /Signal interrupted/);
     assert.match(markup, /Error reference: global-digest/);
     assert.match(markup, /data-testid="error-reset"/);
