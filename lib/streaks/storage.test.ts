@@ -227,6 +227,50 @@ describe("LocalStreakStorageAdapter", () => {
     );
   });
 
+  it("recovers valid data from partially malformed local storage", () => {
+    const storage = new MemoryStorage();
+    const adapter = new LocalStreakStorageAdapter(storage);
+    const now = new Date().toISOString();
+
+    // Missing schemaVersion, one valid item, one malformed item, one malformed completion
+    const malformed = {
+      createdAt: now,
+      updatedAt: now,
+      items: [
+        {
+          id: "valid-1",
+          name: "Valid",
+          createdAt: now,
+          updatedAt: now,
+          order: 0,
+          archivedAt: null
+        },
+        {
+          id: "invalid-2"
+          // Missing name
+        },
+        "not-an-object"
+      ],
+      completions: {
+        "valid-1": {
+          "2026-05-27": { completedAt: now, source: "manual" },
+          "bad-date": { completedAt: now, source: "manual" }
+        }
+      },
+      preferences: { theme: "dark" }
+    };
+
+    storage.setItem(STREAK_STORAGE_KEY, JSON.stringify(malformed));
+
+    const loaded = adapter.load();
+    assert.equal(loaded.schemaVersion, 1);
+    assert.equal(loaded.items.length, 2); // "valid-1" and "invalid-2" (with default name)
+    assert.equal(loaded.items[0].id, "valid-1");
+    assert.equal(loaded.items[1].name, "Unnamed Streak");
+    assert.equal(Object.keys(loaded.completions["valid-1"]).length, 1);
+    assert.equal(loaded.preferences.theme, "dark");
+  });
+
   it("allows duplicate imported names as preview warnings", () => {
     const adapter = new LocalStreakStorageAdapter(new MemoryStorage());
     const now = new Date("2026-05-27T12:00:00.000Z");

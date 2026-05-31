@@ -75,7 +75,7 @@ export class LocalStreakStorageAdapter {
     }
 
     try {
-      return parseStreakData(JSON.parse(raw));
+      return parseStreakData(JSON.parse(raw), true);
     } catch {
       return createEmptyStreakData();
     }
@@ -83,7 +83,7 @@ export class LocalStreakStorageAdapter {
 
   save(data: StreakData, savedAt = new Date()): void {
     const normalized = {
-      ...parseStreakData(data),
+      ...parseStreakData(data, false),
       updatedAt: savedAt.toISOString()
     };
 
@@ -96,7 +96,7 @@ export class LocalStreakStorageAdapter {
 
   replace(data: StreakData, savedAt = new Date()): StreakData {
     const normalized = {
-      ...parseStreakData(data),
+      ...parseStreakData(data, false),
       updatedAt: savedAt.toISOString()
     };
 
@@ -118,7 +118,7 @@ export class LocalStreakStorageAdapter {
   }
 
   export(data: StreakData, exportedAt = new Date()): StreakExportEnvelope {
-    return createExportEnvelope(parseStreakData(data), exportedAt);
+    return createExportEnvelope(parseStreakData(data, false), exportedAt);
   }
 }
 
@@ -175,7 +175,7 @@ export function parseExportEnvelope(value: unknown): {
     throw new Error("Import file app metadata is invalid.");
   }
 
-  const data = parseStreakData(value.data);
+  const data = parseStreakData(value.data, false);
   const warnings = collectImportWarnings(data);
 
   return {
@@ -192,44 +192,67 @@ export function parseExportEnvelope(value: unknown): {
   };
 }
 
-export function parseStreakData(value: unknown): StreakData {
+export function parseStreakData(value: unknown, lenient = false): StreakData {
   if (!isRecord(value)) {
     throw new Error("Streak data must be an object.");
   }
 
   if (value.schemaVersion !== STREAK_DATA_VERSION) {
-    throw new Error("Streak data schema version is not supported.");
+    if (!lenient || value.schemaVersion !== undefined) {
+      throw new Error("Streak data schema version is not supported.");
+    }
   }
 
-  const items = requireArray(value.items, "items").map(normalizeItem);
+  const rawItems = requireArray(value.items, "items", lenient);
+  const items: StreakItem[] = [];
   const itemIds = new Set<string>();
 
-  for (const item of items) {
-    if (itemIds.has(item.id)) {
-      throw new Error(`Import contains a duplicate item id: ${item.id}.`);
-    }
+  for (const rawItem of rawItems) {
+    try {
+      const item = normalizeItem(rawItem, lenient);
 
-    itemIds.add(item.id);
+      if (itemIds.has(item.id)) {
+        if (lenient) {
+          continue;
+        }
+        throw new Error(`Import contains a duplicate item id: ${item.id}.`);
+      }
+
+      items.push(item);
+      itemIds.add(item.id);
+    } catch (error) {
+      if (!lenient) {
+        throw error;
+      }
+    }
   }
 
   return {
     schemaVersion: STREAK_DATA_VERSION,
-    createdAt: requireIsoTimestamp(value.createdAt, "createdAt"),
-    updatedAt: requireIsoTimestamp(value.updatedAt, "updatedAt"),
+    createdAt: requireIsoTimestamp(value.createdAt, "createdAt", lenient),
+    updatedAt: requireIsoTimestamp(value.updatedAt, "updatedAt", lenient),
     items,
-    completions: normalizeCompletions(value.completions, itemIds),
+    completions: normalizeCompletions(value.completions, itemIds, lenient),
     preferences: normalizePreferences(value.preferences)
   };
 }
 
-function normalizeItem(value: unknown): StreakItem {
+function normalizeItem(value: unknown, lenient = false): StreakItem {
   if (!isRecord(value)) {
     throw new Error("Every item must be an object.");
   }
 
+  const id = lenient && typeof value.id !== "string" 
+    ? Math.random().toString(36).slice(2) 
+    : requireString(value.id, "item.id", 128);
+
+  const name = lenient && typeof value.name !== "string"
+    ? "Unnamed Streak"
+    : requireString(value.name, "item.name", 80);
+
   return {
-    id: requireString(value.id, "item.id", 128),
-    name: requireString(value.name, "item.name", 80),
+    id,
+    name,
     description:
       typeof value.description === "string"
         ? requireOptionalString(value.description, "item.description", 240)
@@ -238,21 +261,32 @@ function normalizeItem(value: unknown): StreakItem {
       typeof value.color === "string" && value.color.trim()
         ? value.color.trim()
         : "#27AE60",
-    createdAt: requireIsoTimestamp(value.createdAt, "item.createdAt"),
-    updatedAt: requireIsoTimestamp(value.updatedAt, "item.updatedAt"),
-    order: requireNonNegativeInteger(value.order, "item.order"),
+    createdAt: requireIsoTimestamp(value.createdAt, "item.createdAt", lenient),
+    updatedAt: requireIsoTimestamp(value.updatedAt, "item.updatedAt", lenient),
+    order: requireNonNegativeInteger(
+      typeof value.order === "number" ? value.order : 0, 
+      "item.order"
+    ),
     archivedAt:
       value.archivedAt === null
         ? null
-        : requireIsoTimestamp(value.archivedAt, "item.archivedAt")
+        : requireIsoTimestamp(value.archivedAt, "item.archivedAt", lenient)
   };
 }
 
 function normalizeCompletions(
   value: unknown,
-  itemIds: Set<string>
+  itemIds: Set<string>,
+  lenient = false
 ): Record<string, Record<IsoDate, Completion>> {
   if (!isRecord(value)) {
+    if (lenient) {
+      const completions: Record<string, Record<IsoDate, Completion>> = {};
+      for (const itemId of itemIds) {
+        completions[itemId] = {};
+      }
+      return completions;
+    }
     throw new Error("completions must be an object.");
   }
 
@@ -264,16 +298,28 @@ function normalizeCompletions(
 
   for (const [itemId, days] of Object.entries(value)) {
     if (!itemIds.has(itemId)) {
+      if (lenient) {
+        continue;
+      }
       throw new Error(`Completion data references an unknown item: ${itemId}.`);
     }
 
     if (!isRecord(days)) {
+      if (lenient) {
+        continue;
+      }
       throw new Error(`Completion data for ${itemId} must be an object.`);
     }
 
     for (const [date, completion] of Object.entries(days)) {
-      completions[itemId][requireIsoDate(date)] =
-        normalizeCompletion(completion);
+      try {
+        completions[itemId][requireIsoDate(date)] =
+          normalizeCompletion(completion);
+      } catch (error) {
+        if (!lenient) {
+          throw error;
+        }
+      }
     }
   }
 
@@ -351,14 +397,25 @@ function requireOptionalString(value: string, label: string, maxLength: number) 
   return trimmed;
 }
 
-function requireIsoTimestamp(value: unknown, label: string): string {
-  const timestamp = requireString(value, label);
+function requireIsoTimestamp(
+  value: unknown,
+  label: string,
+  lenient = false
+): string {
+  try {
+    const timestamp = requireString(value, label);
 
-  if (Number.isNaN(Date.parse(timestamp))) {
-    throw new Error(`${label} must be an ISO timestamp.`);
+    if (Number.isNaN(Date.parse(timestamp))) {
+      throw new Error(`${label} must be an ISO timestamp.`);
+    }
+
+    return timestamp;
+  } catch (error) {
+    if (lenient) {
+      return new Date().toISOString();
+    }
+    throw error;
   }
-
-  return timestamp;
 }
 
 function requireIsoDate(value: string): IsoDate {
@@ -377,8 +434,11 @@ function requireNonNegativeInteger(value: unknown, label: string): number {
   return value;
 }
 
-function requireArray(value: unknown, label: string): unknown[] {
+function requireArray(value: unknown, label: string, lenient = false): unknown[] {
   if (!Array.isArray(value)) {
+    if (lenient) {
+      return [];
+    }
     throw new Error(`${label} must be an array.`);
   }
 
