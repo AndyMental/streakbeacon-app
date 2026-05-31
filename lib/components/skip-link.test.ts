@@ -4,6 +4,7 @@ import { describe, it } from "node:test";
 
 const layoutSource = readFileSync("app/layout.tsx", "utf8");
 const pageSource = readFileSync("app/page.tsx", "utf8");
+const loadingSource = readFileSync("app/loading.tsx", "utf8");
 
 describe("skip-to-main-content link", () => {
   it("is the first layout child and points to the main landmark", () => {
@@ -23,5 +24,10 @@ describe("skip-to-main-content link", () => {
     assert.match(layoutSource, /href="#main-content"/);
     assert.match(pageSource, /<main[^>]*id="main-content"/);
     assert.match(pageSource, /<main[^>]*tabIndex=\{-1\}/);
+  });
+
+  it("mirrors the main target on the loading fallback", () => {
+    assert.match(loadingSource, /<main[^>]*id="main-content"/);
+    assert.match(loadingSource, /<main[^>]*tabIndex=\{-1\}/);
   });
 });
