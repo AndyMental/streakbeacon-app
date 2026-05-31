@@ -1,8 +1,9 @@
 "use client";
 
-import { Download, FileJson, Moon, RotateCcw, Sun, Upload, ClipboardPaste, CheckCircle2, AlertCircle } from "lucide-react";
+import { Download, FileJson, Moon, RotateCcw, Sun, Upload, ClipboardPaste, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   AlertDialog,
@@ -53,6 +54,7 @@ export function SettingsPanel() {
   const { setTheme, resolvedTheme } = useTheme();
   const [data, setData] = useState<StreakData>(() => createEmptyStreakData());
   const [isReady, setIsReady] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -149,8 +151,18 @@ export function SettingsPanel() {
       return;
     }
 
-    const text = await file.text();
-    processImportText(text);
+    setIsImporting(true);
+    setImportError(null);
+    setMessage(null);
+
+    try {
+      const text = await file.text();
+      processImportText(text);
+    } catch {
+      setImportError("Failed to read the selected file.");
+    } finally {
+      setIsImporting(false);
+    }
   }
 
   function handlePasteImport() {
@@ -161,8 +173,6 @@ export function SettingsPanel() {
 
   function processImportText(text: string) {
     const result = validateImportText(text);
-
-    setMessage(null);
 
     if (!result.ok) {
       setPreview(null);
@@ -253,7 +263,7 @@ export function SettingsPanel() {
               }
             }}
             aria-label="Theme preference"
-            disabled={!isReady || Boolean(storageError)}
+            disabled={!isReady || Boolean(storageError) || isImporting}
           >
             {(["system", "light", "dark"] as const).map((theme) => (
               <ToggleGroupItem
@@ -318,22 +328,26 @@ export function SettingsPanel() {
               type="button"
               size="lg"
               onClick={exportData}
-              disabled={!isReady || Boolean(storageError)}
+              disabled={!isReady || Boolean(storageError) || isImporting}
               data-testid="settings-export-json"
             >
               <Download className="h-4 w-4" aria-hidden="true" />
               Export JSON
             </Button>
-            <Button asChild variant="outline" size="lg">
-              <Label className="cursor-pointer">
-                <Upload className="h-4 w-4" aria-hidden="true" />
-                Import JSON
+            <Button asChild variant="outline" size="lg" disabled={isImporting}>
+              <Label className={cn("cursor-pointer", isImporting && "opacity-50 pointer-events-none")}>
+                {isImporting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                ) : (
+                  <Upload className="h-4 w-4" aria-hidden="true" />
+                )}
+                {isImporting ? "Reading file..." : "Import JSON"}
                 <Input
                   ref={importInputRef}
                   type="file"
                   accept="application/json,.json"
                   className="sr-only"
-                  disabled={!isReady || Boolean(storageError)}
+                  disabled={!isReady || Boolean(storageError) || isImporting}
                   onChange={(event) =>
                     handleImportFile(event.target.files?.[0])
                   }
@@ -347,7 +361,7 @@ export function SettingsPanel() {
                   type="button"
                   variant="outline"
                   size="lg"
-                  disabled={!isReady || Boolean(storageError)}
+                  disabled={!isReady || Boolean(storageError) || isImporting}
                   data-testid="settings-import-paste"
                 >
                   <ClipboardPaste className="h-4 w-4" aria-hidden="true" />
@@ -388,7 +402,7 @@ export function SettingsPanel() {
                   variant="outline"
                   size="lg"
                   className="text-destructive hover:bg-destructive/10"
-                  disabled={!isReady || Boolean(storageError)}
+                  disabled={!isReady || Boolean(storageError) || isImporting}
                   data-testid="settings-reset-data"
                 >
                   <RotateCcw className="h-4 w-4" aria-hidden="true" />
