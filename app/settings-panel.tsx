@@ -18,7 +18,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   confirmResetAllData,
@@ -310,21 +309,25 @@ export function SettingsPanel() {
               <Download className="h-4 w-4" aria-hidden="true" />
               Export JSON
             </Button>
-            <Button asChild variant="outline" size="lg">
-              <Label className="cursor-pointer">
-                <Upload className="h-4 w-4" aria-hidden="true" />
-                Import JSON
-                <Input
-                  ref={importInputRef}
-                  type="file"
-                  accept="application/json,.json"
-                  className="sr-only"
-                  disabled={!isReady || Boolean(storageError)}
-                  onChange={(event) =>
-                    handleImportFile(event.target.files?.[0])
-                  }
-                />
-              </Label>
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              onClick={() => importInputRef.current?.click()}
+              disabled={!isReady || Boolean(storageError)}
+            >
+              <Upload className="h-4 w-4" aria-hidden="true" />
+              Import JSON
+              <Input
+                ref={importInputRef}
+                type="file"
+                accept="application/json,.json"
+                className="sr-only"
+                disabled={!isReady || Boolean(storageError)}
+                onChange={(event) =>
+                  handleImportFile(event.target.files?.[0])
+                }
+              />
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>

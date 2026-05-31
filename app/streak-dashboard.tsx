@@ -251,7 +251,6 @@ export function StreakDashboard() {
                   className="max-w-full truncate sm:max-w-48"
                   aria-pressed={item.id === model.activeItem?.id}
                   onClick={() => setSelectedItemId(item.id)}
-                  aria-pressed={item.id === model.activeItem?.id}
                 >
                   {item.name}
                 </Button>
@@ -296,57 +295,6 @@ export function StreakDashboard() {
           </div>
         </CardHeader>
         <CardContent className="pt-4">
-          <form
-            className="mb-4 grid gap-3 rounded-md border bg-muted/30 p-3 sm:grid-cols-[1fr_auto] sm:items-end"
-            onSubmit={createItem}
-          >
-            <div className="grid gap-2">
-              <Label htmlFor="new-streak-name">Add habit</Label>
-              <Input
-                id="new-streak-name"
-                name="name"
-                type="text"
-                value={newItemName}
-                maxLength={80}
-                placeholder="Read for 20 minutes"
-                aria-describedby={
-                  createError ? "new-streak-error" : "new-streak-help"
-                }
-                disabled={!isReady || Boolean(storageError)}
-                onChange={(event) => {
-                  setNewItemName(event.target.value);
-                  setCreateError(null);
-                }}
-              />
-              <p id="new-streak-help" className="text-sm text-muted-foreground">
-                Create the first streak in local storage.
-              </p>
-              {createError ? (
-                <p
-                  id="new-streak-error"
-                  role="alert"
-                  className="text-sm text-destructive"
-                >
-                  {createError}
-                </p>
-              ) : null}
-            </div>
-            <Button
-              type="submit"
-              className="w-full sm:w-auto"
-              disabled={!isReady || Boolean(storageError) || !newItemName.trim()}
-            >
-              {!isReady ? (
-                "Loading"
-              ) : (
-                <>
-                  <Plus className="h-4 w-4" aria-hidden="true" />
-                  Add habit
-                </>
-              )}
-            </Button>
-          </form>
-
           {storageError ? (
             <Alert variant="destructive" className="mb-4">
               <AlertTitle>Storage unavailable</AlertTitle>
@@ -421,6 +369,57 @@ export function StreakDashboard() {
             </div>
             <span>More</span>
           </div>
+
+          <form
+            className="mt-6 grid gap-3 rounded-md border bg-muted/30 p-3 sm:grid-cols-[1fr_auto] sm:items-end"
+            onSubmit={createItem}
+          >
+            <div className="grid gap-2">
+              <Label htmlFor="new-streak-name">Add habit</Label>
+              <Input
+                id="new-streak-name"
+                name="name"
+                type="text"
+                value={newItemName}
+                maxLength={80}
+                placeholder="Read for 20 minutes"
+                aria-describedby={
+                  createError ? "new-streak-error" : "new-streak-help"
+                }
+                disabled={!isReady || Boolean(storageError)}
+                onChange={(event) => {
+                  setNewItemName(event.target.value);
+                  setCreateError(null);
+                }}
+              />
+              <p id="new-streak-help" className="text-sm text-muted-foreground">
+                Create the first streak in local storage.
+              </p>
+              {createError ? (
+                <p
+                  id="new-streak-error"
+                  role="alert"
+                  className="text-sm text-destructive"
+                >
+                  {createError}
+                </p>
+              ) : null}
+            </div>
+            <Button
+              type="submit"
+              className="w-full sm:w-auto"
+              disabled={!isReady || Boolean(storageError) || !newItemName.trim()}
+            >
+              {!isReady ? (
+                "Loading"
+              ) : (
+                <>
+                  <Plus className="h-4 w-4" aria-hidden="true" />
+                  Add habit
+                </>
+              )}
+            </Button>
+          </form>
         </CardContent>
       </Card>
 
