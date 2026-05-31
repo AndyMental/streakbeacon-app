@@ -421,19 +421,25 @@ export function StreakDashboard() {
             </div>
             <div className="mt-3 grid grid-cols-7 gap-1" aria-label="Weekly progress">
               {model.weeklyOverview.days.map((day) => (
-                <div
+                <button
                   key={day.day}
+                  type="button"
+                  aria-label={`${day.label}: ${
+                    day.isComplete ? "completed" : "open"
+                  }`}
+                  aria-pressed={day.isComplete}
+                  aria-current={day.isSelected ? "date" : undefined}
+                  onClick={() => selectDay(day)}
                   className={cn(
-                    "flex h-7 w-full items-center justify-center rounded-sm border text-[10px] font-bold uppercase",
-                    day.isComplete
-                      ? "border-streak-4-border bg-streak-4 text-primary-foreground"
-                      : "border-streak-empty-border bg-streak-empty text-muted-foreground",
+                    "flex h-7 w-full items-center justify-center rounded-sm border text-[10px] font-bold uppercase transition-transform focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                    getDayClassName(day.isComplete ? 4 : 0),
+                    day.isComplete ? "text-primary-foreground" : "text-muted-foreground",
                     day.isSelected && "ring-2 ring-ring ring-offset-1"
                   )}
                   title={day.label}
                 >
                   {day.label.slice(0, 1)}
-                </div>
+                </button>
               ))}
             </div>
             <p className="mt-3 text-sm text-muted-foreground">
