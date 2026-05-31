@@ -223,22 +223,23 @@ export function StreakDashboard() {
     <section className="grid gap-6 lg:grid-cols-[1fr_18rem]">
       <Card>
         <CardHeader className="border-b">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div>
+          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <CardTitle>Streak grid</CardTitle>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 truncate text-sm text-muted-foreground">
                 {!isReady
                   ? "Loading local streak data"
                   : model.activeItem?.name ?? "No active streak"}
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2" aria-label="Streak selector">
+            <div className="flex min-w-0 flex-wrap items-center gap-2" aria-label="Streak selector">
               {data.items.map((item) => (
                 <Button
                   key={item.id}
                   type="button"
                   variant={item.id === model.activeItem?.id ? "default" : "outline"}
                   size="sm"
+                  className="max-w-full truncate sm:max-w-48"
                   onClick={() => setSelectedItemId(item.id)}
                 >
                   {item.name}
@@ -493,11 +494,13 @@ function SummaryCard({
   return (
     <Card>
       <CardContent className="pt-4">
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">{label}</p>
-          <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
+        <div className="flex min-w-0 items-center justify-between gap-3">
+          <p className="min-w-0 truncate text-sm text-muted-foreground">
+            {label}
+          </p>
+          <Icon className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
         </div>
-        <p className="mt-3 text-2xl font-semibold">
+        <p className="mt-3 truncate text-2xl font-semibold">
           {value}
           <span className="ml-2 text-sm font-normal text-muted-foreground">
             {suffix}

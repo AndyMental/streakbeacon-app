@@ -45,13 +45,15 @@ export default function Home() {
           return (
             <Card key={signal.label}>
               <CardContent className="pt-4">
-                <div className="flex items-center justify-between gap-3">
-                  <p className="text-sm text-muted-foreground">
+                <div className="flex min-w-0 items-center justify-between gap-3">
+                  <p className="min-w-0 truncate text-sm text-muted-foreground">
                     {signal.label}
                   </p>
-                  <Icon className="h-5 w-5 text-primary" aria-hidden="true" />
+                  <Icon className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
                 </div>
-                <p className="mt-3 text-2xl font-semibold">{signal.value}</p>
+                <p className="mt-3 truncate text-2xl font-semibold">
+                  {signal.value}
+                </p>
               </CardContent>
             </Card>
           );
@@ -73,13 +75,18 @@ export default function Home() {
                 key={habit.name}
                 className="flex flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
               >
-                <div>
-                  <p className="font-medium">{habit.name}</p>
-                  <p className="text-sm text-muted-foreground">
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{habit.name}</p>
+                  <p className="truncate text-sm text-muted-foreground">
                     {habit.streak}
                   </p>
                 </div>
-                <Badge variant="secondary">{habit.status}</Badge>
+                <Badge
+                  variant="secondary"
+                  className="max-w-full shrink-0 truncate sm:max-w-[12rem]"
+                >
+                  {habit.status}
+                </Badge>
               </div>
             ))}
           </div>
