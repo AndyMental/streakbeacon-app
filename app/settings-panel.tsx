@@ -237,7 +237,7 @@ export function SettingsPanel() {
               }
             }}
             aria-label="Theme preference"
-            disabled={!isReady}
+            disabled={!isReady || Boolean(storageError)}
           >
             {(["system", "light", "dark"] as const).map((theme) => (
               <ToggleGroupItem
@@ -296,7 +296,12 @@ export function SettingsPanel() {
           </dl>
 
           <div className="mt-5 flex flex-col gap-3 sm:flex-row">
-            <Button type="button" size="lg" onClick={exportData}>
+            <Button
+              type="button"
+              size="lg"
+              onClick={exportData}
+              disabled={!isReady || Boolean(storageError)}
+            >
               <Download className="h-4 w-4" aria-hidden="true" />
               Export JSON
             </Button>
