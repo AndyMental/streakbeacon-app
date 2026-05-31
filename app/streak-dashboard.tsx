@@ -249,6 +249,7 @@ export function StreakDashboard() {
                   }
                   size="sm"
                   className="max-w-full truncate sm:max-w-48"
+                  aria-pressed={item.id === model.activeItem?.id}
                   onClick={() => setSelectedItemId(item.id)}
                   aria-pressed={item.id === model.activeItem?.id}
                 >
