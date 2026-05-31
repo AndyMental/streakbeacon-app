@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Toaster } from "@/components/ui/sonner";
+import { SkipLink } from "@/components/skip-link";
 import "./globals.css";
 import { ThemeProvider } from "./theme-provider";
 
@@ -49,6 +50,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <SkipLink />
           {children}
           <Toaster richColors />
         </ThemeProvider>
