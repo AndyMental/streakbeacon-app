@@ -96,7 +96,7 @@ export function createStreakItem(
   const timestamp = input.now.toISOString();
 
   return {
-    id: normalizeRequiredString(input.id, "Streak item id"),
+    id: normalizeRequiredString(input.id, "Streak item id", 128),
     name: normalizeName(input.name),
     description: normalizeOptionalString(input.description, 240),
     color: normalizeColor(input.color),
@@ -287,16 +287,18 @@ export function normalizePreferences(value: unknown): StreakPreferences {
     weekStartsOn: record.weekStartsOn === 1 ? 1 : 0,
     gridWindowDays: normalizeGridWindowDays(record.gridWindowDays),
     showArchived: record.showArchived === true,
-    accentColor:
-      typeof record.accentColor === "string" && record.accentColor.trim()
-        ? record.accentColor.trim()
-        : DEFAULT_ACCENT_COLOR
+    accentColor: normalizeColor(record.accentColor as string | undefined)
   };
 }
 
 export function assertIsoDate(day: string): asserts day is IsoDate {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) {
     throw new Error(`Expected YYYY-MM-DD day, received: ${day}`);
+  }
+
+  const date = new Date(day);
+  if (isNaN(date.getTime()) || date.toISOString().split("T")[0] !== day) {
+    throw new Error(`Invalid calendar date: ${day}`);
   }
 }
 
@@ -368,7 +370,8 @@ function normalizeOptionalString(value: string | undefined, maxLength: number) {
 
 function normalizeColor(value: string | undefined): string {
   const normalized = value?.trim();
-  return normalized || DEFAULT_ACCENT_COLOR;
+  if (!normalized) return DEFAULT_ACCENT_COLOR;
+  return normalized.slice(0, 50);
 }
 
 function normalizeTheme(value: unknown): ThemePreference {

@@ -1,6 +1,7 @@
 import {
   createEmptyStreakData,
   createExportEnvelope,
+  DEFAULT_ACCENT_COLOR,
   isRecord,
   normalizePreferences,
   STREAK_DATA_VERSION,
@@ -235,9 +236,10 @@ function normalizeItem(value: unknown): StreakItem {
         ? requireOptionalString(value.description, "item.description", 240)
         : "",
     color:
-      typeof value.color === "string" && value.color.trim()
-        ? value.color.trim()
-        : "#27AE60",
+      typeof value.color === "string"
+        ? requireOptionalString(value.color, "item.color", 50) ||
+          DEFAULT_ACCENT_COLOR
+        : DEFAULT_ACCENT_COLOR,
     createdAt: requireIsoTimestamp(value.createdAt, "item.createdAt"),
     updatedAt: requireIsoTimestamp(value.updatedAt, "item.updatedAt"),
     order: requireNonNegativeInteger(value.order, "item.order"),
@@ -364,6 +366,11 @@ function requireIsoTimestamp(value: unknown, label: string): string {
 function requireIsoDate(value: string): IsoDate {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
     throw new Error(`Expected YYYY-MM-DD completion date, received: ${value}.`);
+  }
+
+  const date = new Date(value);
+  if (isNaN(date.getTime()) || date.toISOString().split("T")[0] !== value) {
+    throw new Error(`Invalid calendar completion date: ${value}.`);
   }
 
   return value as IsoDate;
