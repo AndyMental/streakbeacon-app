@@ -73,27 +73,29 @@ export default function Home() {
           <CardHeader className="border-b py-3">
             <CardTitle>Today</CardTitle>
           </CardHeader>
-          <div className="divide-y">
-            {habits.map((habit) => (
-              <div
-                key={habit.name}
-                className="flex flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="min-w-0">
-                  <p className="truncate font-medium">{habit.name}</p>
-                  <p className="truncate text-sm text-muted-foreground">
-                    {habit.streak}
-                  </p>
-                </div>
-                <Badge
-                  variant="secondary"
-                  className="max-w-full shrink-0 truncate sm:max-w-[12rem]"
+          <CardContent className="p-0">
+            <div className="divide-y">
+              {habits.map((habit) => (
+                <div
+                  key={habit.name}
+                  className="flex flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
                 >
-                  {habit.status}
-                </Badge>
-              </div>
-            ))}
-          </div>
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">{habit.name}</p>
+                    <p className="truncate text-sm text-muted-foreground">
+                      {habit.streak}
+                    </p>
+                  </div>
+                  <Badge
+                    variant="secondary"
+                    className="max-w-full shrink-0 truncate sm:max-w-[12rem]"
+                  >
+                    {habit.status}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
         </Card>
 
         <Card>
