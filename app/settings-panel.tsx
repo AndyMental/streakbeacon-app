@@ -2,7 +2,7 @@
 
 import { AlertCircle, CheckCircle2, ClipboardPaste, Download, FileJson, Info, Loader2, Monitor, Moon, RotateCcw, Sun, Upload } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -28,23 +28,14 @@ import {
 } from "@/lib/streaks/reset";
 import {
   createExportEnvelope,
-  createEmptyStreakData,
-  type StreakData,
   type ThemePreference
 } from "@/lib/streaks/model";
 import {
-  assertStorageWritable,
-  LocalStreakStorageAdapter,
   STREAK_DATA_CHANGED_EVENT,
   validateImportText,
   type ImportPreview
 } from "@/lib/streaks/storage";
-import { StreakStore } from "@/lib/streaks/store";
-
-function createBrowserStore() {
-  assertStorageWritable(window.localStorage);
-  return new StreakStore(new LocalStreakStorageAdapter(window.localStorage));
-}
+import { useStreakData } from "@/lib/streaks/use-streak-data";
 
 const STORAGE_ERROR_MESSAGE =
   "Browser storage is unavailable. Settings and import changes cannot be saved right now.";
@@ -52,78 +43,29 @@ const STORAGE_ERROR_MESSAGE =
 export function SettingsPanel() {
   const importInputRef = useRef<HTMLInputElement>(null);
   const { setTheme, resolvedTheme } = useTheme();
-  const [data, setData] = useState<StreakData>(() => createEmptyStreakData());
-  const [isReady, setIsReady] = useState(false);
+  const { data, setData, isReady, storageError, store } = useStreakData();
   const [isImporting, setIsImporting] = useState(false);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
   const [importError, setImportError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  const [storageError, setStorageError] = useState<string | null>(null);
   const [pasteValue, setPasteValue] = useState("");
   const [isPasteOpen, setIsPasteOpen] = useState(false);
-
-  const store = useMemo(() => {
-    if (typeof window === "undefined") {
-      return null;
-    }
-
-    try {
-      return createBrowserStore();
-    } catch {
-      return null;
-    }
-  }, []);
 
   useEffect(() => {
     setTheme(data.preferences.theme);
   }, [data.preferences.theme, setTheme]);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadSnapshot = () => {
-      if (cancelled) {
-        return;
-      }
-
-      if (!store) {
-        setStorageError(STORAGE_ERROR_MESSAGE);
-        setIsReady(true);
-        return;
-      }
-
-      try {
-        setData(store.getSnapshot());
-        setStorageError(null);
-      } catch {
-        setStorageError(STORAGE_ERROR_MESSAGE);
-      } finally {
-        setIsReady(true);
-      }
-    };
-
-    queueMicrotask(loadSnapshot);
-    window.addEventListener(STREAK_DATA_CHANGED_EVENT, loadSnapshot);
-
-    return () => {
-      cancelled = true;
-      window.removeEventListener(STREAK_DATA_CHANGED_EVENT, loadSnapshot);
-    };
-  }, [store]);
-
   function updateTheme(theme: ThemePreference) {
     if (!store) {
-      setStorageError(STORAGE_ERROR_MESSAGE);
       return;
     }
 
     try {
       const next = store.updatePreferences({ theme });
       setData(next);
-      setStorageError(null);
       setMessage("Theme preference saved.");
     } catch {
-      setStorageError(STORAGE_ERROR_MESSAGE);
+      // Error handled by hook's storageError if persistent
     }
   }
 
@@ -186,7 +128,6 @@ export function SettingsPanel() {
 
   function confirmImport() {
     if (!store || !preview) {
-      setStorageError(STORAGE_ERROR_MESSAGE);
       return;
     }
 
@@ -194,11 +135,10 @@ export function SettingsPanel() {
       const next = store.replaceData(preview.data);
       setData(next);
       setPreview(null);
-      setStorageError(null);
       setMessage("Import complete. Local data was replaced.");
       window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
     } catch {
-      setStorageError(STORAGE_ERROR_MESSAGE);
+      // Error handled by hook
     }
 
     if (importInputRef.current) {
@@ -218,7 +158,6 @@ export function SettingsPanel() {
 
   function resetLocalData() {
     if (!store) {
-      setStorageError(STORAGE_ERROR_MESSAGE);
       return;
     }
 
@@ -228,11 +167,10 @@ export function SettingsPanel() {
       setTheme(next.preferences.theme);
       setPreview(null);
       setImportError(null);
-      setStorageError(null);
       setMessage("Local data cleared.");
       dispatchStreakDataReset(window);
     } catch {
-      setStorageError(STORAGE_ERROR_MESSAGE);
+      // Error handled by hook
     }
   }
 
@@ -251,7 +189,7 @@ export function SettingsPanel() {
             <Alert variant="destructive" className="relative mb-4 pl-10">
               <AlertCircle className="absolute left-4 top-4 h-4 w-4" />
               <AlertTitle>Storage unavailable</AlertTitle>
-              <AlertDescription>{storageError}</AlertDescription>
+              <AlertDescription>{STORAGE_ERROR_MESSAGE}</AlertDescription>
             </Alert>
           ) : null}
 
@@ -295,7 +233,7 @@ export function SettingsPanel() {
             <Alert variant="destructive" className="relative mb-5 pl-10">
               <AlertCircle className="absolute left-4 top-4 h-4 w-4" />
               <AlertTitle>Storage unavailable</AlertTitle>
-              <AlertDescription>{storageError}</AlertDescription>
+              <AlertDescription>{STORAGE_ERROR_MESSAGE}</AlertDescription>
             </Alert>
           ) : null}
 
