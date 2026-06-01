@@ -44,17 +44,33 @@ export function buildStreakGridModel(
   const activeItems = data.items
     .filter((item) => !item.archivedAt)
     .sort((a, b) => a.order - b.order);
+
   const activeItem =
-    activeItems.find((item) => item.id === selectedItemId) ??
-    activeItems[0] ??
-    null;
+    activeItems.find((item) => item.id === selectedItemId) ?? null;
+
   const days = buildGridDays(
     data,
     activeItem?.id ?? null,
     selectedDay ?? formatIsoDay(asOf),
     asOf
   );
-  const completions = activeItem ? data.completions[activeItem.id] ?? {} : {};
+
+  const isAllHabits = activeItem === null && activeItems.length > 0;
+  let completions: Record<IsoDate, Completion> = {};
+
+  if (activeItem) {
+    completions = data.completions[activeItem.id] ?? {};
+  } else if (isAllHabits) {
+    for (const item of activeItems) {
+      const itemCompletions = data.completions[item.id] ?? {};
+      for (const [day, completion] of Object.entries(itemCompletions)) {
+        if (!completions[day as IsoDate]) {
+          completions[day as IsoDate] = completion;
+        }
+      }
+    }
+  }
+
   const completedDays = Object.keys(completions).length;
   const selected =
     days.find((day) => day.day === selectedDay) ??
@@ -70,10 +86,12 @@ export function buildStreakGridModel(
         : Math.round(
             (days.filter((day) => day.isComplete).length / days.length) * 100
           ),
-    currentStreak: activeItem
-      ? calculateCurrentStreak(completions, formatIsoDay(asOf))
-      : 0,
-    longestStreak: activeItem ? calculateLongestStreak(completions) : 0,
+    currentStreak:
+      activeItem || isAllHabits
+        ? calculateCurrentStreak(completions, formatIsoDay(asOf))
+        : 0,
+    longestStreak:
+      activeItem || isAllHabits ? calculateLongestStreak(completions) : 0,
     selectedDay: selected,
     totalDays: days.length,
     weeks: chunkWeeks(days)
@@ -102,7 +120,24 @@ function buildGridDays(
   );
   const end = parseIsoDay(formatIsoDay(asOf));
   const start = addDays(end, -(windowDays - 1));
-  const completions = itemId ? data.completions[itemId] ?? {} : {};
+
+  const activeItems = data.items.filter((item) => !item.archivedAt);
+  const isAllHabits = itemId === null && activeItems.length > 0;
+
+  const completions: Record<IsoDate, Completion> = {};
+  if (itemId) {
+    Object.assign(completions, data.completions[itemId] ?? {});
+  } else if (isAllHabits) {
+    for (const item of activeItems) {
+      const itemCompletions = data.completions[item.id] ?? {};
+      for (const [day, completion] of Object.entries(itemCompletions)) {
+        if (!completions[day as IsoDate]) {
+          completions[day as IsoDate] = completion;
+        }
+      }
+    }
+  }
+
   const days: GridDay[] = [];
 
   for (let index = 0; index < windowDays; index += 1) {
