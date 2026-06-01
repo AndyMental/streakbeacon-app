@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { afterEach, describe, it } from "node:test";
 import { JSDOM } from "jsdom";
 import { act } from "react";
@@ -129,6 +130,16 @@ describe("SettingsPanel Interaction Evidence", () => {
       const element = document.querySelector(`[data-testid="${id}"]`);
       assert.ok(element, `Missing element with data-testid="${id}"`);
     }
+  });
+
+  it("labels the paste JSON textarea for assistive technology", () => {
+    const source = readFileSync("app/settings-panel.tsx", "utf8");
+
+    assert.match(
+      source,
+      /<Label htmlFor="settings-import-paste-textarea">\s*Export JSON\s*<\/Label>/
+    );
+    assert.match(source, /<Textarea\s+id="settings-import-paste-textarea"/);
   });
 
   it("updates the theme class on documentElement when a theme toggle item is clicked", async () => {
