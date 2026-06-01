@@ -20,10 +20,14 @@ commands that are actually present.
 
 ## OpenAPI
 
-No OpenAPI or Swagger generation/update command is present yet.
+The repository uses a custom Ajv-based harness for OpenAPI contract validation.
+
+- Run contract tests: `npm run test:contract`
 
 Before adding frontend code or black-box tests that consume API routes, add or
 identify the OpenAPI/Swagger workflow and document the exact command here.
+If adding new API routes, ensure they are documented in `docs/openapi.yaml` and
+that the contract tests pass.
 
 ## Deployment
 

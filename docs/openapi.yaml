@@ -8,11 +8,17 @@ info:
     url: https://opensource.org/licenses/MIT
 servers:
   - url: /api
+tags:
+  - name: Sync
+    description: Data synchronization operations
 paths:
   /sync:
     get:
       summary: Fetch the latest synced streak data
+      description: Retrieves the full streak data set including items, completions, and preferences from the remote backup.
       operationId: getSync
+      tags:
+        - Sync
       responses:
         '200':
           description: Successful response
@@ -24,7 +30,10 @@ paths:
           description: Unauthorized
     post:
       summary: Upsert streak data
+      description: Updates or inserts streak data to the remote backup.
       operationId: postSync
+      tags:
+        - Sync
       requestBody:
         required: true
         content:
