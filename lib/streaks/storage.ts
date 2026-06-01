@@ -272,7 +272,12 @@ function normalizeItem(value: unknown, lenient = false): StreakItem {
     archivedAt:
       value.archivedAt === null || (lenient && value.archivedAt === undefined)
         ? null
-        : requireIsoTimestamp(value.archivedAt, "item.archivedAt", lenient)
+        : lenient
+        ? typeof value.archivedAt === "string" &&
+          !Number.isNaN(Date.parse(value.archivedAt))
+          ? value.archivedAt
+          : null
+        : requireIsoTimestamp(value.archivedAt, "item.archivedAt")
   };
 }
 
