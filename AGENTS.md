@@ -20,7 +20,7 @@ commands that are actually present.
 
 ## OpenAPI
 
-No OpenAPI or Swagger generation/update command is present yet.
+The project uses `next-openapi-gen` for OpenAPI generation. Run `npm run openapi:generate` to scan Next.js App Router API routes and output the specification to `docs/openapi.yaml`.
 
 Before adding frontend code or black-box tests that consume API routes, add or
 identify the OpenAPI/Swagger workflow and document the exact command here.
