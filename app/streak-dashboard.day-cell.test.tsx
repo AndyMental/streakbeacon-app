@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
-import { afterEach, describe, it } from "node:test";
+import { afterEach, beforeEach, describe, it, mock } from "node:test";
 import { JSDOM } from "jsdom";
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
@@ -118,7 +118,12 @@ async function renderDashboard() {
 }
 
 describe("StreakDashboard day-cell controls", () => {
+  beforeEach(() => {
+    mock.timers.enable({ apis: ["Date"], now: new Date("2026-05-27T12:00:00.000Z") });
+  });
+
   afterEach(() => {
+    mock.timers.reset();
     if (root) {
       act(() => {
         root?.unmount();

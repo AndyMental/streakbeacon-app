@@ -63,7 +63,6 @@ import { filterStreakItems } from "@/lib/streaks/filter";
 
 import { useHabitSelection } from "@/hooks/useHabitSelection";
 
-const DEMO_AS_OF = new Date("2026-05-27T12:00:00.000Z");
 const STORAGE_ERROR_MESSAGE =
   "Local streak data is unavailable in this browser. You can still review the page, but completion changes will not be saved.";
 
@@ -74,7 +73,7 @@ function createBrowserStore() {
 
 export function StreakDashboard() {
   const [data, setData] = useState<StreakData>(() =>
-    createEmptyStreakData(DEMO_AS_OF)
+    createEmptyStreakData(new Date())
   );
   const [isReady, setIsReady] = useState(false);
   const [storageError, setStorageError] = useState<string | null>(null);
@@ -88,7 +87,7 @@ export function StreakDashboard() {
   const [renameError, setRenameError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const model = useMemo(
-    () => buildStreakGridModel(data, selectedHabitId, selectedDay, DEMO_AS_OF),
+    () => buildStreakGridModel(data, selectedHabitId, selectedDay, new Date()),
     [data, selectedDay, selectedHabitId]
   );
   const filteredItems = useMemo(() => {
@@ -314,7 +313,7 @@ export function StreakDashboard() {
 
   return (
     <section className="grid gap-6 lg:grid-cols-[1fr_18rem]">
-      <WeeklyOverview data={data} asOf={DEMO_AS_OF} className="lg:col-span-2" />
+      <WeeklyOverview data={data} asOf={new Date()} className="lg:col-span-2" />
       <Card>
         <CardHeader className="border-b">
           <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
