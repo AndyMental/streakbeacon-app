@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   addStreakItem,
+  archiveStreakItem,
   calculateCurrentStreak,
   calculateLongestStreak,
   createEmptyStreakData,
@@ -9,11 +10,12 @@ import {
   deleteStreakItem,
   renameStreakItem,
   setDayCompletion,
+  unarchiveStreakItem,
   updatePreferences
 } from "./model";
 
 describe("streak domain model", () => {
-  it("covers create, rename, delete, completion, and streak math", () => {
+  it("covers create, rename, archive, unarchive, delete, completion, and streak math", () => {
     const now = new Date("2026-05-27T12:00:00.000Z");
     let data = createEmptyStreakData(now);
 
@@ -24,6 +26,7 @@ describe("streak domain model", () => {
     });
 
     assert.equal(data.items[0]?.name, "Morning walk");
+    assert.equal(data.items[0]?.archivedAt, null);
     assert.deepEqual(data.completions["morning-walk"], {});
 
     data = renameStreakItem(data, {
@@ -31,6 +34,12 @@ describe("streak domain model", () => {
       name: "Daily walk",
       now: new Date("2026-05-27T13:00:00.000Z")
     });
+
+    data = archiveStreakItem(data, "morning-walk", now);
+    assert.equal(data.items[0]?.archivedAt, now.toISOString());
+
+    data = unarchiveStreakItem(data, "morning-walk", now);
+    assert.equal(data.items[0]?.archivedAt, null);
 
     data = setDayCompletion(
       data,

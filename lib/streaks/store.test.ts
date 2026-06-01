@@ -109,6 +109,24 @@ describe("StreakStore", () => {
     assert.equal(snapshot.completions.hydrate, undefined);
   });
 
+  it("archives and unarchives a streak item and persists the state", () => {
+    const storage = new MemoryStorage();
+    const store = new StreakStore(new LocalStreakStorageAdapter(storage));
+    const now = new Date("2026-05-27T12:00:00.000Z");
+
+    store.createItem({ id: "hydrate", name: "Hydrate", now });
+    store.archiveItem("hydrate", now);
+
+    const reloaded = new StreakStore(new LocalStreakStorageAdapter(storage));
+    let snapshot = reloaded.getSnapshot();
+    assert.equal(snapshot.items[0]?.id, "hydrate");
+    assert.equal(snapshot.items[0]?.archivedAt, now.toISOString());
+
+    store.unarchiveItem("hydrate", now);
+    snapshot = store.getSnapshot();
+    assert.equal(snapshot.items[0]?.archivedAt, null);
+  });
+
   it("persists a first-run in-memory snapshot before saving a toggle", () => {
     const storage = new MemoryStorage();
     const store = new StreakStore(new LocalStreakStorageAdapter(storage));

@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle, CheckCircle2, ClipboardPaste, Download, FileJson, Info, Loader2, Monitor, Moon, RotateCcw, Sun, Upload } from "lucide-react";
+import { AlertCircle, Archive, CheckCircle2, ClipboardPaste, Download, FileJson, Info, Loader2, Monitor, Moon, RotateCcw, Sun, Upload } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -122,6 +122,23 @@ export function SettingsPanel() {
       setData(next);
       setStorageError(null);
       setMessage("Theme preference saved.");
+    } catch {
+      setStorageError(STORAGE_ERROR_MESSAGE);
+    }
+  }
+
+  function restoreItem(id: string) {
+    if (!store) {
+      setStorageError(STORAGE_ERROR_MESSAGE);
+      return;
+    }
+
+    try {
+      const next = store.unarchiveItem(id);
+      setData(next);
+      setStorageError(null);
+      setMessage("Habit restored to dashboard.");
+      window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
     } catch {
       setStorageError(STORAGE_ERROR_MESSAGE);
     }
@@ -492,6 +509,41 @@ export function SettingsPanel() {
           </p>
         </CardContent>
       </Card>
+
+      {data.items.some((item) => item.archivedAt) && (
+        <Card className="lg:col-span-2">
+          <CardHeader className="flex-row items-center gap-2 space-y-0">
+            <Archive className="h-5 w-5 text-primary" aria-hidden="true" />
+            <CardTitle>Archived Habits</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {data.items
+                .filter((item) => item.archivedAt)
+                .map((item) => (
+                  <Card key={item.id} className="bg-muted/50">
+                    <CardContent className="flex items-center justify-between p-4">
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">{item.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Archived {new Date(item.archivedAt!).toLocaleDateString()}
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => restoreItem(item.id)}
+                        disabled={isActionDisabled}
+                      >
+                        Restore
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </section>
   );
 }
