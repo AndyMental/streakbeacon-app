@@ -141,13 +141,13 @@ describe("exhaustive streak logic", () => {
       const completions: Record<IsoDate, Completion> = {
         "2026-05-31": manual
       };
-      
+
       // Current streak as of 2026-06-01 should be 1
       assert.equal(calculateCurrentStreak(completions, "2026-06-01"), 1);
-      
+
       // But if we are "at" 2026-05-31, it's also 1
       assert.equal(calculateCurrentStreak(completions, "2026-05-31"), 1);
-      
+
       // If we are "at" 2026-06-02, it's 0 (streak broken)
       assert.equal(calculateCurrentStreak(completions, "2026-06-02"), 0);
     });

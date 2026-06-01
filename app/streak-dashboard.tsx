@@ -50,6 +50,7 @@ import {
 } from "@/lib/streaks/grid";
 import {
   assertStorageWritable,
+  isQuotaExceededError,
   LocalStreakStorageAdapter,
   STREAK_DATA_CHANGED_EVENT
 } from "@/lib/streaks/storage";
@@ -58,10 +59,17 @@ import { StreakStore } from "@/lib/streaks/store";
 const DEMO_AS_OF = new Date("2026-05-27T12:00:00.000Z");
 const STORAGE_ERROR_MESSAGE =
   "Local streak data is unavailable in this browser. You can still review the page, but completion changes will not be saved.";
+const STORAGE_FULL_MESSAGE =
+  "Browser storage is full. Your changes will not be saved. Clear some space to continue tracking habits.";
 
-function createBrowserStore() {
-  assertStorageWritable(window.localStorage);
-  return new StreakStore(new LocalStreakStorageAdapter(window.localStorage));
+function createBrowserStore(onError?: (err: unknown) => void) {
+  try {
+    assertStorageWritable(window.localStorage);
+  } catch (error) {
+    onError?.(error);
+    throw error;
+  }
+  return new StreakStore(new LocalStreakStorageAdapter(window.localStorage), onError);
 }
 
 export function StreakDashboard() {
@@ -74,6 +82,30 @@ export function StreakDashboard() {
   const [selectedDay, setSelectedDay] = useState<IsoDate | null>(null);
   const [newItemName, setNewItemName] = useState("");
   const [createError, setCreateError] = useState<string | null>(null);
+
+  const handleStorageError = (error: unknown) => {
+    if (isQuotaExceededError(error)) {
+      setStorageError(STORAGE_FULL_MESSAGE);
+      toast.error("Storage full", {
+        description: "Unable to save changes. Please clear some space."
+      });
+    } else {
+      setStorageError(STORAGE_ERROR_MESSAGE);
+    }
+  };
+
+  const store = useMemo(() => {
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    try {
+      return createBrowserStore(handleStorageError);
+    } catch {
+      return null;
+    }
+  }, []);
+
   const model = useMemo(
     () => buildStreakGridModel(data, selectedItemId, selectedDay, DEMO_AS_OF),
     [data, selectedDay, selectedItemId]
@@ -89,8 +121,14 @@ export function StreakDashboard() {
         return;
       }
 
+      if (!store) {
+        setStorageError(STORAGE_ERROR_MESSAGE);
+        setIsReady(true);
+        return;
+      }
+
       try {
-        const stored = createBrowserStore().getSnapshot();
+        const stored = store.getSnapshot();
         setData(stored);
         setSelectedItemId((current) =>
           current && stored.items.some((item) => item.id === current)
@@ -99,7 +137,7 @@ export function StreakDashboard() {
         );
         setStorageError(null);
       } catch {
-        setStorageError(STORAGE_ERROR_MESSAGE);
+        // Error already handled by handleStorageError or is fatal to load
       }
 
       setIsReady(true);
@@ -112,14 +150,14 @@ export function StreakDashboard() {
       cancelled = true;
       window.removeEventListener(STREAK_DATA_CHANGED_EVENT, loadSnapshot);
     };
-  }, []);
+  }, [store]);
 
   function selectDay(day: GridDay) {
     setSelectedDay(day.day);
   }
 
   function toggleSelectedDay() {
-    if (!model.activeItem || selectedCompletion === null) {
+    if (!model.activeItem || selectedCompletion === null || !store) {
       return;
     }
 
@@ -132,26 +170,23 @@ export function StreakDashboard() {
       now
     );
 
-    try {
-      createBrowserStore().replaceData(next, now);
-      setStorageError(null);
-    } catch {
-      setStorageError(STORAGE_ERROR_MESSAGE);
-      return;
-    }
+    store.replaceData(next, now);
 
-    setData(next);
-    window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
-    toast.success(
-      selectedCompletion ? "Marked complete" : "Completion cleared",
-      {
-        description: `${model.activeItem.name} - ${model.selectedDay.label}`
-      }
-    );
+    if (!store.lastError) {
+      setData(next);
+      setStorageError(null);
+      window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
+      toast.success(
+        selectedCompletion ? "Marked complete" : "Completion cleared",
+        {
+          description: `${model.activeItem.name} - ${model.selectedDay.label}`
+        }
+      );
+    }
   }
 
   function deleteSelectedItem() {
-    if (!model.activeItem) {
+    if (!model.activeItem || !store) {
       return;
     }
 
@@ -159,29 +194,30 @@ export function StreakDashboard() {
     const removedName = model.activeItem.name;
     const now = new Date();
 
-    let next: StreakData;
-    try {
-      next = createBrowserStore().deleteItem(removedId, now);
+    const next = store.deleteItem(removedId, now);
+
+    if (!store.lastError) {
+      const remaining = next.items.filter((item) => !item.archivedAt);
+      const fallbackId = remaining[0]?.id ?? null;
+
+      setData(next);
+      setSelectedItemId(fallbackId);
+      setSelectedDay(null);
       setStorageError(null);
-    } catch {
-      setStorageError(STORAGE_ERROR_MESSAGE);
-      return;
+      window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
+      toast.success("Habit deleted", {
+        description: `${removedName} was removed from local storage.`
+      });
     }
-
-    const remaining = next.items.filter((item) => !item.archivedAt);
-    const fallbackId = remaining[0]?.id ?? null;
-
-    setData(next);
-    setSelectedItemId(fallbackId);
-    setSelectedDay(null);
-    window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
-    toast.success("Habit deleted", {
-      description: `${removedName} was removed from local storage.`
-    });
   }
 
   function createItem(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!store) {
+      setStorageError(STORAGE_ERROR_MESSAGE);
+      return;
+    }
 
     const name = newItemName.trim();
 
@@ -193,13 +229,13 @@ export function StreakDashboard() {
     const now = new Date();
     const id = createItemId(name);
 
-    try {
-      const next = createBrowserStore().createItem({
-        id,
-        name,
-        now
-      });
+    const next = store.createItem({
+      id,
+      name,
+      now
+    });
 
+    if (!store.lastError) {
       setData(next);
       setSelectedItemId(id);
       setNewItemName("");
@@ -209,14 +245,8 @@ export function StreakDashboard() {
       toast.success("Habit added", {
         description: `${name} is ready to track.`
       });
-    } catch (error) {
-      setCreateError(
-        error instanceof Error ? error.message : "Unable to add this habit."
-      );
-
-      if (isStorageError(error)) {
-        setStorageError(STORAGE_ERROR_MESSAGE);
-      }
+    } else {
+      setCreateError("Unable to save this habit. Storage is full.");
     }
   }
 
@@ -493,10 +523,6 @@ function createItemId(name: string) {
       : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
   return `${slug || "streak"}-${suffix}`;
-}
-
-function isStorageError(error: unknown) {
-  return error instanceof DOMException;
 }
 
 function SummaryCard({

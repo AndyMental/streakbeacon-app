@@ -87,11 +87,7 @@ export class LocalStreakStorageAdapter {
       updatedAt: savedAt.toISOString()
     };
 
-    try {
-      this.storage.setItem(this.key, JSON.stringify(normalized));
-    } catch {
-      // Keep app-layer state changes usable when browser persistence is denied.
-    }
+    this.storage.setItem(this.key, JSON.stringify(normalized));
   }
 
   replace(data: StreakData, savedAt = new Date()): StreakData {
@@ -100,26 +96,27 @@ export class LocalStreakStorageAdapter {
       updatedAt: savedAt.toISOString()
     };
 
-    try {
-      this.storage.setItem(this.key, JSON.stringify(normalized));
-    } catch {
-      // Keep import/reset flows non-fatal when browser persistence is denied.
-    }
+    this.storage.setItem(this.key, JSON.stringify(normalized));
 
     return normalized;
   }
 
   reset(): void {
-    try {
-      this.storage.removeItem(this.key);
-    } catch {
-      // Reset should remain non-fatal in browsers that block storage access.
-    }
+    this.storage.removeItem(this.key);
   }
 
   export(data: StreakData, exportedAt = new Date()): StreakExportEnvelope {
     return createExportEnvelope(parseStreakData(data), exportedAt);
   }
+}
+
+export function isQuotaExceededError(err: unknown): boolean {
+  return (
+    err instanceof Error &&
+    (err.name === "QuotaExceededError" ||
+      err.name === "NS_ERROR_DOM_QUOTA_REACHED" ||
+      ("code" in err && (err.code === 22 || err.code === 1014)))
+  );
 }
 
 export function validateImportText(input: string): ImportValidationResult {
