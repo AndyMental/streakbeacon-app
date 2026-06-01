@@ -55,6 +55,14 @@ export function assertStorageWritable(
   }
 }
 
+export function isQuotaExceededError(err: unknown): boolean {
+  return (
+    err instanceof DOMException &&
+    (err.name === "QuotaExceededError" ||
+      err.name === "NS_ERROR_DOM_QUOTA_REACHED")
+  );
+}
+
 export class LocalStreakStorageAdapter {
   constructor(
     private readonly storage: KeyValueStorage,
@@ -89,7 +97,10 @@ export class LocalStreakStorageAdapter {
 
     try {
       this.storage.setItem(this.key, JSON.stringify(normalized));
-    } catch {
+    } catch (error) {
+      if (isQuotaExceededError(error)) {
+        throw error;
+      }
       // Keep app-layer state changes usable when browser persistence is denied.
     }
   }
@@ -102,7 +113,10 @@ export class LocalStreakStorageAdapter {
 
     try {
       this.storage.setItem(this.key, JSON.stringify(normalized));
-    } catch {
+    } catch (error) {
+      if (isQuotaExceededError(error)) {
+        throw error;
+      }
       // Keep import/reset flows non-fatal when browser persistence is denied.
     }
 

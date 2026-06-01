@@ -34,6 +34,7 @@ import {
 } from "@/lib/streaks/model";
 import {
   assertStorageWritable,
+  isQuotaExceededError,
   LocalStreakStorageAdapter,
   STREAK_DATA_CHANGED_EVENT,
   validateImportText,
@@ -41,13 +42,17 @@ import {
 } from "@/lib/streaks/storage";
 import { StreakStore } from "@/lib/streaks/store";
 
-function createBrowserStore() {
+function createBrowserStore(onError?: (err: unknown) => void) {
   assertStorageWritable(window.localStorage);
-  return new StreakStore(new LocalStreakStorageAdapter(window.localStorage));
+  return new StreakStore(new LocalStreakStorageAdapter(window.localStorage), {
+    onError
+  });
 }
 
 const STORAGE_ERROR_MESSAGE =
   "Browser storage is unavailable. Settings and import changes cannot be saved right now.";
+const QUOTA_ERROR_MESSAGE =
+  "Browser storage is full. Settings or import could not be saved. Try clearing local data first.";
 
 export function SettingsPanel() {
   const importInputRef = useRef<HTMLInputElement>(null);
@@ -62,13 +67,21 @@ export function SettingsPanel() {
   const [pasteValue, setPasteValue] = useState("");
   const [isPasteOpen, setIsPasteOpen] = useState(false);
 
+  const handleStorageError = (error: unknown) => {
+    if (isQuotaExceededError(error)) {
+      setStorageError(QUOTA_ERROR_MESSAGE);
+    } else {
+      setStorageError(STORAGE_ERROR_MESSAGE);
+    }
+  };
+
   const store = useMemo(() => {
     if (typeof window === "undefined") {
       return null;
     }
 
     try {
-      return createBrowserStore();
+      return createBrowserStore(handleStorageError);
     } catch {
       return null;
     }
@@ -87,7 +100,9 @@ export function SettingsPanel() {
       }
 
       if (!store) {
-        setStorageError(STORAGE_ERROR_MESSAGE);
+        if (!storageError) {
+          setStorageError(STORAGE_ERROR_MESSAGE);
+        }
         setIsReady(true);
         return;
       }
@@ -95,8 +110,8 @@ export function SettingsPanel() {
       try {
         setData(store.getSnapshot());
         setStorageError(null);
-      } catch {
-        setStorageError(STORAGE_ERROR_MESSAGE);
+      } catch (error) {
+        handleStorageError(error);
       } finally {
         setIsReady(true);
       }
@@ -109,7 +124,7 @@ export function SettingsPanel() {
       cancelled = true;
       window.removeEventListener(STREAK_DATA_CHANGED_EVENT, loadSnapshot);
     };
-  }, [store]);
+  }, [store, storageError]);
 
   function updateTheme(theme: ThemePreference) {
     if (!store) {
@@ -122,8 +137,8 @@ export function SettingsPanel() {
       setData(next);
       setStorageError(null);
       setMessage("Theme preference saved.");
-    } catch {
-      setStorageError(STORAGE_ERROR_MESSAGE);
+    } catch (error) {
+      handleStorageError(error);
     }
   }
 
@@ -197,8 +212,8 @@ export function SettingsPanel() {
       setStorageError(null);
       setMessage("Import complete. Local data was replaced.");
       window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
-    } catch {
-      setStorageError(STORAGE_ERROR_MESSAGE);
+    } catch (error) {
+      handleStorageError(error);
     }
 
     if (importInputRef.current) {
@@ -231,8 +246,8 @@ export function SettingsPanel() {
       setStorageError(null);
       setMessage("Local data cleared.");
       dispatchStreakDataReset(window);
-    } catch {
-      setStorageError(STORAGE_ERROR_MESSAGE);
+    } catch (error) {
+      handleStorageError(error);
     }
   }
 

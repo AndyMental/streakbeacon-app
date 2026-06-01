@@ -50,6 +50,7 @@ import {
 } from "@/lib/streaks/grid";
 import {
   assertStorageWritable,
+  isQuotaExceededError,
   LocalStreakStorageAdapter,
   STREAK_DATA_CHANGED_EVENT
 } from "@/lib/streaks/storage";
@@ -58,10 +59,14 @@ import { StreakStore } from "@/lib/streaks/store";
 const DEMO_AS_OF = new Date("2026-05-27T12:00:00.000Z");
 const STORAGE_ERROR_MESSAGE =
   "Local streak data is unavailable in this browser. You can still review the page, but completion changes will not be saved.";
+const QUOTA_ERROR_MESSAGE =
+  "Browser storage is full. Some changes could not be saved. Try deleting old habits or clearing other browser data.";
 
-function createBrowserStore() {
+function createBrowserStore(onError?: (err: unknown) => void) {
   assertStorageWritable(window.localStorage);
-  return new StreakStore(new LocalStreakStorageAdapter(window.localStorage));
+  return new StreakStore(new LocalStreakStorageAdapter(window.localStorage), {
+    onError
+  });
 }
 
 export function StreakDashboard() {
@@ -81,6 +86,17 @@ export function StreakDashboard() {
   const selectedCompletion = getNextSelectedCompletion(model);
   const hasItems = data.items.length > 0;
 
+  const handleStorageError = (error: unknown) => {
+    if (isQuotaExceededError(error)) {
+      setStorageError(QUOTA_ERROR_MESSAGE);
+      toast.error("Storage full", {
+        description: "Your browser storage quota has been exceeded."
+      });
+    } else {
+      setStorageError(STORAGE_ERROR_MESSAGE);
+    }
+  };
+
   useEffect(() => {
     let cancelled = false;
 
@@ -98,8 +114,8 @@ export function StreakDashboard() {
             : stored.items[0]?.id ?? null
         );
         setStorageError(null);
-      } catch {
-        setStorageError(STORAGE_ERROR_MESSAGE);
+      } catch (error) {
+        handleStorageError(error);
       }
 
       setIsReady(true);
@@ -133,10 +149,12 @@ export function StreakDashboard() {
     );
 
     try {
-      createBrowserStore().replaceData(next, now);
+      createBrowserStore(handleStorageError).replaceData(next, now);
       setStorageError(null);
-    } catch {
-      setStorageError(STORAGE_ERROR_MESSAGE);
+    } catch (error) {
+      if (!isQuotaExceededError(error)) {
+        setStorageError(STORAGE_ERROR_MESSAGE);
+      }
       return;
     }
 
@@ -161,10 +179,12 @@ export function StreakDashboard() {
 
     let next: StreakData;
     try {
-      next = createBrowserStore().deleteItem(removedId, now);
+      next = createBrowserStore(handleStorageError).deleteItem(removedId, now);
       setStorageError(null);
-    } catch {
-      setStorageError(STORAGE_ERROR_MESSAGE);
+    } catch (error) {
+      if (!isQuotaExceededError(error)) {
+        setStorageError(STORAGE_ERROR_MESSAGE);
+      }
       return;
     }
 
@@ -194,7 +214,7 @@ export function StreakDashboard() {
     const id = createItemId(name);
 
     try {
-      const next = createBrowserStore().createItem({
+      const next = createBrowserStore(handleStorageError).createItem({
         id,
         name,
         now
@@ -214,7 +234,9 @@ export function StreakDashboard() {
         error instanceof Error ? error.message : "Unable to add this habit."
       );
 
-      if (isStorageError(error)) {
+      if (isQuotaExceededError(error)) {
+        setStorageError(QUOTA_ERROR_MESSAGE);
+      } else if (isStorageError(error)) {
         setStorageError(STORAGE_ERROR_MESSAGE);
       }
     }

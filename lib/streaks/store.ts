@@ -14,7 +14,10 @@ import {
 import { LocalStreakStorageAdapter } from "./storage";
 
 export class StreakStore {
-  constructor(private readonly storage: LocalStreakStorageAdapter) {}
+  constructor(
+    private readonly storage: LocalStreakStorageAdapter,
+    private readonly options?: { onError?: (err: unknown) => void }
+  ) {}
 
   getSnapshot(): StreakData {
     return this.storage.load();
@@ -55,7 +58,12 @@ export class StreakStore {
   }
 
   replaceData(data: StreakData, now = new Date()): StreakData {
-    return this.storage.replace(data, now);
+    try {
+      return this.storage.replace(data, now);
+    } catch (error) {
+      this.options?.onError?.(error);
+      throw error;
+    }
   }
 
   mergeData(data: StreakData, now = new Date()): StreakData {
@@ -67,7 +75,12 @@ export class StreakStore {
   }
 
   private commit(data: StreakData, savedAt: Date): StreakData {
-    this.storage.save(data, savedAt);
+    try {
+      this.storage.save(data, savedAt);
+    } catch (error) {
+      this.options?.onError?.(error);
+      throw error;
+    }
     return data;
   }
 }
