@@ -153,6 +153,40 @@ export function renameStreakItem(
   );
 }
 
+export function archiveStreakItem(
+  data: StreakData,
+  id: string,
+  now = new Date()
+): StreakData {
+  return updateItem(
+    data,
+    id,
+    (item) => ({
+      ...item,
+      archivedAt: now.toISOString(),
+      updatedAt: now.toISOString()
+    }),
+    now
+  );
+}
+
+export function unarchiveStreakItem(
+  data: StreakData,
+  id: string,
+  now = new Date()
+): StreakData {
+  return updateItem(
+    data,
+    id,
+    (item) => ({
+      ...item,
+      archivedAt: null,
+      updatedAt: now.toISOString()
+    }),
+    now
+  );
+}
+
 export function deleteStreakItem(
   data: StreakData,
   id: string,

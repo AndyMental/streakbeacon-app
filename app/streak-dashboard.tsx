@@ -2,6 +2,7 @@
 
 import {
   AlertCircle,
+  Archive,
   CalendarDays,
   CheckCircle2,
   Flame,
@@ -96,11 +97,12 @@ export function StreakDashboard() {
       try {
         const stored = createBrowserStore().getSnapshot();
         setData(stored);
-        setSelectedItemId((current) =>
-          current && stored.items.some((item) => item.id === current)
+        setSelectedItemId((current) => {
+          const activeItems = stored.items.filter((item) => !item.archivedAt);
+          return current && activeItems.some((item) => item.id === current)
             ? current
-            : stored.items[0]?.id ?? null
-        );
+            : activeItems[0]?.id ?? null;
+        });
         setStorageError(null);
       } catch {
         setStorageError(STORAGE_ERROR_MESSAGE);
@@ -195,6 +197,36 @@ export function StreakDashboard() {
     }
   }
 
+  function archiveSelectedItem() {
+    if (!model.activeItem) {
+      return;
+    }
+
+    const archivedId = model.activeItem.id;
+    const archivedName = model.activeItem.name;
+    const now = new Date();
+
+    let next: StreakData;
+    try {
+      next = createBrowserStore().archiveItem(archivedId, now);
+      setStorageError(null);
+    } catch {
+      setStorageError(STORAGE_ERROR_MESSAGE);
+      return;
+    }
+
+    const remaining = next.items.filter((item) => !item.archivedAt);
+    const fallbackId = remaining[0]?.id ?? null;
+
+    setData(next);
+    setSelectedItemId(fallbackId);
+    setSelectedDay(null);
+    window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
+    toast.success("Habit archived", {
+      description: `${archivedName} was moved to archives.`
+    });
+  }
+
   function deleteSelectedItem() {
     if (!model.activeItem) {
       return;
@@ -286,9 +318,11 @@ export function StreakDashboard() {
               role="group"
               aria-label="Streak selector"
             >
-              {data.items.map((item) => (
-                <Button
-                  key={item.id}
+              {data.items
+                .filter((item) => !item.archivedAt)
+                .map((item) => (
+                  <Button
+                    key={item.id}
                   type="button"
                   data-testid={`streak-item-${item.id}`}
                   variant={
@@ -361,6 +395,39 @@ export function StreakDashboard() {
                           </Button>
                         </AlertDialogFooter>
                       </form>
+                    </AlertDialogContent>
+                  </AlertDialog>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        aria-label={`Archive ${model.activeItem.name}`}
+                        disabled={!isReady || Boolean(storageError)}
+                      >
+                        <Archive className="h-4 w-4" aria-hidden="true" />
+                        Archive
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          Archive {model.activeItem.name}?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This hides the habit from your active grid. You can
+                          restore it later from Settings without losing any
+                          history.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={archiveSelectedItem}>
+                          Confirm archive
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
 

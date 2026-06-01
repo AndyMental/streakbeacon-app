@@ -1,9 +1,11 @@
 import {
   addStreakItem,
+  archiveStreakItem,
   deleteStreakItem,
   mergeStreaks,
   renameStreakItem,
   setDayCompletion,
+  unarchiveStreakItem,
   updatePreferences,
   type CreateStreakInput,
   type IsoDate,
@@ -26,6 +28,14 @@ export class StreakStore {
 
   renameItem(input: RenameStreakInput): StreakData {
     return this.commit(renameStreakItem(this.storage.load(), input), input.now);
+  }
+
+  archiveItem(id: string, now = new Date()): StreakData {
+    return this.commit(archiveStreakItem(this.storage.load(), id, now), now);
+  }
+
+  unarchiveItem(id: string, now = new Date()): StreakData {
+    return this.commit(unarchiveStreakItem(this.storage.load(), id, now), now);
   }
 
   deleteItem(id: string, now = new Date()): StreakData {
