@@ -25,7 +25,7 @@ describe("Parser Hardening Regression", () => {
   it("does not archive legacy items that are missing the archivedAt field", () => {
     const storage = new MemoryStorage();
     const adapter = new LocalStreakStorageAdapter(storage);
-    
+
     // Legacy data missing schemaVersion and archivedAt
     const legacyData = {
       items: [
@@ -54,7 +54,7 @@ describe("Parser Hardening Regression", () => {
   it("recovers partially from malformed items and missing IDs in lenient mode", () => {
     const storage = new MemoryStorage();
     const adapter = new LocalStreakStorageAdapter(storage);
-    
+
     const messyData = {
       items: [
         { name: "Missing ID", order: 0 }, // Missing ID
@@ -71,13 +71,13 @@ describe("Parser Hardening Regression", () => {
     storage.setItem(STREAK_STORAGE_KEY, JSON.stringify(messyData));
 
     const loaded = adapter.load();
-    
+
     assert.equal(loaded.items.length, 2, "Should recover 2 items");
     assert.ok(loaded.items.find(i => i.name === "Missing ID"), "Should recover item with missing ID");
     assert.ok(loaded.items.find(i => i.id === "valid"), "Should recover valid item");
-    
+
     assert.ok(!Number.isNaN(Date.parse(loaded.createdAt)), "Should fall back to a valid createdAt date");
-    
+
     assert.ok(loaded.completions["valid"]["2026-05-27"], "Should keep completion for valid item");
     assert.ok(!loaded.completions["unknown"], "Should skip unknown item completions");
   });
@@ -85,7 +85,7 @@ describe("Parser Hardening Regression", () => {
   it("deduplicates items by ID in lenient mode", () => {
     const storage = new MemoryStorage();
     const adapter = new LocalStreakStorageAdapter(storage);
-    
+
     const duplicateData = {
       items: [
         { id: "dup", name: "First", order: 0 },
@@ -103,7 +103,7 @@ describe("Parser Hardening Regression", () => {
   it("does not archive legacy items that have malformed archivedAt values in lenient mode", () => {
     const storage = new MemoryStorage();
     const adapter = new LocalStreakStorageAdapter(storage);
-    
+
     const legacyData = {
       items: [
         {
