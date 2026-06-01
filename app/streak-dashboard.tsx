@@ -431,13 +431,13 @@ export function StreakDashboard() {
         <SummaryCard
           label="Current"
           value={model.currentStreak}
-          suffix="days"
+          suffix={model.currentStreak === 1 ? "day" : "days"}
           icon={Flame}
         />
         <SummaryCard
           label="Longest"
           value={model.longestStreak}
-          suffix="days"
+          suffix={model.longestStreak === 1 ? "day" : "days"}
           icon={Trophy}
         />
         <SummaryCard
