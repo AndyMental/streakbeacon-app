@@ -44,17 +44,36 @@ export function buildStreakGridModel(
   const activeItems = data.items
     .filter((item) => !item.archivedAt)
     .sort((a, b) => a.order - b.order);
-  const activeItem =
-    activeItems.find((item) => item.id === selectedItemId) ??
-    activeItems[0] ??
-    null;
+
+  let activeItem: StreakItem | null = null;
+  let completions: Record<IsoDate, Completion> = {};
+
+  if (selectedItemId === "all" || selectedItemId === null) {
+    activeItem = null;
+    // Aggregate completions from all active items
+    for (const item of activeItems) {
+      const itemCompletions = data.completions[item.id] ?? {};
+      for (const [day, completion] of Object.entries(itemCompletions)) {
+        const isoDay = day as IsoDate;
+        if (!completions[isoDay]) {
+          completions[isoDay] = completion;
+        }
+      }
+    }
+  } else {
+    activeItem =
+      activeItems.find((item) => item.id === selectedItemId) ??
+      activeItems[0] ??
+      null;
+    completions = activeItem ? data.completions[activeItem.id] ?? {} : {};
+  }
+
   const days = buildGridDays(
     data,
-    activeItem?.id ?? null,
+    (selectedItemId === "all" || selectedItemId === null) ? null : activeItem?.id ?? null,
     selectedDay ?? formatIsoDay(asOf),
     asOf
   );
-  const completions = activeItem ? data.completions[activeItem.id] ?? {} : {};
   const completedDays = Object.keys(completions).length;
   const selected =
     days.find((day) => day.day === selectedDay) ??
@@ -70,10 +89,10 @@ export function buildStreakGridModel(
         : Math.round(
             (days.filter((day) => day.isComplete).length / days.length) * 100
           ),
-    currentStreak: activeItem
+    currentStreak: completions
       ? calculateCurrentStreak(completions, formatIsoDay(asOf))
       : 0,
-    longestStreak: activeItem ? calculateLongestStreak(completions) : 0,
+    longestStreak: completions ? calculateLongestStreak(completions) : 0,
     selectedDay: selected,
     totalDays: days.length,
     weeks: chunkWeeks(days)
@@ -83,6 +102,7 @@ export function buildStreakGridModel(
 export function getNextSelectedCompletion(
   model: StreakGridModel
 ): boolean | null {
+  // Toggle is only available for single-habit view
   if (!model.activeItem) {
     return null;
   }
@@ -102,13 +122,29 @@ function buildGridDays(
   );
   const end = parseIsoDay(formatIsoDay(asOf));
   const start = addDays(end, -(windowDays - 1));
-  const completions = itemId ? data.completions[itemId] ?? {} : {};
+
+  const activeItems = data.items.filter((item) => !item.archivedAt);
+  const totalActiveItems = activeItems.length;
+
   const days: GridDay[] = [];
 
   for (let index = 0; index < windowDays; index += 1) {
     const date = addDays(start, index);
     const day = formatIsoDay(date);
-    const completion = completions[day];
+
+    let completionsCount = 0;
+    if (itemId) {
+      if (data.completions[itemId]?.[day]) {
+        completionsCount = 1;
+      }
+    } else {
+      // Cumulative view
+      for (const item of activeItems) {
+        if (data.completions[item.id]?.[day]) {
+          completionsCount += 1;
+        }
+      }
+    }
 
     days.push({
       day,
@@ -118,8 +154,8 @@ function buildGridDays(
         timeZone: "UTC",
         weekday: "short"
       }),
-      isComplete: Boolean(completion),
-      intensity: getIntensity(completion, index),
+      isComplete: completionsCount > 0,
+      intensity: getIntensity(completionsCount, itemId ? 1 : totalActiveItems),
       isSelected: day === selectedDay
     });
   }
@@ -128,14 +164,32 @@ function buildGridDays(
 }
 
 function getIntensity(
-  completion: Completion | undefined,
-  index: number
+  completionsCount: number,
+  totalActiveItems: number
 ): 0 | 1 | 2 | 3 | 4 {
-  if (!completion) {
+  if (completionsCount === 0) {
     return 0;
   }
 
-  return ((index % 4) + 1) as 1 | 2 | 3 | 4;
+  if (totalActiveItems <= 1) {
+    return 1;
+  }
+
+  const ratio = completionsCount / totalActiveItems;
+
+  if (ratio <= 0.25) {
+    return 1;
+  }
+
+  if (ratio <= 0.5) {
+    return 2;
+  }
+
+  if (ratio <= 0.75) {
+    return 3;
+  }
+
+  return 4;
 }
 
 function chunkWeeks(days: GridDay[]): GridWeek[] {
