@@ -1,8 +1,9 @@
 "use client";
 
-import { AlertCircle, CheckCircle2, ClipboardPaste, Download, FileJson, Info, Loader2, Monitor, Moon, RotateCcw, Sun, Upload } from "lucide-react";
+import { AlertCircle, ClipboardPaste, Download, FileJson, Info, Loader2, Monitor, Moon, RotateCcw, Sun, Upload } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -56,8 +57,6 @@ export function SettingsPanel() {
   const [isReady, setIsReady] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [preview, setPreview] = useState<ImportPreview | null>(null);
-  const [importError, setImportError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
   const [storageError, setStorageError] = useState<string | null>(null);
   const [pasteValue, setPasteValue] = useState("");
   const [isPasteOpen, setIsPasteOpen] = useState(false);
@@ -121,7 +120,7 @@ export function SettingsPanel() {
       const next = store.updatePreferences({ theme });
       setData(next);
       setStorageError(null);
-      setMessage("Theme preference saved.");
+      toast.success("Theme preference saved.");
     } catch {
       setStorageError(STORAGE_ERROR_MESSAGE);
     }
@@ -143,7 +142,7 @@ export function SettingsPanel() {
     link.click();
     link.remove();
     URL.revokeObjectURL(url);
-    setMessage("Export downloaded.");
+    toast.success("Export downloaded.");
   }
 
   async function handleImportFile(file: File | undefined) {
@@ -152,14 +151,12 @@ export function SettingsPanel() {
     }
 
     setIsImporting(true);
-    setImportError(null);
-    setMessage(null);
 
     try {
       const text = await file.text();
       processImportText(text);
     } catch {
-      setImportError("Failed to read the selected file.");
+      toast.error("Failed to read the selected file.");
     } finally {
       setIsImporting(false);
     }
@@ -176,11 +173,10 @@ export function SettingsPanel() {
 
     if (!result.ok) {
       setPreview(null);
-      setImportError(result.errors.join(" "));
+      toast.error(result.errors.join(" "));
       return;
     }
 
-    setImportError(null);
     setPreview(result.preview);
   }
 
@@ -195,7 +191,7 @@ export function SettingsPanel() {
       setData(next);
       setPreview(null);
       setStorageError(null);
-      setMessage("Import complete. Local data was replaced.");
+      toast.success("Import complete. Local data was replaced.");
       window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
     } catch {
       setStorageError(STORAGE_ERROR_MESSAGE);
@@ -208,8 +204,7 @@ export function SettingsPanel() {
 
   function cancelImport() {
     setPreview(null);
-    setImportError(null);
-    setMessage("Import cancelled.");
+    toast.info("Import cancelled.");
 
     if (importInputRef.current) {
       importInputRef.current.value = "";
@@ -227,9 +222,8 @@ export function SettingsPanel() {
       setData(next);
       setTheme(next.preferences.theme);
       setPreview(null);
-      setImportError(null);
       setStorageError(null);
-      setMessage("Local data cleared.");
+      toast.success("Local data cleared.");
       dispatchStreakDataReset(window);
     } catch {
       setStorageError(STORAGE_ERROR_MESSAGE);
@@ -472,24 +466,6 @@ export function SettingsPanel() {
               </div>
             </Alert>
           ) : null}
-
-          {importError ? (
-            <Alert variant="destructive" className="relative mt-4 pl-10">
-              <AlertCircle className="absolute left-4 top-4 h-4 w-4" />
-              <AlertTitle>Import Error</AlertTitle>
-              <AlertDescription className="mt-0">
-                {importError}
-              </AlertDescription>
-            </Alert>
-          ) : null}
-          <p
-            role="status"
-            aria-live="polite"
-            className="mt-4 flex min-h-5 items-center gap-2 text-sm text-muted-foreground font-medium"
-          >
-            {message ? <CheckCircle2 className="h-4 w-4 text-primary" aria-hidden="true" /> : null}
-            {message ?? ""}
-          </p>
         </CardContent>
       </Card>
     </section>
