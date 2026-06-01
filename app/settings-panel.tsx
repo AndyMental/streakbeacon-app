@@ -75,8 +75,9 @@ export function SettingsPanel() {
   }, []);
 
   useEffect(() => {
+    if (!isReady) return;
     setTheme(data.preferences.theme);
-  }, [data.preferences.theme, setTheme]);
+  }, [data.preferences.theme, setTheme, isReady]);
 
   useEffect(() => {
     let cancelled = false;
@@ -242,7 +243,6 @@ export function SettingsPanel() {
     try {
       const next = confirmResetAllData(store);
       setData(next);
-      setTheme(next.preferences.theme);
       setPreview(null);
       setImportError(null);
       setStorageError(null);
