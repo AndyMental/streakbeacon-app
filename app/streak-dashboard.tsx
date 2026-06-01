@@ -6,6 +6,7 @@ import {
   CheckCircle2,
   Flame,
   Info,
+  Pencil,
   Plus,
   Trash2,
   Trophy
@@ -74,6 +75,9 @@ export function StreakDashboard() {
   const [selectedDay, setSelectedDay] = useState<IsoDate | null>(null);
   const [newItemName, setNewItemName] = useState("");
   const [createError, setCreateError] = useState<string | null>(null);
+  const [isRenameOpen, setIsRenameOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
+  const [renameError, setRenameError] = useState<string | null>(null);
   const model = useMemo(
     () => buildStreakGridModel(data, selectedItemId, selectedDay, DEMO_AS_OF),
     [data, selectedDay, selectedItemId]
@@ -148,6 +152,47 @@ export function StreakDashboard() {
         description: `${model.activeItem.name} - ${model.selectedDay.label}`
       }
     );
+  }
+
+  function renameSelectedItem(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!model.activeItem) {
+      return;
+    }
+
+    const name = renameValue.trim();
+    if (!name) {
+      setRenameError("Habit name is required.");
+      return;
+    }
+
+    const id = model.activeItem.id;
+    const now = new Date();
+
+    try {
+      const next = createBrowserStore().renameItem({
+        id,
+        name,
+        now
+      });
+
+      setData(next);
+      setStorageError(null);
+      setIsRenameOpen(false);
+      setRenameError(null);
+      window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
+      toast.success("Habit renamed", {
+        description: `New name: ${name}`
+      });
+    } catch (error) {
+      setRenameError(
+        error instanceof Error ? error.message : "Unable to rename this habit."
+      );
+
+      if (isStorageError(error)) {
+        setStorageError(STORAGE_ERROR_MESSAGE);
+      }
+    }
   }
 
   function deleteSelectedItem() {
@@ -245,6 +290,7 @@ export function StreakDashboard() {
                 <Button
                   key={item.id}
                   type="button"
+                  data-testid={`streak-item-${item.id}`}
                   variant={
                     item.id === model.activeItem?.id ? "default" : "outline"
                   }
@@ -256,40 +302,103 @@ export function StreakDashboard() {
                 </Button>
               ))}
               {model.activeItem ? (
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      aria-label={`Delete ${model.activeItem.name}`}
-                      disabled={!isReady || Boolean(storageError)}
-                    >
-                      <Trash2 className="h-4 w-4" aria-hidden="true" />
-                      Delete
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        Delete {model.activeItem.name}?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This removes the habit and all of its completion
-                        history from this browser. Other habits stay intact.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        className="bg-destructive text-destructive-foreground hover:opacity-90"
-                        onClick={deleteSelectedItem}
+                <div className="flex items-center gap-2">
+                  <AlertDialog open={isRenameOpen} onOpenChange={setIsRenameOpen}>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        data-testid="dashboard-rename-trigger"
+                        aria-label={`Rename ${model.activeItem.name}`}
+                        disabled={!isReady || Boolean(storageError)}
+                        onClick={() => {
+                          setRenameValue(model.activeItem?.name ?? "");
+                          setRenameError(null);
+                          setIsRenameOpen(true);
+                        }}
                       >
-                        Confirm delete
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                        <Pencil className="h-4 w-4" aria-hidden="true" />
+                        Rename
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <form onSubmit={renameSelectedItem}>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Rename habit</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Change the name of this habit. History will be
+                            preserved.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid gap-2">
+                            <Label htmlFor="rename-streak-name">New name</Label>
+                            <Input
+                              id="rename-streak-name"
+                              data-testid="dashboard-rename-input"
+                              value={renameValue}
+                              onChange={(e) => {
+                                setRenameValue(e.target.value);
+                                setRenameError(null);
+                              }}
+                              placeholder="New habit name"
+                              autoFocus
+                            />
+                            {renameError && (
+                              <p className="text-sm text-destructive">
+                                {renameError}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel type="button">
+                            Cancel
+                          </AlertDialogCancel>
+                          <Button type="submit" data-testid="dashboard-rename-save">
+                            Save changes
+                          </Button>
+                        </AlertDialogFooter>
+                      </form>
+                    </AlertDialogContent>
+                  </AlertDialog>
+
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        aria-label={`Delete ${model.activeItem.name}`}
+                        disabled={!isReady || Boolean(storageError)}
+                      >
+                        <Trash2 className="h-4 w-4" aria-hidden="true" />
+                        Delete
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>
+                          Delete {model.activeItem.name}?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This removes the habit and all of its completion
+                          history from this browser. Other habits stay intact.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction
+                          className="bg-destructive text-destructive-foreground hover:opacity-90"
+                          onClick={deleteSelectedItem}
+                        >
+                          Confirm delete
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
               ) : null}
             </div>
           </div>
