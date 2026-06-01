@@ -12,7 +12,7 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "bash -O globstar -O nullglob -c 'node --import tsx --test lib/**/*.test.ts app/*.test.tsx hooks/**/*.test.tsx'",
+    "test": "bash -O globstar -O nullglob -c 'node --import tsx --test lib/**/*.test.ts app/*.test.tsx components/**/*.test.tsx hooks/**/*.test.tsx'",
     "test:contract": "node --import tsx --test lib/contracts/*.test.ts",
     "preview:preflight": "npm run format:check && npm run lint && npm run test && npm run build"
   },
