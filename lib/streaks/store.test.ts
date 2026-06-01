@@ -5,7 +5,7 @@ import {
   createEmptyStreakData,
   setDayCompletion,
 } from "./model";
-import { LocalStreakStorageAdapter } from "./storage";
+import { LocalStreakStorageAdapter, STREAK_STORAGE_KEY } from "./storage";
 import { StreakStore } from "./store";
 
 class MemoryStorage {
@@ -24,7 +24,61 @@ class MemoryStorage {
   }
 }
 
+class WriteThrowingStorage extends MemoryStorage {
+  setItem(): void {
+    throw new Error("Storage quota exceeded.");
+  }
+}
+
 describe("StreakStore", () => {
+  it("hydrates an empty snapshot when local storage has no persisted state", () => {
+    const storage = new MemoryStorage();
+    const store = new StreakStore(new LocalStreakStorageAdapter(storage));
+    const snapshot = store.getSnapshot();
+
+    assert.deepEqual(snapshot.items, []);
+    assert.deepEqual(snapshot.completions, {});
+    assert.equal(snapshot.preferences.theme, "system");
+    assert.equal(storage.getItem(STREAK_STORAGE_KEY), null);
+  });
+
+  it("hydrates an empty snapshot when persisted state is malformed or corrupt", () => {
+    const storage = new MemoryStorage();
+    const store = new StreakStore(new LocalStreakStorageAdapter(storage));
+
+    storage.setItem(STREAK_STORAGE_KEY, "{not json");
+    assert.deepEqual(store.getSnapshot().items, []);
+
+    storage.setItem(
+      STREAK_STORAGE_KEY,
+      JSON.stringify({
+        ...createEmptyStreakData(),
+        items: [{ id: "missing-fields" }],
+      })
+    );
+    const recovered = store.getSnapshot();
+
+    assert.deepEqual(recovered.items, []);
+    assert.deepEqual(recovered.completions, {});
+    assert.equal(recovered.preferences.theme, "system");
+  });
+
+  it("keeps write failures non-fatal and returns the app-layer update", () => {
+    const storage = new WriteThrowingStorage();
+    const store = new StreakStore(new LocalStreakStorageAdapter(storage));
+    const now = new Date("2026-05-27T12:00:00.000Z");
+
+    let updated = createEmptyStreakData(now);
+    assert.doesNotThrow(() => {
+      updated = store.createItem({ id: "hydrate", name: "Hydrate", now });
+    });
+
+    assert.equal(updated.items[0]?.id, "hydrate");
+    assert.equal(updated.completions.hydrate !== undefined, true);
+    assert.equal(storage.getItem(STREAK_STORAGE_KEY), null);
+    assert.deepEqual(store.getSnapshot().items, []);
+  });
+
   it("persists app-layer operations through the storage adapter", () => {
     const storage = new MemoryStorage();
     const store = new StreakStore(new LocalStreakStorageAdapter(storage));
