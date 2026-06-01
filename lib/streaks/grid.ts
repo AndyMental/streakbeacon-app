@@ -129,13 +129,13 @@ function buildGridDays(
 
 function getIntensity(
   completion: Completion | undefined,
-  index: number
+  _index: number
 ): 0 | 1 | 2 | 3 | 4 {
   if (!completion) {
     return 0;
   }
 
-  return ((index % 4) + 1) as 1 | 2 | 3 | 4;
+  return ((_index % 4) + 1) as 1 | 2 | 3 | 4;
 }
 
 function chunkWeeks(days: GridDay[]): GridWeek[] {

@@ -4,12 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SettingsPanel } from "./settings-panel";
 import { StreakDashboard } from "./streak-dashboard";
 import { ThemeToggle } from "./theme-toggle";
-
-const habits = [
-  { name: "Morning walk", streak: "12 days", status: "Done today" },
-  { name: "Ship one useful change", streak: "5 days", status: "Queued" },
-  { name: "Evening shutdown", streak: "8 days", status: "Due tonight" }
-];
+import { TodayCard } from "./today-card";
 
 const signals = [
   { label: "Export format", value: "v1", icon: ShieldCheck },
@@ -69,32 +64,7 @@ export default function Home() {
       <SettingsPanel />
 
       <section className="grid gap-6 lg:grid-cols-[1.4fr_0.8fr]">
-        <Card>
-          <CardHeader className="border-b py-3">
-            <CardTitle>Today</CardTitle>
-          </CardHeader>
-          <div className="divide-y">
-            {habits.map((habit) => (
-              <div
-                key={habit.name}
-                className="flex flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="min-w-0">
-                  <p className="truncate font-medium">{habit.name}</p>
-                  <p className="truncate text-sm text-muted-foreground">
-                    {habit.streak}
-                  </p>
-                </div>
-                <Badge
-                  variant="secondary"
-                  className="max-w-full shrink-0 truncate sm:max-w-[12rem]"
-                >
-                  {habit.status}
-                </Badge>
-              </div>
-            ))}
-          </div>
-        </Card>
+        <TodayCard />
 
         <Card>
           <CardHeader>
