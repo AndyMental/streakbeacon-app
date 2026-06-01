@@ -37,10 +37,10 @@ const AlertTitle = React.forwardRef<
 AlertTitle.displayName = "AlertTitle";
 
 const AlertDescription = React.forwardRef<
-  HTMLParagraphElement,
-  React.HTMLAttributes<HTMLParagraphElement>
+  HTMLDivElement,
+  React.HTMLAttributes<HTMLDivElement>
 >(({ className, ...props }, ref) => (
-  <p ref={ref} className={cn("mt-2 leading-6", className)} {...props} />
+  <div ref={ref} className={cn("mt-2 leading-6", className)} {...props} />
 ));
 AlertDescription.displayName = "AlertDescription";
 

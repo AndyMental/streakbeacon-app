@@ -49,6 +49,7 @@ import {
   getNextSelectedCompletion,
   type GridDay
 } from "@/lib/streaks/grid";
+import { getExampleData } from "@/lib/streaks/seed";
 import {
   assertStorageWritable,
   LocalStreakStorageAdapter,
@@ -265,6 +266,24 @@ export function StreakDashboard() {
     }
   }
 
+  function seedExamples() {
+    const now = new Date();
+    const exampleData = getExampleData(now);
+
+    try {
+      createBrowserStore().replaceData(exampleData, now);
+      setData(exampleData);
+      setStorageError(null);
+      setSelectedItemId(exampleData.items[0]?.id ?? null);
+      window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
+      toast.success("Example habits added", {
+        description: "You can now explore the dashboard with demo data."
+      });
+    } catch {
+      setStorageError(STORAGE_ERROR_MESSAGE);
+    }
+  }
+
   return (
     <section className="grid gap-6 lg:grid-cols-[1fr_18rem]">
       <Card>
@@ -470,10 +489,21 @@ export function StreakDashboard() {
             <Alert variant="muted" role="status" className="relative mb-4 pl-10">
               <Info className="absolute left-4 top-4 h-4 w-4 text-primary" />
               <AlertTitle>No streaks yet</AlertTitle>
-              <AlertDescription>
-                Add a habit to start filling the local completion grid. Until
-                then, the calendar stays empty and summary metrics remain at
-                zero.
+              <AlertDescription className="flex flex-col items-start gap-3">
+                <span>
+                  Add a habit to start filling the local completion grid. Until
+                  then, the calendar stays empty and summary metrics remain at
+                  zero.
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={seedExamples}
+                  data-testid="dashboard-seed-examples"
+                  disabled={!isReady || Boolean(storageError)}
+                >
+                  Try with Examples
+                </Button>
               </AlertDescription>
             </Alert>
           ) : null}

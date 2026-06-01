@@ -26,6 +26,7 @@ import {
   confirmResetAllData,
   dispatchStreakDataReset
 } from "@/lib/streaks/reset";
+import { getExampleData } from "@/lib/streaks/seed";
 import {
   createExportEnvelope,
   createEmptyStreakData,
@@ -216,6 +217,25 @@ export function SettingsPanel() {
     }
   }
 
+  function seedExamples() {
+    if (!store) {
+      setStorageError(STORAGE_ERROR_MESSAGE);
+      return;
+    }
+
+    try {
+      const now = new Date();
+      const exampleData = getExampleData(now);
+      const next = store.replaceData(exampleData, now);
+      setData(next);
+      setStorageError(null);
+      setMessage("Example data seeded.");
+      window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
+    } catch {
+      setStorageError(STORAGE_ERROR_MESSAGE);
+    }
+  }
+
   function resetLocalData() {
     if (!store) {
       setStorageError(STORAGE_ERROR_MESSAGE);
@@ -398,6 +418,39 @@ export function SettingsPanel() {
                     data-testid="settings-import-paste-confirm"
                   >
                     Preview Import
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="lg"
+                  disabled={isActionDisabled}
+                  data-testid="settings-seed-examples"
+                >
+                  <RotateCcw className="h-4 w-4" aria-hidden="true" />
+                  Try with Examples
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Seed with example data?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This replaces your current local data with a set of demo habits
+                    and completions. Export your current data first if you want to
+                    keep it.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={seedExamples}
+                    data-testid="settings-seed-examples-confirm"
+                  >
+                    Confirm seed examples
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
