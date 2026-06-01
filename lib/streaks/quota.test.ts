@@ -58,7 +58,7 @@ describe("Quota Error Handling", () => {
     assert.strictEqual(isQuotaExceededError({ name: "QuotaExceededError" }), false);
   });
 
-  it("StreakStore reports quota errors through onError and returns current state", () => {
+  it("StreakStore reports quota errors through onError and lastError property", () => {
     let reportedError: unknown = null;
     const adapter = new LocalStreakStorageAdapter(new QuotaExceededStorage());
     const store = new StreakStore(adapter, (err) => {
@@ -66,27 +66,32 @@ describe("Quota Error Handling", () => {
     });
 
     const data = createEmptyStreakData(new Date("2026-05-27T12:00:00.000Z"));
-    
+
     // Test createItem (which calls commit)
     const result = store.createItem({ id: "test", name: "Test", now: new Date() });
-    
+
     assert.ok(isQuotaExceededError(reportedError));
+    assert.ok(isQuotaExceededError(store.lastError));
     assert.strictEqual(result.items.length, 1);
     assert.strictEqual(result.items[0].name, "Test");
 
     // Test replaceData
     reportedError = null;
+    store.lastError = null;
     const replaced = store.replaceData(data);
     assert.ok(isQuotaExceededError(reportedError));
+    assert.ok(isQuotaExceededError(store.lastError));
     assert.strictEqual(replaced.schemaVersion, 1);
 
     // Test reset
     reportedError = null;
+    store.lastError = null;
     store.reset();
     assert.ok(isQuotaExceededError(reportedError));
+    assert.ok(isQuotaExceededError(store.lastError));
   });
 
-  it("StreakStore reports generic errors through onError", () => {
+  it("StreakStore reports generic errors through onError and lastError property", () => {
     let reportedError: unknown = null;
     const adapter = new LocalStreakStorageAdapter(new GenericErrorStorage());
     const store = new StreakStore(adapter, (err) => {
@@ -95,9 +100,11 @@ describe("Quota Error Handling", () => {
 
     store.createItem({ id: "test", name: "Test", now: new Date() });
     assert.ok(reportedError instanceof Error);
-    if (reportedError instanceof Error) {
+    assert.ok(store.lastError instanceof Error);
+    if (reportedError instanceof Error && store.lastError instanceof Error) {
       assert.strictEqual(reportedError.message, "Generic failure");
+      assert.strictEqual(store.lastError.message, "Generic failure");
     }
     assert.strictEqual(isQuotaExceededError(reportedError), false);
-  });
-});
+    assert.strictEqual(isQuotaExceededError(store.lastError), false);
+  });});

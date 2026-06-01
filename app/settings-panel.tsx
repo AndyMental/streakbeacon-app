@@ -139,8 +139,11 @@ export function SettingsPanel() {
 
     const next = store.updatePreferences({ theme });
     setData(next);
-    setStorageError(null);
-    setMessage("Theme preference saved.");
+
+    if (!store.lastError) {
+      setStorageError(null);
+      setMessage("Theme preference saved.");
+    }
   }
 
   function exportData() {
@@ -209,9 +212,12 @@ export function SettingsPanel() {
     const next = store.replaceData(preview.data);
     setData(next);
     setPreview(null);
-    setStorageError(null);
-    setMessage("Import complete. Local data was replaced.");
-    window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
+
+    if (!store.lastError) {
+      setStorageError(null);
+      setMessage("Import complete. Local data was replaced.");
+      window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
+    }
 
     if (importInputRef.current) {
       importInputRef.current.value = "";
@@ -239,9 +245,12 @@ export function SettingsPanel() {
     setTheme(next.preferences.theme);
     setPreview(null);
     setImportError(null);
-    setStorageError(null);
-    setMessage("Local data cleared.");
-    dispatchStreakDataReset(window);
+
+    if (!store.lastError) {
+      setStorageError(null);
+      setMessage("Local data cleared.");
+      dispatchStreakDataReset(window);
+    }
   }
 
   const StatusIcon = resolvedTheme === "dark" ? Moon : Sun;
