@@ -58,6 +58,7 @@ import {
 } from "@/lib/streaks/storage";
 import { StreakStore } from "@/lib/streaks/store";
 import { StreakExportButton } from "@/components/streak-export-button";
+import { WeeklyOverview } from "@/components/weekly-overview";
 import { filterStreakItems } from "@/lib/streaks/filter";
 
 import { useHabitSelection } from "@/hooks/useHabitSelection";
@@ -313,6 +314,7 @@ export function StreakDashboard() {
 
   return (
     <section className="grid gap-6 lg:grid-cols-[1fr_18rem]">
+      <WeeklyOverview data={data} asOf={DEMO_AS_OF} className="lg:col-span-2" />
       <Card>
         <CardHeader className="border-b">
           <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
