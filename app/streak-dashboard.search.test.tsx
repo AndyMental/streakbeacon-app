@@ -139,6 +139,9 @@ describe("StreakDashboard Search UI", () => {
     const searchInput = document.querySelector(
       '[data-testid="streak-search-input"]'
     );
-    assert.ok(searchInput, "Search input should be rendered when habits are present");
+    assert.ok(
+      searchInput,
+      "Search input should be rendered when habits are present"
+    );
   });
 });

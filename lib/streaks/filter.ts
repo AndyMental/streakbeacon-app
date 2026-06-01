@@ -16,7 +16,9 @@ export function filterStreakItems(
 
   return items.filter((item) => {
     const nameMatch = item.name.toLowerCase().includes(trimmedQuery);
-    const descriptionMatch = item.description.toLowerCase().includes(trimmedQuery);
+    const descriptionMatch = item.description
+      .toLowerCase()
+      .includes(trimmedQuery);
     return nameMatch || descriptionMatch;
   });
 }

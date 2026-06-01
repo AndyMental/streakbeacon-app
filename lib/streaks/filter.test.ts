@@ -58,7 +58,7 @@ describe("filterStreakItems", () => {
     const results = filterStreakItems(mockItems, "i");
     // ExercIse, MedItatIon
     assert.equal(results.length, 2);
-    const names = results.map(r => r.name);
+    const names = results.map((r) => r.name);
     assert.ok(names.includes("Exercise"));
     assert.ok(names.includes("Meditation"));
   });
