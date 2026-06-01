@@ -3,7 +3,6 @@ import {
   calculateLongestStreak,
   MAX_GRID_WINDOW_DAYS,
   MIN_GRID_WINDOW_DAYS,
-  type Completion,
   type IsoDate,
   type StreakData,
   type StreakItem

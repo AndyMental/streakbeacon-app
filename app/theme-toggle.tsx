@@ -72,7 +72,7 @@ export function ThemeToggle() {
       onValueChange={handleValueChange}
       aria-label="Theme"
       data-testid="theme-toggle"
-      className="h-9 self-start sm:self-auto"
+      className="h-11 self-start sm:h-9 sm:self-auto"
     >
       {OPTIONS.map((option) => {
         const Icon = option.icon;
@@ -83,7 +83,7 @@ export function ThemeToggle() {
             value={option.value}
             aria-label={option.label}
             data-testid={`theme-toggle-${option.value}`}
-            className="min-h-9 px-3"
+            className="min-h-11 px-3 sm:min-h-9"
           >
             <Icon className="h-4 w-4" aria-hidden="true" />
             <span className="sr-only">{option.label}</span>

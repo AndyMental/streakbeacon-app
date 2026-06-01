@@ -531,7 +531,8 @@ export function SettingsPanel() {
                       </div>
                       <Button
                         variant="outline"
-                        size="sm"
+                        size="lg"
+                        className="sm:min-h-9 sm:px-3 sm:text-xs"
                         onClick={() => restoreItem(item.id)}
                         disabled={isActionDisabled}
                       >
