@@ -242,7 +242,7 @@ function migrateData(value: unknown): Record<string, unknown> {
   // Phase 2: Sequential migrations
   while (typeof data.schemaVersion === "number" && data.schemaVersion < STREAK_DATA_VERSION) {
     const currentVersion: number = data.schemaVersion;
-    
+
     if (currentVersion === 1) {
       data = migrateV1ToV2(data);
     } else {
