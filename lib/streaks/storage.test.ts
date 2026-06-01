@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 import {
   addStreakItem,
   createEmptyStreakData,
+  mergeStreaks,
   setDayCompletion,
   updatePreferences
 } from "./model";
@@ -118,6 +119,86 @@ describe("LocalStreakStorageAdapter", () => {
     );
 
     assert.deepEqual(adapter.load().items, []);
+
+    storage.setItem(
+      STREAK_STORAGE_KEY,
+      JSON.stringify({
+        ...createEmptyStreakData(),
+        items: [
+          {
+            id: "missing-fields"
+            // name, createdAt, etc missing
+          }
+        ]
+      })
+    );
+
+    assert.deepEqual(adapter.load().items, []);
+
+    storage.setItem(
+      STREAK_STORAGE_KEY,
+      JSON.stringify({
+        ...createEmptyStreakData(),
+        items: [
+          {
+            id: 123, // invalid type
+            name: "Invalid ID Type",
+            createdAt: "not a date",
+            updatedAt: "not a date",
+            order: "not a number"
+          }
+        ]
+      })
+    );
+
+    assert.deepEqual(adapter.load().items, []);
+  });
+
+  it("merges two streak data objects by ID and takes the union of completions", () => {
+    const now = new Date("2026-05-27T12:00:00.000Z");
+    const later = new Date("2026-05-27T13:00:00.000Z");
+    const existing = setDayCompletion(
+      addStreakItem(createEmptyStreakData(now), {
+        id: "streak-1",
+        name: "Streak 1",
+        now
+      }),
+      "streak-1",
+      "2026-05-26",
+      true,
+      now
+    );
+
+    const incoming = setDayCompletion(
+      addStreakItem(createEmptyStreakData(now), {
+        id: "streak-1",
+        name: "Streak 1 Updated",
+        now: later
+      }),
+      "streak-1",
+      "2026-05-27",
+      true,
+      later
+    );
+
+    // Add a second streak to incoming
+    const withSecond = addStreakItem(incoming, {
+      id: "streak-2",
+      name: "Streak 2",
+      now: later
+    });
+
+    const merged = mergeStreaks(existing, withSecond, later);
+
+    assert.equal(merged.items.length, 2);
+    // Updated name because later > now
+    assert.equal(merged.items.find((i) => i.id === "streak-1")?.name, "Streak 1 Updated");
+    assert.equal(merged.items.find((i) => i.id === "streak-2")?.name, "Streak 2");
+
+    // Union of completions
+    assert.ok(merged.completions["streak-1"]["2026-05-26"]);
+    assert.ok(merged.completions["streak-1"]["2026-05-27"]);
+    assert.equal(Object.keys(merged.completions["streak-1"]).length, 2);
   });
 
   it("deletes saved data on reset", () => {

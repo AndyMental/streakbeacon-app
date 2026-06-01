@@ -54,6 +54,33 @@ describe("StreakStore", () => {
 
     store.reset();
     assert.deepEqual(store.getSnapshot().items, []);
+    assert.equal(storage.getItem("streakbeacon:data:v1"), null);
+  });
+
+  it("merges partial data into the existing store", () => {
+    const storage = new MemoryStorage();
+    const store = new StreakStore(new LocalStreakStorageAdapter(storage));
+    const now = new Date("2026-05-27T12:00:00.000Z");
+    const later = new Date("2026-05-27T13:00:00.000Z");
+
+    store.createItem({ id: "hydrate", name: "Hydrate", now });
+    store.setCompletion("hydrate", "2026-05-27", true, now);
+
+    const incoming = addStreakItem(createEmptyStreakData(later), {
+      id: "walk",
+      name: "Walk",
+      now: later
+    });
+    const withCompletion = setDayCompletion(incoming, "walk", "2026-05-27", true, later);
+
+    store.mergeData(withCompletion, later);
+
+    const snapshot = store.getSnapshot();
+    assert.equal(snapshot.items.length, 2);
+    assert.ok(snapshot.items.find(i => i.id === "hydrate"));
+    assert.ok(snapshot.items.find(i => i.id === "walk"));
+    assert.ok(snapshot.completions.hydrate["2026-05-27"]);
+    assert.ok(snapshot.completions.walk["2026-05-27"]);
   });
 
   it("removes a streak item and persists the remaining active items", () => {
