@@ -45,9 +45,11 @@ export function buildStreakGridModel(
     .filter((item) => !item.archivedAt)
     .sort((a, b) => a.order - b.order);
   const activeItem =
-    activeItems.find((item) => item.id === selectedItemId) ??
-    activeItems[0] ??
-    null;
+    selectedItemId === null
+      ? null
+      : (activeItems.find((item) => item.id === selectedItemId) ??
+        activeItems[0] ??
+        null);
   const days = buildGridDays(
     data,
     activeItem?.id ?? null,
@@ -102,13 +104,29 @@ function buildGridDays(
   );
   const end = parseIsoDay(formatIsoDay(asOf));
   const start = addDays(end, -(windowDays - 1));
-  const completions = itemId ? data.completions[itemId] ?? {} : {};
+  const activeItemIds = data.items.filter((i) => !i.archivedAt).map((i) => i.id);
   const days: GridDay[] = [];
 
   for (let index = 0; index < windowDays; index += 1) {
     const date = addDays(start, index);
     const day = formatIsoDay(date);
-    const completion = completions[day];
+    let isComplete = false;
+    let intensity: 0 | 1 | 2 | 3 | 4 = 0;
+
+    if (itemId) {
+      const completion = data.completions[itemId]?.[day];
+      isComplete = Boolean(completion);
+      intensity = isComplete ? 1 : 0;
+    } else {
+      let completedCount = 0;
+      for (const id of activeItemIds) {
+        if (data.completions[id]?.[day]) {
+          completedCount++;
+        }
+      }
+      isComplete = completedCount > 0;
+      intensity = Math.min(completedCount, 4) as 0 | 1 | 2 | 3 | 4;
+    }
 
     days.push({
       day,
@@ -118,24 +136,13 @@ function buildGridDays(
         timeZone: "UTC",
         weekday: "short"
       }),
-      isComplete: Boolean(completion),
-      intensity: getIntensity(completion, index),
+      isComplete,
+      intensity,
       isSelected: day === selectedDay
     });
   }
 
   return days;
-}
-
-function getIntensity(
-  completion: Completion | undefined,
-  index: number
-): 0 | 1 | 2 | 3 | 4 {
-  if (!completion) {
-    return 0;
-  }
-
-  return ((index % 4) + 1) as 1 | 2 | 3 | 4;
 }
 
 function chunkWeeks(days: GridDay[]): GridWeek[] {
