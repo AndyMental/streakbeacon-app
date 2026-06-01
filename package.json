@@ -10,7 +10,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test": "node --import tsx --test 'lib/**/*.test.ts' 'app/*.test.tsx' 'hooks/*.test.tsx'",
+    "test": "bash -O globstar -c 'node --import tsx --test lib/**/*.test.ts app/*.test.tsx hooks/*.test.tsx'",
     "test:contract": "node --import tsx --test lib/contracts/*.test.ts",
     "preview:preflight": "npm run lint && npm run test && npm run build"
   },
