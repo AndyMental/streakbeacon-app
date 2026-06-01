@@ -86,6 +86,15 @@ function flushEffects() {
   });
 }
 
+async function clickElement(element: Element) {
+  await act(async () => {
+    element.dispatchEvent(new window.MouseEvent("mousedown", { bubbles: true, cancelable: true }));
+    element.dispatchEvent(new window.MouseEvent("mouseup", { bubbles: true, cancelable: true }));
+    element.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+    await flushEffects();
+  });
+}
+
 describe("StreakDashboard Export UI Affordance", () => {
   afterEach(() => {
     if (root) {
@@ -140,6 +149,10 @@ describe("StreakDashboard Export UI Affordance", () => {
       );
       await flushEffects();
     });
+
+    const habitButton = document.querySelector('[data-testid="streak-item-habit-1"]');
+    assert.ok(habitButton, "Habit button should be present");
+    await clickElement(habitButton);
 
     const exportButton = document.querySelector<HTMLButtonElement>(
       '[data-testid="dashboard-export-button"]'

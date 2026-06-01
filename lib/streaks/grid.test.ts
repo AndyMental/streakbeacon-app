@@ -116,7 +116,7 @@ describe("streak grid model", () => {
     data = setDayCompletion(data, "c", isoOffset(3), true, AS_OF);
     data = setDayCompletion(data, "d", isoOffset(3), true, AS_OF);
 
-    const model = buildStreakGridModel(data, "all", "2026-05-27", AS_OF);
+    const model = buildStreakGridModel(data, null, "2026-05-27", AS_OF);
     
     assert.equal(model.activeItem, null);
     assert.equal(model.completedDays, 4);
@@ -133,6 +133,39 @@ describe("streak grid model", () => {
     assert.equal(day3?.intensity, 3);
     assert.equal(day4?.intensity, 4);
     assert.equal(getNextSelectedCompletion(model), null);
+  });
+
+  it("aggregates metrics across all active habits in 'All Habits' view", () => {
+    let data = createEmptyStreakData(AS_OF);
+    data = addStreakItem(data, { id: "habit-1", name: "Habit 1", now: AS_OF });
+    data = addStreakItem(data, { id: "habit-2", name: "Habit 2", now: AS_OF });
+
+    // habit-1 completed on 2026-05-25 and 2026-05-26
+    data = setDayCompletion(data, "habit-1", "2026-05-25", true, AS_OF);
+    data = setDayCompletion(data, "habit-1", "2026-05-26", true, AS_OF);
+
+    // habit-2 completed on 2026-05-26 and 2026-05-27
+    data = setDayCompletion(data, "habit-2", "2026-05-26", true, AS_OF);
+    data = setDayCompletion(data, "habit-2", "2026-05-27", true, AS_OF);
+
+    // selectedItemId = null means "All Habits"
+    const model = buildStreakGridModel(data, null, "2026-05-27", AS_OF);
+
+    assert.equal(model.activeItem, null);
+    // Unique days: 25, 26, 27
+    assert.equal(model.completedDays, 3);
+    // Current streak: 27, 26, 25 are all complete -> 3
+    assert.equal(model.currentStreak, 3);
+    assert.equal(model.longestStreak, 3);
+
+    const visibleDays = model.weeks.flatMap((week) => week.days);
+    const d25 = visibleDays.find((d) => d.day === "2026-05-25");
+    const d26 = visibleDays.find((d) => d.day === "2026-05-26");
+    const d27 = visibleDays.find((d) => d.day === "2026-05-27");
+
+    assert.equal(d25?.isComplete, true);
+    assert.equal(d26?.isComplete, true);
+    assert.equal(d27?.isComplete, true);
   });
 });
 

@@ -45,35 +45,32 @@ export function buildStreakGridModel(
     .filter((item) => !item.archivedAt)
     .sort((a, b) => a.order - b.order);
 
-  let activeItem: StreakItem | null = null;
+  const activeItem =
+    activeItems.find((item) => item.id === selectedItemId) ?? null;
+
+  const isAllHabits = activeItem === null && activeItems.length > 0;
   let completions: Record<IsoDate, Completion> = {};
 
-  if (selectedItemId === "all" || selectedItemId === null) {
-    activeItem = null;
-    // Aggregate completions from all active items
+  if (activeItem) {
+    completions = data.completions[activeItem.id] ?? {};
+  } else if (isAllHabits) {
     for (const item of activeItems) {
       const itemCompletions = data.completions[item.id] ?? {};
       for (const [day, completion] of Object.entries(itemCompletions)) {
-        const isoDay = day as IsoDate;
-        if (!completions[isoDay]) {
-          completions[isoDay] = completion;
+        if (!completions[day as IsoDate]) {
+          completions[day as IsoDate] = completion;
         }
       }
     }
-  } else {
-    activeItem =
-      activeItems.find((item) => item.id === selectedItemId) ??
-      activeItems[0] ??
-      null;
-    completions = activeItem ? data.completions[activeItem.id] ?? {} : {};
   }
 
   const days = buildGridDays(
     data,
-    (selectedItemId === "all" || selectedItemId === null) ? null : activeItem?.id ?? null,
+    activeItem?.id ?? null,
     selectedDay ?? formatIsoDay(asOf),
     asOf
   );
+
   const completedDays = Object.keys(completions).length;
   const selected =
     days.find((day) => day.day === selectedDay) ??
@@ -89,10 +86,12 @@ export function buildStreakGridModel(
         : Math.round(
             (days.filter((day) => day.isComplete).length / days.length) * 100
           ),
-    currentStreak: completions
-      ? calculateCurrentStreak(completions, formatIsoDay(asOf))
-      : 0,
-    longestStreak: completions ? calculateLongestStreak(completions) : 0,
+    currentStreak:
+      activeItem || isAllHabits
+        ? calculateCurrentStreak(completions, formatIsoDay(asOf))
+        : 0,
+    longestStreak:
+      activeItem || isAllHabits ? calculateLongestStreak(completions) : 0,
     selectedDay: selected,
     totalDays: days.length,
     weeks: chunkWeeks(days)
