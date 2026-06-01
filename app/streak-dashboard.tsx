@@ -619,7 +619,7 @@ export function StreakDashboard() {
                     {week.days.map((day) => (
                       <Tooltip key={day.day}>
                         <TooltipTrigger asChild>
-                          <button
+                          <Button
                             type="button"
                             aria-label={`${day.label}: ${
                               day.isComplete ? "completed" : "not completed"
@@ -628,7 +628,7 @@ export function StreakDashboard() {
                             aria-current={day.isSelected ? "true" : undefined}
                             onClick={() => selectDay(day)}
                             className={cn(
-                              "h-11 w-11 rounded-sm border outline-none transition-transform motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:h-5 sm:w-5",
+                              "h-11 min-h-0 w-11 rounded-sm border p-0 transition-transform motion-reduce:transition-none sm:h-5 sm:w-5",
                               day.isSelected &&
                                 "scale-110 border-foreground motion-reduce:scale-100",
                               getDayClassName(day.intensity)
