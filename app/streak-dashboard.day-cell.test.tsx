@@ -119,7 +119,10 @@ async function renderDashboard() {
 
 describe("StreakDashboard day-cell controls", () => {
   beforeEach(() => {
-    mock.timers.enable({ apis: ["Date"], now: new Date("2026-05-27T12:00:00.000Z") });
+    mock.timers.enable({
+      apis: ["Date"],
+      now: new Date("2026-05-27T12:00:00.000Z"),
+    });
   });
 
   afterEach(() => {
