@@ -308,397 +308,407 @@ export function StreakDashboard() {
     <div className="flex flex-col gap-6">
       <WeeklyOverview data={data} asOf={DEMO_AS_OF} />
       <section className="grid gap-6 lg:grid-cols-[1fr_18rem]">
-      <Card>
-        <CardHeader className="border-b">
-          <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="min-w-0">
-              <CardTitle>Streak grid</CardTitle>
-              <p
-                className="mt-1 truncate text-sm text-muted-foreground"
-                aria-live="polite"
-              >
-                {!isReady
-                  ? "Loading local streak data"
-                  : (model.activeItem?.name ??
-                    (hasItems ? "All Habits" : "No active streak"))}
-              </p>
-            </div>
-            <div
-              className="flex min-w-0 flex-wrap items-center gap-2"
-              role="group"
-              aria-label="Streak selector"
-            >
-              {hasItems && (
-                <Button
-                  type="button"
-                  data-testid="streak-item-all"
-                  variant={selectedHabitId === null ? "default" : "outline"}
-                  size="lg"
-                  className="sm:min-h-9 sm:px-3 sm:text-xs"
-                  onClick={() => setSelectedItemId(null)}
+        <Card>
+          <CardHeader className="border-b">
+            <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="min-w-0">
+                <CardTitle>Streak grid</CardTitle>
+                <p
+                  className="mt-1 truncate text-sm text-muted-foreground"
+                  aria-live="polite"
                 >
-                  All Habits
-                </Button>
-              )}
-              {data.items
-                .filter((item) => !item.archivedAt)
-                .map((item) => (
+                  {!isReady
+                    ? "Loading local streak data"
+                    : (model.activeItem?.name ??
+                      (hasItems ? "All Habits" : "No active streak"))}
+                </p>
+              </div>
+              <div
+                className="flex min-w-0 flex-wrap items-center gap-2"
+                role="group"
+                aria-label="Streak selector"
+              >
+                {hasItems && (
                   <Button
-                    key={item.id}
                     type="button"
-                    data-testid={`streak-item-${item.id}`}
-                    variant={
-                      item.id === selectedHabitId ? "default" : "outline"
-                    }
+                    data-testid="streak-item-all"
+                    variant={selectedHabitId === null ? "default" : "outline"}
                     size="lg"
-                    className="max-w-full truncate sm:min-h-9 sm:px-3 sm:text-xs sm:max-w-48"
-                    onClick={() => setSelectedItemId(item.id)}
+                    className="sm:min-h-9 sm:px-3 sm:text-xs"
+                    onClick={() => setSelectedItemId(null)}
                   >
-                    {item.name}
+                    All Habits
                   </Button>
-                ))}
-              {model.activeItem ? (
-                <div className="flex flex-wrap items-center gap-2">
-                  <AlertDialog
-                    open={isRenameOpen}
-                    onOpenChange={setIsRenameOpen}
-                  >
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="lg"
-                        className="sm:min-h-9 sm:px-3 sm:text-xs"
-                        data-testid="dashboard-rename-trigger"
-                        aria-label={`Rename ${model.activeItem.name}`}
-                        disabled={!isReady || Boolean(storageError)}
-                        onClick={() => {
-                          setRenameValue(model.activeItem?.name ?? "");
-                          setRenameError(null);
-                          setIsRenameOpen(true);
-                        }}
-                      >
-                        <Pencil className="h-4 w-4" aria-hidden="true" />
-                        Rename
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <form onSubmit={renameSelectedItem}>
+                )}
+                {data.items
+                  .filter((item) => !item.archivedAt)
+                  .map((item) => (
+                    <Button
+                      key={item.id}
+                      type="button"
+                      data-testid={`streak-item-${item.id}`}
+                      variant={
+                        item.id === selectedHabitId ? "default" : "outline"
+                      }
+                      size="lg"
+                      className="max-w-full truncate sm:min-h-9 sm:px-3 sm:text-xs sm:max-w-48"
+                      onClick={() => setSelectedItemId(item.id)}
+                    >
+                      {item.name}
+                    </Button>
+                  ))}
+                {model.activeItem ? (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <AlertDialog
+                      open={isRenameOpen}
+                      onOpenChange={setIsRenameOpen}
+                    >
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="lg"
+                          className="sm:min-h-9 sm:px-3 sm:text-xs"
+                          data-testid="dashboard-rename-trigger"
+                          aria-label={`Rename ${model.activeItem.name}`}
+                          disabled={!isReady || Boolean(storageError)}
+                          onClick={() => {
+                            setRenameValue(model.activeItem?.name ?? "");
+                            setRenameError(null);
+                            setIsRenameOpen(true);
+                          }}
+                        >
+                          <Pencil className="h-4 w-4" aria-hidden="true" />
+                          Rename
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <form onSubmit={renameSelectedItem}>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Rename habit</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Change the name of this habit. History will be
+                              preserved.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                              <Label htmlFor="rename-streak-name">
+                                New name
+                              </Label>
+                              <Input
+                                id="rename-streak-name"
+                                data-testid="dashboard-rename-input"
+                                value={renameValue}
+                                onChange={(e) => {
+                                  setRenameValue(e.target.value);
+                                  setRenameError(null);
+                                }}
+                                placeholder="New habit name"
+                                autoFocus
+                              />
+                              {renameError && (
+                                <p className="text-sm text-destructive">
+                                  {renameError}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel type="button">
+                              Cancel
+                            </AlertDialogCancel>
+                            <Button
+                              type="submit"
+                              data-testid="dashboard-rename-save"
+                            >
+                              Save changes
+                            </Button>
+                          </AlertDialogFooter>
+                        </form>
+                      </AlertDialogContent>
+                    </AlertDialog>
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="lg"
+                          className="sm:min-h-9 sm:px-3 sm:text-xs"
+                          aria-label={`Archive ${model.activeItem.name}`}
+                          disabled={!isReady || Boolean(storageError)}
+                        >
+                          <Archive className="h-4 w-4" aria-hidden="true" />
+                          Archive
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
                         <AlertDialogHeader>
-                          <AlertDialogTitle>Rename habit</AlertDialogTitle>
+                          <AlertDialogTitle>
+                            Archive {model.activeItem.name}?
+                          </AlertDialogTitle>
                           <AlertDialogDescription>
-                            Change the name of this habit. History will be
-                            preserved.
+                            This hides the habit from your active grid. You can
+                            restore it later from Settings without losing any
+                            history.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
-                        <div className="grid gap-4 py-4">
-                          <div className="grid gap-2">
-                            <Label htmlFor="rename-streak-name">New name</Label>
-                            <Input
-                              id="rename-streak-name"
-                              data-testid="dashboard-rename-input"
-                              value={renameValue}
-                              onChange={(e) => {
-                                setRenameValue(e.target.value);
-                                setRenameError(null);
-                              }}
-                              placeholder="New habit name"
-                              autoFocus
-                            />
-                            {renameError && (
-                              <p className="text-sm text-destructive">
-                                {renameError}
-                              </p>
-                            )}
-                          </div>
-                        </div>
                         <AlertDialogFooter>
-                          <AlertDialogCancel type="button">
-                            Cancel
-                          </AlertDialogCancel>
-                          <Button
-                            type="submit"
-                            data-testid="dashboard-rename-save"
-                          >
-                            Save changes
-                          </Button>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={archiveSelectedItem}>
+                            Confirm archive
+                          </AlertDialogAction>
                         </AlertDialogFooter>
-                      </form>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                      </AlertDialogContent>
+                    </AlertDialog>
 
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="lg"
-                        className="sm:min-h-9 sm:px-3 sm:text-xs"
-                        aria-label={`Archive ${model.activeItem.name}`}
-                        disabled={!isReady || Boolean(storageError)}
-                      >
-                        <Archive className="h-4 w-4" aria-hidden="true" />
-                        Archive
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Archive {model.activeItem.name}?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This hides the habit from your active grid. You can
-                          restore it later from Settings without losing any
-                          history.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={archiveSelectedItem}>
-                          Confirm archive
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="lg"
-                        className="sm:min-h-9 sm:px-3 sm:text-xs"
-                        aria-label={`Delete ${model.activeItem.name}`}
-                        disabled={!isReady || Boolean(storageError)}
-                      >
-                        <Trash2 className="h-4 w-4" aria-hidden="true" />
-                        Delete
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>
-                          Delete {model.activeItem.name}?
-                        </AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This removes the habit and all of its completion
-                          history from this browser. Other habits stay intact.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction
-                          className="bg-destructive text-destructive-foreground hover:opacity-90"
-                          onClick={deleteSelectedItem}
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="lg"
+                          className="sm:min-h-9 sm:px-3 sm:text-xs"
+                          aria-label={`Delete ${model.activeItem.name}`}
+                          disabled={!isReady || Boolean(storageError)}
                         >
-                          Confirm delete
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                          <Trash2 className="h-4 w-4" aria-hidden="true" />
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            Delete {model.activeItem.name}?
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This removes the habit and all of its completion
+                            history from this browser. Other habits stay intact.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-destructive text-destructive-foreground hover:opacity-90"
+                            onClick={deleteSelectedItem}
+                          >
+                            Confirm delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
 
-                  <StreakExportButton
-                    model={model}
-                    disabled={!isReady || Boolean(storageError)}
-                  />
-                </div>
-              ) : null}
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="pt-4">
-          <form
-            className="mb-4 rounded-md border bg-muted/30 p-3"
-            onSubmit={createItem}
-          >
-            <div className="grid gap-2">
-              <Label htmlFor="new-streak-name">Add habit</Label>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <Input
-                  id="new-streak-name"
-                  name="name"
-                  type="text"
-                  value={newItemName}
-                  maxLength={80}
-                  placeholder="Read for 20 minutes"
-                  aria-describedby={
-                    createError ? "new-streak-error" : "new-streak-help"
-                  }
-                  disabled={!isReady || Boolean(storageError)}
-                  className="flex-1"
-                  onChange={(event) => {
-                    setNewItemName(event.target.value);
-                    setCreateError(null);
-                  }}
-                />
-                <Button
-                  type="submit"
-                  size="lg"
-                  className="w-full sm:min-h-10 sm:px-4 sm:py-2 sm:text-sm sm:w-auto"
-                  disabled={
-                    !isReady || Boolean(storageError) || !newItemName.trim()
-                  }
-                >
-                  {!isReady ? (
-                    "Loading"
-                  ) : (
-                    <>
-                      <Plus className="h-4 w-4" aria-hidden="true" />
-                      Add habit
-                    </>
-                  )}
-                </Button>
-              </div>
-              <p id="new-streak-help" className="text-sm text-muted-foreground">
-                Create the first streak in local storage.
-              </p>
-              {createError ? (
-                <p
-                  id="new-streak-error"
-                  role="alert"
-                  className="text-sm text-destructive"
-                >
-                  {createError}
-                </p>
-              ) : null}
-            </div>
-          </form>
-
-          {storageError ? (
-            <Alert variant="destructive" className="relative mb-4 pl-10">
-              <AlertCircle className="absolute left-4 top-4 h-4 w-4" />
-              <AlertTitle>Storage unavailable</AlertTitle>
-              <AlertDescription>{storageError}</AlertDescription>
-            </Alert>
-          ) : null}
-
-          {isReady && !hasItems ? (
-            <Alert
-              variant="muted"
-              role="status"
-              className="relative mb-4 pl-10"
-            >
-              <Info className="absolute left-4 top-4 h-4 w-4 text-primary" />
-              <AlertTitle>No streaks yet</AlertTitle>
-              <AlertDescription>
-                Add a habit to start filling the local completion grid. Until
-                then, the calendar stays empty and summary metrics remain at
-                zero.
-              </AlertDescription>
-            </Alert>
-          ) : null}
-
-          <div
-            className="overflow-x-auto pb-2"
-            role="group"
-            aria-label="Recent completion history"
-          >
-            <TooltipProvider>
-              <div className="grid w-max min-w-full grid-flow-col auto-cols-[2.75rem] gap-1 sm:auto-cols-[1.35rem]">
-                {model.weeks.map((week) => (
-                  <div key={week.key} className="grid grid-rows-7 gap-1">
-                    {week.days.map((day) => (
-                      <Tooltip key={day.day}>
-                        <TooltipTrigger asChild>
-                          <button
-                            type="button"
-                            aria-label={`${day.label}: ${
-                              day.isComplete ? "completed" : "not completed"
-                            }`}
-                            aria-pressed={day.isComplete}
-                            aria-current={day.isSelected ? "true" : undefined}
-                            onClick={() => selectDay(day)}
-                            className={cn(
-                              "h-11 w-11 rounded-sm border outline-none transition-transform motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:h-5 sm:w-5",
-                              day.isSelected &&
-                                "scale-110 border-foreground motion-reduce:scale-100",
-                              getDayClassName(day.intensity)
-                            )}
-                          />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {day.label} - {day.isComplete ? "Complete" : "Open"}
-                        </TooltipContent>
-                      </Tooltip>
-                    ))}
+                    <StreakExportButton
+                      model={model}
+                      disabled={!isReady || Boolean(storageError)}
+                    />
                   </div>
+                ) : null}
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="pt-4">
+            <form
+              className="mb-4 rounded-md border bg-muted/30 p-3"
+              onSubmit={createItem}
+            >
+              <div className="grid gap-2">
+                <Label htmlFor="new-streak-name">Add habit</Label>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <Input
+                    id="new-streak-name"
+                    name="name"
+                    type="text"
+                    value={newItemName}
+                    maxLength={80}
+                    placeholder="Read for 20 minutes"
+                    aria-describedby={
+                      createError ? "new-streak-error" : "new-streak-help"
+                    }
+                    disabled={!isReady || Boolean(storageError)}
+                    className="flex-1"
+                    onChange={(event) => {
+                      setNewItemName(event.target.value);
+                      setCreateError(null);
+                    }}
+                  />
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full sm:min-h-10 sm:px-4 sm:py-2 sm:text-sm sm:w-auto"
+                    disabled={
+                      !isReady || Boolean(storageError) || !newItemName.trim()
+                    }
+                  >
+                    {!isReady ? (
+                      "Loading"
+                    ) : (
+                      <>
+                        <Plus className="h-4 w-4" aria-hidden="true" />
+                        Add habit
+                      </>
+                    )}
+                  </Button>
+                </div>
+                <p
+                  id="new-streak-help"
+                  className="text-sm text-muted-foreground"
+                >
+                  Create the first streak in local storage.
+                </p>
+                {createError ? (
+                  <p
+                    id="new-streak-error"
+                    role="alert"
+                    className="text-sm text-destructive"
+                  >
+                    {createError}
+                  </p>
+                ) : null}
+              </div>
+            </form>
+
+            {storageError ? (
+              <Alert variant="destructive" className="relative mb-4 pl-10">
+                <AlertCircle className="absolute left-4 top-4 h-4 w-4" />
+                <AlertTitle>Storage unavailable</AlertTitle>
+                <AlertDescription>{storageError}</AlertDescription>
+              </Alert>
+            ) : null}
+
+            {isReady && !hasItems ? (
+              <Alert
+                variant="muted"
+                role="status"
+                className="relative mb-4 pl-10"
+              >
+                <Info className="absolute left-4 top-4 h-4 w-4 text-primary" />
+                <AlertTitle>No streaks yet</AlertTitle>
+                <AlertDescription>
+                  Add a habit to start filling the local completion grid. Until
+                  then, the calendar stays empty and summary metrics remain at
+                  zero.
+                </AlertDescription>
+              </Alert>
+            ) : null}
+
+            <div
+              className="overflow-x-auto pb-2"
+              role="group"
+              aria-label="Recent completion history"
+            >
+              <TooltipProvider>
+                <div className="grid w-max min-w-full grid-flow-col auto-cols-[2.75rem] gap-1 sm:auto-cols-[1.35rem]">
+                  {model.weeks.map((week) => (
+                    <div key={week.key} className="grid grid-rows-7 gap-1">
+                      {week.days.map((day) => (
+                        <Tooltip key={day.day}>
+                          <TooltipTrigger asChild>
+                            <button
+                              type="button"
+                              aria-label={`${day.label}: ${
+                                day.isComplete ? "completed" : "not completed"
+                              }`}
+                              aria-pressed={day.isComplete}
+                              aria-current={day.isSelected ? "true" : undefined}
+                              onClick={() => selectDay(day)}
+                              className={cn(
+                                "h-11 w-11 rounded-sm border outline-none transition-transform motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:h-5 sm:w-5",
+                                day.isSelected &&
+                                  "scale-110 border-foreground motion-reduce:scale-100",
+                                getDayClassName(day.intensity)
+                              )}
+                            />
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {day.label} - {day.isComplete ? "Complete" : "Open"}
+                          </TooltipContent>
+                        </Tooltip>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              </TooltipProvider>
+            </div>
+
+            <div className="mt-4 flex items-center justify-between gap-3 text-xs text-muted-foreground">
+              <span>Less</span>
+              <div className="flex gap-1" aria-hidden="true">
+                {[0, 1, 2, 3, 4].map((intensity) => (
+                  <span
+                    key={intensity}
+                    className={cn(
+                      "h-3.5 w-3.5 rounded-sm border",
+                      getDayClassName(intensity)
+                    )}
+                  />
                 ))}
               </div>
-            </TooltipProvider>
-          </div>
-
-          <div className="mt-4 flex items-center justify-between gap-3 text-xs text-muted-foreground">
-            <span>Less</span>
-            <div className="flex gap-1" aria-hidden="true">
-              {[0, 1, 2, 3, 4].map((intensity) => (
-                <span
-                  key={intensity}
-                  className={cn(
-                    "h-3.5 w-3.5 rounded-sm border",
-                    getDayClassName(intensity)
-                  )}
-                />
-              ))}
+              <span>More</span>
             </div>
-            <span>More</span>
-          </div>
-        </CardContent>
-      </Card>
-
-      <div className="grid gap-4">
-        <SummaryCard
-          label="Current"
-          value={model.currentStreak}
-          suffix="days"
-          icon={Flame}
-        />
-        <SummaryCard
-          label="Longest"
-          value={model.longestStreak}
-          suffix="days"
-          icon={Trophy}
-        />
-        <SummaryCard
-          label="Completed"
-          value={model.completedDays}
-          suffix="total"
-          icon={CheckCircle2}
-        />
-        <Card>
-          <CardHeader className="flex-row items-center gap-2 space-y-0">
-            <CalendarDays className="h-5 w-5 text-primary" aria-hidden="true" />
-            <CardTitle>Selected day</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Badge
-              variant={model.selectedDay.isComplete ? "default" : "outline"}
-            >
-              {model.selectedDay.isComplete ? "Complete" : "Open"}
-            </Badge>
-            <p className="mt-3 text-sm text-muted-foreground">
-              {model.selectedDay.label}
-            </p>
-            <Button
-              type="button"
-              className="mt-4 w-full"
-              size="lg"
-              variant={model.selectedDay.isComplete ? "outline" : "default"}
-              onClick={toggleSelectedDay}
-              disabled={!model.activeItem || !isReady || Boolean(storageError)}
-            >
-              {!isReady
-                ? "Loading"
-                : model.selectedDay.isComplete
-                  ? "Mark Open"
-                  : "Mark Complete"}
-            </Button>
-            <p className="mt-3 text-sm text-muted-foreground">
-              {model.completionRate}% of visible days complete.
-            </p>
           </CardContent>
         </Card>
-      </div>
-    </section>
+
+        <div className="grid gap-4">
+          <SummaryCard
+            label="Current"
+            value={model.currentStreak}
+            suffix="days"
+            icon={Flame}
+          />
+          <SummaryCard
+            label="Longest"
+            value={model.longestStreak}
+            suffix="days"
+            icon={Trophy}
+          />
+          <SummaryCard
+            label="Completed"
+            value={model.completedDays}
+            suffix="total"
+            icon={CheckCircle2}
+          />
+          <Card>
+            <CardHeader className="flex-row items-center gap-2 space-y-0">
+              <CalendarDays
+                className="h-5 w-5 text-primary"
+                aria-hidden="true"
+              />
+              <CardTitle>Selected day</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Badge
+                variant={model.selectedDay.isComplete ? "default" : "outline"}
+              >
+                {model.selectedDay.isComplete ? "Complete" : "Open"}
+              </Badge>
+              <p className="mt-3 text-sm text-muted-foreground">
+                {model.selectedDay.label}
+              </p>
+              <Button
+                type="button"
+                className="mt-4 w-full"
+                size="lg"
+                variant={model.selectedDay.isComplete ? "outline" : "default"}
+                onClick={toggleSelectedDay}
+                disabled={
+                  !model.activeItem || !isReady || Boolean(storageError)
+                }
+              >
+                {!isReady
+                  ? "Loading"
+                  : model.selectedDay.isComplete
+                    ? "Mark Open"
+                    : "Mark Complete"}
+              </Button>
+              <p className="mt-3 text-sm text-muted-foreground">
+                {model.completionRate}% of visible days complete.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
-  TooltipTrigger
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import type { IsoDate, StreakData } from "@/lib/streaks/model";
@@ -16,12 +16,15 @@ interface WeeklyOverviewProps {
   asOf?: Date;
 }
 
-export function WeeklyOverview({ data, asOf = new Date() }: WeeklyOverviewProps) {
+export function WeeklyOverview({
+  data,
+  asOf = new Date(),
+}: WeeklyOverviewProps) {
   const activeItems = data.items.filter((item) => !item.archivedAt);
 
   // Calculate the last 7 days ending at asOf
   const days: { day: IsoDate; label: string; shortLabel: string }[] = [];
-  
+
   // Ensure we use UTC for date calculations to match the rest of the app's IsoDate pattern
   const end = new Date(asOf.toISOString().slice(0, 10) + "T00:00:00.000Z");
 
@@ -35,12 +38,12 @@ export function WeeklyOverview({ data, asOf = new Date() }: WeeklyOverviewProps)
         weekday: "long",
         month: "short",
         day: "numeric",
-        timeZone: "UTC"
+        timeZone: "UTC",
       }),
       shortLabel: d.toLocaleDateString("en", {
         weekday: "narrow",
-        timeZone: "UTC"
-      })
+        timeZone: "UTC",
+      }),
     });
   }
 
