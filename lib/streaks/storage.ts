@@ -269,10 +269,22 @@ function normalizeItem(value: unknown, lenient = false): StreakItem {
       typeof value.order === "number" ? value.order : 0,
       "item.order"
     ),
-    archivedAt:
-      value.archivedAt === null || (lenient && value.archivedAt === undefined)
-        ? null
-        : requireIsoTimestamp(value.archivedAt, "item.archivedAt", lenient)
+    archivedAt: (function () {
+      if (
+        value.archivedAt === null ||
+        (lenient && value.archivedAt === undefined)
+      ) {
+        return null;
+      }
+      try {
+        return requireIsoTimestamp(value.archivedAt, "item.archivedAt", false);
+      } catch (error) {
+        if (lenient) {
+          return null;
+        }
+        throw error;
+      }
+    })()
   };
 }
 

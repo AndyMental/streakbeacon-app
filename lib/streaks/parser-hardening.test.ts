@@ -99,4 +99,29 @@ describe("Parser Hardening Regression", () => {
     assert.equal(loaded.items.length, 1, "Should deduplicate items");
     assert.equal(loaded.items[0].name, "First", "Should take the first one encountered");
   });
+
+  it("does not archive legacy items that have malformed archivedAt values in lenient mode", () => {
+    const storage = new MemoryStorage();
+    const adapter = new LocalStreakStorageAdapter(storage);
+    
+    const legacyData = {
+      items: [
+        {
+          id: "malformed-archive-item",
+          name: "Malformed Archive Item",
+          createdAt: "2026-05-27T12:00:00.000Z",
+          updatedAt: "2026-05-27T12:00:00.000Z",
+          archivedAt: "not-a-date", // Malformed archivedAt
+          order: 0
+        }
+      ]
+    };
+
+    storage.setItem(STREAK_STORAGE_KEY, JSON.stringify(legacyData));
+
+    const loaded = adapter.load();
+    const item = loaded.items.find(i => i.id === "malformed-archive-item");
+    assert.ok(item, "Item should be loaded");
+    assert.equal(item.archivedAt, null, "Malformed archivedAt should default to null in lenient mode to keep item active");
+  });
 });
