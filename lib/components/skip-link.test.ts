@@ -23,6 +23,9 @@ describe("skip-to-main-content link", () => {
     );
     assert.match(layoutSource, /className="[^"]*\bsr-only\b[^"]*"/);
     assert.match(layoutSource, /className="[^"]*\bfocus:not-sr-only\b[^"]*"/);
+    assert.match(layoutSource, /className="[^"]*\bfocus:absolute\b[^"]*"/);
+    assert.match(layoutSource, /className="[^"]*\bfocus:z-50\b[^"]*"/);
+    assert.match(layoutSource, /className="[^"]*\bfocus:ring-2\b[^"]*"/);
     assert.doesNotMatch(layoutSource, /<SkipLink\s*\/>/);
   });
 
