@@ -193,15 +193,13 @@ export function parseExportEnvelope(value: unknown): {
 }
 
 export function parseStreakData(value: unknown): StreakData {
-  if (!isRecord(value)) {
-    throw new Error("Streak data must be an object.");
-  }
+  const raw = migrateData(value);
 
-  if (value.schemaVersion !== STREAK_DATA_VERSION) {
+  if (raw.schemaVersion !== STREAK_DATA_VERSION) {
     throw new Error("Streak data schema version is not supported.");
   }
 
-  const items = requireArray(value.items, "items").map(normalizeItem);
+  const items = requireArray(raw.items, "items").map(normalizeItem);
   const itemIds = new Set<string>();
 
   for (const item of items) {
@@ -214,11 +212,74 @@ export function parseStreakData(value: unknown): StreakData {
 
   return {
     schemaVersion: STREAK_DATA_VERSION,
-    createdAt: requireIsoTimestamp(value.createdAt, "createdAt"),
-    updatedAt: requireIsoTimestamp(value.updatedAt, "updatedAt"),
+    createdAt: requireIsoTimestamp(raw.createdAt, "createdAt"),
+    updatedAt: requireIsoTimestamp(raw.updatedAt, "updatedAt"),
     items,
-    completions: normalizeCompletions(value.completions, itemIds),
-    preferences: normalizePreferences(value.preferences)
+    completions: normalizeCompletions(raw.completions, itemIds),
+    preferences: normalizePreferences(raw.preferences)
+  };
+}
+
+function migrateData(value: unknown): Record<string, unknown> {
+  if (!isRecord(value)) {
+    return {
+      schemaVersion: STREAK_DATA_VERSION,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      items: [],
+      completions: {},
+      preferences: {}
+    };
+  }
+
+  let data = { ...value };
+
+  // Phase 1: Ensure we have a valid starting version number
+  if (typeof data.schemaVersion !== "number" || data.schemaVersion < 1) {
+    data.schemaVersion = 1;
+  }
+
+  // Phase 2: Sequential migrations
+  while (typeof data.schemaVersion === "number" && data.schemaVersion < STREAK_DATA_VERSION) {
+    const currentVersion: number = data.schemaVersion;
+    
+    if (currentVersion === 1) {
+      data = migrateV1ToV2(data);
+    } else {
+      // Avoid infinite loop if we hit an unknown version that is less than current
+      break;
+    }
+  }
+
+  // Phase 3: Final normalization of common fields to ensure parseStreakData doesn't throw
+  // on missing top-level keys after migration.
+  if (typeof data.createdAt !== "string") {
+    data.createdAt = new Date().toISOString();
+  }
+
+  if (typeof data.updatedAt !== "string") {
+    data.updatedAt = data.createdAt;
+  }
+
+  if (!Array.isArray(data.items)) {
+    data.items = [];
+  }
+
+  if (!isRecord(data.completions)) {
+    data.completions = {};
+  }
+
+  if (!isRecord(data.preferences)) {
+    data.preferences = {};
+  }
+
+  return data;
+}
+
+function migrateV1ToV2(data: Record<string, unknown>): Record<string, unknown> {
+  return {
+    ...data,
+    schemaVersion: 2
   };
 }
 

@@ -139,7 +139,7 @@ describe("streak domain model", () => {
 
     assert.deepEqual(createExportEnvelope(data, exportedAt), {
       format: "streakbeacon.export",
-      formatVersion: 1,
+      formatVersion: 2,
       exportedAt: "2026-05-27T12:00:00.000Z",
       app: {
         name: "StreakBeacon"
