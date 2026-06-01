@@ -16,14 +16,15 @@ commands that are actually present.
 - Test: `npm run test`
 - Build: `npm run build`
 - Start production server after a build: `npm run start`
-- Preview/preflight gate: `npm run preview:preflight` (runs `npm run lint && npm run test && npm run build` in that order; the same script is invoked by the `Preview Preflight` GitHub Actions workflow on every pull request and push)
+- Preview/preflight gate: `npm run preview:preflight` (runs `npm run lint && npm run lint:openapi && npm run test && npm run build` in that order; the same script is invoked by the `Preview Preflight` GitHub Actions workflow on every pull request and push)
 
 ## OpenAPI
 
-No OpenAPI or Swagger generation/update command is present yet.
+OpenAPI linting is implemented using Spectral.
 
-Before adding frontend code or black-box tests that consume API routes, add or
-identify the OpenAPI/Swagger workflow and document the exact command here.
+- Lint OpenAPI spec: `npm run lint:openapi`
+
+The spec file is located at `docs/openapi.yaml`. Linting is integrated into the `npm run preview:preflight` gate to ensure spec validity before builds.
 
 ## Deployment
 

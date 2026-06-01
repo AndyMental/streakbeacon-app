@@ -3,16 +3,25 @@ info:
   title: StreakBeacon Sync API
   description: API for syncing local streak data with a remote backup.
   version: 1.0.0
+  contact:
+    name: StreakBeacon Support
+    url: https://github.com/AndyMental/streakbeacon-app
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
 servers:
   - url: /api
+tags:
+  - name: Sync
+    description: Operations related to data synchronization
 paths:
   /sync:
     get:
       summary: Fetch the latest synced streak data
+      description: Returns the most recent streak data stored in the remote backup for the authenticated user.
       operationId: getSync
+      tags:
+        - Sync
       responses:
         '200':
           description: Successful response
@@ -24,7 +33,10 @@ paths:
           description: Unauthorized
     post:
       summary: Upsert streak data
+      description: Syncs the provided streak data with the remote backup. Overwrites existing data if the provided data is newer.
       operationId: postSync
+      tags:
+        - Sync
       requestBody:
         required: true
         content:
