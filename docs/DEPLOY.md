@@ -16,7 +16,8 @@ documented in `README.md`.
 - Output directory: Next.js default `.next`
 - Required secrets: none for the current local-first app
 
-No `vercel.json`, committed `.vercel/` directory, or tracked root `.env*`
+The repo includes `vercel.json` for Vercel framework detection and shared
+security headers. No committed `.vercel/` directory or tracked root `.env*`
 template exists in this repo at the time of this handoff. Do not invent Vercel
 project IDs, tokens, environment variables, or deployment URLs.
 
@@ -26,13 +27,12 @@ Run the repo-documented checks before handing off a deploy branch:
 
 ```bash
 npm install
-npm run lint
-npm run test
-npm run build
+npm run preview:preflight
 ```
 
-The convenience script `npm run preview:preflight` runs lint, unit tests, and
-the production build in the same order as the GitHub Actions workflow.
+The convenience script `npm run preview:preflight` runs format check, lint,
+unit tests, and the production build in the same order as the GitHub Actions
+workflow.
 
 ## Admin Handoff
 
