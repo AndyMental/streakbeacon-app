@@ -1,23 +1,56 @@
+"use client";
+
 import { CalendarCheck, Flame, ShieldCheck, Target } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SettingsPanel } from "./settings-panel";
 import { StreakDashboard } from "./streak-dashboard";
 import { ThemeToggle } from "./theme-toggle";
-
-const habits = [
-  { name: "Morning walk", streak: "12 days", status: "Done today" },
-  { name: "Ship one useful change", streak: "5 days", status: "Queued" },
-  { name: "Evening shutdown", streak: "8 days", status: "Due tonight" }
-];
-
-const signals = [
-  { label: "Export format", value: "v1", icon: ShieldCheck },
-  { label: "Storage", value: "Local", icon: Flame },
-  { label: "Grid window", value: "365", icon: Target }
-];
+import { useStreakData } from "@/lib/streaks/use-streak-data";
+import { 
+  calculateCurrentStreak, 
+  STREAK_DATA_VERSION,
+  type IsoDate 
+} from "@/lib/streaks/model";
 
 export default function Home() {
+  const { data, isReady } = useStreakData();
+
+  const today = new Date().toISOString().slice(0, 10) as IsoDate;
+
+  const signals = [
+    { 
+      label: "Export format", 
+      value: `v${data.schemaVersion || STREAK_DATA_VERSION}`, 
+      icon: ShieldCheck 
+    },
+    { 
+      label: "Storage", 
+      value: "Local", 
+      icon: Flame 
+    },
+    { 
+      label: "Grid window", 
+      value: data.preferences.gridWindowDays.toString(), 
+      icon: Target 
+    }
+  ];
+
+  const habits = data.items
+    .filter(item => !item.archivedAt)
+    .sort((a, b) => a.order - b.order)
+    .map(item => {
+      const completions = data.completions[item.id] || {};
+      const streak = calculateCurrentStreak(completions, today);
+      const isDoneToday = !!completions[today];
+
+      return {
+        name: item.name,
+        streak: `${streak} day${streak === 1 ? "" : "s"}`,
+        status: isDoneToday ? "Done today" : "Queued"
+      };
+    });
+
   return (
     <main
       id="main-content"
@@ -74,25 +107,35 @@ export default function Home() {
             <CardTitle>Today</CardTitle>
           </CardHeader>
           <div className="divide-y">
-            {habits.map((habit) => (
-              <div
-                key={habit.name}
-                className="flex flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="min-w-0">
-                  <p className="truncate font-medium">{habit.name}</p>
-                  <p className="truncate text-sm text-muted-foreground">
-                    {habit.streak}
-                  </p>
-                </div>
-                <Badge
-                  variant="secondary"
-                  className="max-w-full shrink-0 truncate sm:max-w-[12rem]"
-                >
-                  {habit.status}
-                </Badge>
+            {!isReady ? (
+              <div className="px-4 py-8 text-center text-muted-foreground">
+                Loading habits...
               </div>
-            ))}
+            ) : habits.length === 0 ? (
+              <div className="px-4 py-8 text-center text-muted-foreground">
+                No active habits. Add one above to get started.
+              </div>
+            ) : (
+              habits.map((habit) => (
+                <div
+                  key={habit.name}
+                  className="flex flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="min-w-0">
+                    <p className="truncate font-medium">{habit.name}</p>
+                    <p className="truncate text-sm text-muted-foreground">
+                      {habit.streak}
+                    </p>
+                  </div>
+                  <Badge
+                    variant={habit.status === "Done today" ? "default" : "secondary"}
+                    className="max-w-full shrink-0 truncate sm:max-w-[12rem]"
+                  >
+                    {habit.status}
+                  </Badge>
+                </div>
+              ))
+            )}
           </div>
         </Card>
 

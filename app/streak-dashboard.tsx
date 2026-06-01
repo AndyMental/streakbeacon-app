@@ -11,7 +11,7 @@ import {
   Trophy
 } from "lucide-react";
 import type { FormEvent } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -38,7 +38,6 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
-  createEmptyStreakData,
   setDayCompletion,
   type IsoDate,
   type StreakData
@@ -49,94 +48,52 @@ import {
   type GridDay
 } from "@/lib/streaks/grid";
 import {
-  assertStorageWritable,
-  LocalStreakStorageAdapter,
   STREAK_DATA_CHANGED_EVENT
 } from "@/lib/streaks/storage";
-import { StreakStore } from "@/lib/streaks/store";
+import { useStreakData } from "@/lib/streaks/use-streak-data";
 
-const DEMO_AS_OF = new Date("2026-05-27T12:00:00.000Z");
 const STORAGE_ERROR_MESSAGE =
   "Local streak data is unavailable in this browser. You can still review the page, but completion changes will not be saved.";
 
-function createBrowserStore() {
-  assertStorageWritable(window.localStorage);
-  return new StreakStore(new LocalStreakStorageAdapter(window.localStorage));
-}
-
 export function StreakDashboard() {
-  const [data, setData] = useState<StreakData>(() =>
-    createEmptyStreakData(DEMO_AS_OF)
-  );
-  const [isReady, setIsReady] = useState(false);
-  const [storageError, setStorageError] = useState<string | null>(null);
+  const { data, setData, isReady, storageError, store } = useStreakData();
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [selectedDay, setSelectedDay] = useState<IsoDate | null>(null);
   const [newItemName, setNewItemName] = useState("");
   const [createError, setCreateError] = useState<string | null>(null);
+  
+  const now = useMemo(() => new Date(), []);
+  
+  const effectiveSelectedItemId = selectedItemId || data.items[0]?.id || null;
+  
   const model = useMemo(
-    () => buildStreakGridModel(data, selectedItemId, selectedDay, DEMO_AS_OF),
-    [data, selectedDay, selectedItemId]
+    () => buildStreakGridModel(data, effectiveSelectedItemId, selectedDay, now),
+    [data, selectedDay, effectiveSelectedItemId, now]
   );
   const selectedCompletion = getNextSelectedCompletion(model);
   const hasItems = data.items.length > 0;
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const loadSnapshot = () => {
-      if (cancelled) {
-        return;
-      }
-
-      try {
-        const stored = createBrowserStore().getSnapshot();
-        setData(stored);
-        setSelectedItemId((current) =>
-          current && stored.items.some((item) => item.id === current)
-            ? current
-            : stored.items[0]?.id ?? null
-        );
-        setStorageError(null);
-      } catch {
-        setStorageError(STORAGE_ERROR_MESSAGE);
-      }
-
-      setIsReady(true);
-    };
-
-    queueMicrotask(loadSnapshot);
-    window.addEventListener(STREAK_DATA_CHANGED_EVENT, loadSnapshot);
-
-    return () => {
-      cancelled = true;
-      window.removeEventListener(STREAK_DATA_CHANGED_EVENT, loadSnapshot);
-    };
-  }, []);
 
   function selectDay(day: GridDay) {
     setSelectedDay(day.day);
   }
 
   function toggleSelectedDay() {
-    if (!model.activeItem || selectedCompletion === null) {
+    if (!model.activeItem || selectedCompletion === null || !store) {
       return;
     }
 
-    const now = new Date();
+    const today = new Date();
     const next = setDayCompletion(
       data,
       model.activeItem.id,
       model.selectedDay.day,
       selectedCompletion,
-      now
+      today
     );
 
     try {
-      createBrowserStore().replaceData(next, now);
-      setStorageError(null);
+      store.replaceData(next, today);
     } catch {
-      setStorageError(STORAGE_ERROR_MESSAGE);
       return;
     }
 
@@ -151,20 +108,18 @@ export function StreakDashboard() {
   }
 
   function deleteSelectedItem() {
-    if (!model.activeItem) {
+    if (!model.activeItem || !store) {
       return;
     }
 
     const removedId = model.activeItem.id;
     const removedName = model.activeItem.name;
-    const now = new Date();
+    const today = new Date();
 
     let next: StreakData;
     try {
-      next = createBrowserStore().deleteItem(removedId, now);
-      setStorageError(null);
+      next = store.deleteItem(removedId, today);
     } catch {
-      setStorageError(STORAGE_ERROR_MESSAGE);
       return;
     }
 
@@ -185,26 +140,25 @@ export function StreakDashboard() {
 
     const name = newItemName.trim();
 
-    if (!name) {
-      setCreateError("Habit name is required.");
+    if (!name || !store) {
+      if (!name) setCreateError("Habit name is required.");
       return;
     }
 
-    const now = new Date();
+    const today = new Date();
     const id = createItemId(name);
 
     try {
-      const next = createBrowserStore().createItem({
+      const next = store.createItem({
         id,
         name,
-        now
+        now: today
       });
 
       setData(next);
       setSelectedItemId(id);
       setNewItemName("");
       setCreateError(null);
-      setStorageError(null);
       window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
       toast.success("Habit added", {
         description: `${name} is ready to track.`
@@ -213,10 +167,6 @@ export function StreakDashboard() {
       setCreateError(
         error instanceof Error ? error.message : "Unable to add this habit."
       );
-
-      if (isStorageError(error)) {
-        setStorageError(STORAGE_ERROR_MESSAGE);
-      }
     }
   }
 
@@ -263,7 +213,7 @@ export function StreakDashboard() {
                       variant="outline"
                       size="sm"
                       aria-label={`Delete ${model.activeItem.name}`}
-                      disabled={!isReady || Boolean(storageError)}
+                      disabled={!isReady || storageError}
                     >
                       <Trash2 className="h-4 w-4" aria-hidden="true" />
                       Delete
@@ -353,7 +303,7 @@ export function StreakDashboard() {
             <Alert variant="destructive" className="relative mb-4 pl-10">
               <AlertCircle className="absolute left-4 top-4 h-4 w-4" />
               <AlertTitle>Storage unavailable</AlertTitle>
-              <AlertDescription>{storageError}</AlertDescription>
+              <AlertDescription>{STORAGE_ERROR_MESSAGE}</AlertDescription>
             </Alert>
           ) : null}
 
@@ -463,7 +413,7 @@ export function StreakDashboard() {
               className="mt-4 w-full"
               variant={model.selectedDay.isComplete ? "outline" : "default"}
               onClick={toggleSelectedDay}
-              disabled={!model.activeItem || !isReady || Boolean(storageError)}
+              disabled={!model.activeItem || !isReady || storageError}
             >
               {!isReady
                 ? "Loading"
@@ -493,10 +443,6 @@ function createItemId(name: string) {
       : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
   return `${slug || "streak"}-${suffix}`;
-}
-
-function isStorageError(error: unknown) {
-  return error instanceof DOMException;
 }
 
 function SummaryCard({
