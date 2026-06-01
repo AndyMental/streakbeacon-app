@@ -49,9 +49,18 @@ describe("WeeklyOverview", () => {
     const habitName = document.body.textContent?.includes("Test Habit");
     assert.ok(habitName, "Habit name should be rendered");
 
-    // Verify we have 7 day columns (S, M, T, W, T, F, S narrow labels)
-    // Note: Some days might have same narrow label.
-    // For 2026-05-27 (Wed), last 7 days are T, F, S, S, M, T, W
+    // Verify we have 7 day columns layout
+    const gridRows = document.querySelectorAll(".grid-cols-\\[1fr_repeat\\(7\\%2C2\\.5rem\\)\\]");
+    assert.equal(gridRows.length, 2, "Should render header and habit row with grid layout");
+
+    // Verify aria-labels for completion status
+    const wednesdayLabel = "Test Habit on Wednesday, May 27: Completed";
+    const wednesdayElement = document.querySelector(`[aria-label="${wednesdayLabel}"]`);
+    assert.ok(wednesdayElement, "Should render Completed status for May 27");
+
+    const tuesdayLabel = "Test Habit on Tuesday, May 26: Open";
+    const tuesdayElement = document.querySelector(`[aria-label="${tuesdayLabel}"]`);
+    assert.ok(tuesdayElement, "Should render Open status for May 26");
   });
 
   it("returns null when there are no active habits", async () => {
