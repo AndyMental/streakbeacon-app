@@ -61,11 +61,11 @@ export function StreakDashboard() {
   const [selectedDay, setSelectedDay] = useState<IsoDate | null>(null);
   const [newItemName, setNewItemName] = useState("");
   const [createError, setCreateError] = useState<string | null>(null);
-  
+
   const now = useMemo(() => new Date(), []);
-  
+
   const effectiveSelectedItemId = selectedItemId || data.items[0]?.id || null;
-  
+
   const model = useMemo(
     () => buildStreakGridModel(data, effectiveSelectedItemId, selectedDay, now),
     [data, selectedDay, effectiveSelectedItemId, now]

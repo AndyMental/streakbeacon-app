@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { 
-  createEmptyStreakData, 
-  type StreakData 
+import {
+  createEmptyStreakData,
+  type StreakData
 } from "./model";
-import { 
-  assertStorageWritable, 
-  LocalStreakStorageAdapter, 
-  STREAK_DATA_CHANGED_EVENT 
+import {
+  assertStorageWritable,
+  LocalStreakStorageAdapter,
+  STREAK_DATA_CHANGED_EVENT
 } from "./storage";
 import { StreakStore } from "./store";
 

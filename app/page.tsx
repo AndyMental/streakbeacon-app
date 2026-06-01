@@ -7,10 +7,10 @@ import { SettingsPanel } from "./settings-panel";
 import { StreakDashboard } from "./streak-dashboard";
 import { ThemeToggle } from "./theme-toggle";
 import { useStreakData } from "@/lib/streaks/use-streak-data";
-import { 
-  calculateCurrentStreak, 
+import {
+  calculateCurrentStreak,
   STREAK_DATA_VERSION,
-  type IsoDate 
+  type IsoDate
 } from "@/lib/streaks/model";
 
 export default function Home() {
@@ -19,20 +19,20 @@ export default function Home() {
   const today = new Date().toISOString().slice(0, 10) as IsoDate;
 
   const signals = [
-    { 
-      label: "Export format", 
-      value: `v${data.schemaVersion || STREAK_DATA_VERSION}`, 
-      icon: ShieldCheck 
+    {
+      label: "Export format",
+      value: `v${data.schemaVersion || STREAK_DATA_VERSION}`,
+      icon: ShieldCheck
     },
-    { 
-      label: "Storage", 
-      value: "Local", 
-      icon: Flame 
+    {
+      label: "Storage",
+      value: "Local",
+      icon: Flame
     },
-    { 
-      label: "Grid window", 
-      value: data.preferences.gridWindowDays.toString(), 
-      icon: Target 
+    {
+      label: "Grid window",
+      value: data.preferences.gridWindowDays.toString(),
+      icon: Target
     }
   ];
 
