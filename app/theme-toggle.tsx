@@ -8,6 +8,7 @@ import {
   applyThemePreference,
   readThemePreference
 } from "@/lib/streaks/theme-preference";
+import { STREAK_DATA_CHANGED_EVENT } from "@/lib/streaks/storage";
 import type { ThemePreference } from "@/lib/streaks/model";
 
 const OPTIONS: ReadonlyArray<{
@@ -27,7 +28,7 @@ export function ThemeToggle() {
   useEffect(() => {
     let cancelled = false;
 
-    queueMicrotask(() => {
+    const loadSnapshot = () => {
       if (cancelled) {
         return;
       }
@@ -38,12 +39,18 @@ export function ThemeToggle() {
       } catch {
         // Storage may be denied; provider keeps its current selection.
       }
+    };
 
+    queueMicrotask(() => {
+      loadSnapshot();
       setMounted(true);
     });
 
+    window.addEventListener(STREAK_DATA_CHANGED_EVENT, loadSnapshot);
+
     return () => {
       cancelled = true;
+      window.removeEventListener(STREAK_DATA_CHANGED_EVENT, loadSnapshot);
     };
   }, [setTheme]);
 

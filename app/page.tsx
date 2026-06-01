@@ -97,7 +97,7 @@ export default function Home() {
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="border-b py-3">
             <CardTitle>Data contract</CardTitle>
           </CardHeader>
           <CardContent>
