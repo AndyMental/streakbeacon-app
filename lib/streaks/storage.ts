@@ -438,6 +438,17 @@ function requireIsoDate(value: string): IsoDate {
     throw new Error(`Expected YYYY-MM-DD completion date, received: ${value}.`);
   }
 
+  const parsed = new Date(`${value}T00:00:00.000Z`);
+
+  if (
+    Number.isNaN(parsed.getTime()) ||
+    parsed.toISOString().slice(0, 10) !== value
+  ) {
+    throw new Error(
+      `Expected a real YYYY-MM-DD completion date, received: ${value}.`
+    );
+  }
+
   return value as IsoDate;
 }
 
