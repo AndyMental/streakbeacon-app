@@ -56,6 +56,7 @@ import {
   STREAK_DATA_CHANGED_EVENT
 } from "@/lib/streaks/storage";
 import { StreakStore } from "@/lib/streaks/store";
+import { StreakExportButton } from "@/components/streak-export-button";
 
 const DEMO_AS_OF = new Date("2026-05-27T12:00:00.000Z");
 const STORAGE_ERROR_MESSAGE =
@@ -465,6 +466,11 @@ export function StreakDashboard() {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
+
+                  <StreakExportButton
+                    model={model}
+                    disabled={!isReady || Boolean(storageError)}
+                  />
                 </div>
               ) : null}
             </div>
