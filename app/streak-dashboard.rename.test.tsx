@@ -124,6 +124,10 @@ describe("StreakDashboard Rename UI Affordance", () => {
       await flushEffects();
     });
 
+    const habitButton = document.querySelector('[data-testid="streak-item-habit-1"]');
+    assert.ok(habitButton, "Habit button should be present");
+    await clickElement(habitButton);
+
     const renameTrigger = document.querySelector<HTMLButtonElement>(
       '[data-testid="dashboard-rename-trigger"]'
     );

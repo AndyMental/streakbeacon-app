@@ -58,6 +58,8 @@ import {
 import { StreakStore } from "@/lib/streaks/store";
 import { StreakExportButton } from "@/components/streak-export-button";
 
+import { useHabitSelection } from "@/hooks/useHabitSelection";
+
 const DEMO_AS_OF = new Date("2026-05-27T12:00:00.000Z");
 const STORAGE_ERROR_MESSAGE =
   "Local streak data is unavailable in this browser. You can still review the page, but completion changes will not be saved.";
@@ -73,7 +75,7 @@ export function StreakDashboard() {
   );
   const [isReady, setIsReady] = useState(false);
   const [storageError, setStorageError] = useState<string | null>(null);
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const { selectedHabitId, selectHabit: setSelectedItemId } = useHabitSelection(null);
   const [selectedDay, setSelectedDay] = useState<IsoDate | null>(null);
   const [newItemName, setNewItemName] = useState("");
   const [createError, setCreateError] = useState<string | null>(null);
@@ -81,8 +83,8 @@ export function StreakDashboard() {
   const [renameValue, setRenameValue] = useState("");
   const [renameError, setRenameError] = useState<string | null>(null);
   const model = useMemo(
-    () => buildStreakGridModel(data, selectedItemId, selectedDay, DEMO_AS_OF),
-    [data, selectedDay, selectedItemId]
+    () => buildStreakGridModel(data, selectedHabitId, selectedDay, DEMO_AS_OF),
+    [data, selectedDay, selectedHabitId]
   );
   const selectedCompletion = getNextSelectedCompletion(model);
   const hasItems = data.items.length > 0;
@@ -100,9 +102,12 @@ export function StreakDashboard() {
         setData(stored);
         setSelectedItemId((current) => {
           const activeItems = stored.items.filter((item) => !item.archivedAt);
-          return current && activeItems.some((item) => item.id === current)
+          if (current === null) {
+            return null;
+          }
+          return activeItems.some((item) => item.id === current)
             ? current
-            : activeItems[0]?.id ?? null;
+            : null;
         });
         setStorageError(null);
       } catch {
@@ -119,7 +124,7 @@ export function StreakDashboard() {
       cancelled = true;
       window.removeEventListener(STREAK_DATA_CHANGED_EVENT, loadSnapshot);
     };
-  }, []);
+  }, [setSelectedItemId]);
 
   function selectDay(day: GridDay) {
     setSelectedDay(day.day);
@@ -311,7 +316,7 @@ export function StreakDashboard() {
               >
                 {!isReady
                   ? "Loading local streak data"
-                  : model.activeItem?.name ?? "No active streak"}
+                  : model.activeItem?.name ?? (hasItems ? "All Habits" : "No active streak")}
               </p>
             </div>
             <div
@@ -319,6 +324,17 @@ export function StreakDashboard() {
               role="group"
               aria-label="Streak selector"
             >
+              {hasItems && (
+                <Button
+                  type="button"
+                  data-testid="streak-item-all"
+                  variant={selectedHabitId === null ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedItemId(null)}
+                >
+                  All Habits
+                </Button>
+              )}
               {data.items
                 .filter((item) => !item.archivedAt)
                 .map((item) => (
@@ -327,7 +343,7 @@ export function StreakDashboard() {
                   type="button"
                   data-testid={`streak-item-${item.id}`}
                   variant={
-                    item.id === model.activeItem?.id ? "default" : "outline"
+                    item.id === selectedHabitId ? "default" : "outline"
                   }
                   size="sm"
                   className="max-w-full truncate sm:max-w-48"
