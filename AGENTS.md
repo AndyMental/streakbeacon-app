@@ -20,10 +20,18 @@ commands that are actually present.
 
 ## OpenAPI
 
-No OpenAPI or Swagger generation/update command is present yet.
+The repository uses Spectral for OpenAPI linting and a custom Ajv-based harness
+for contract validation.
+
+- Lint OpenAPI spec: `npm run lint:openapi`
+- Run contract tests: `npm run test:contract`
+
+OpenAPI linting is integrated into the main `npm run lint` command.
 
 Before adding frontend code or black-box tests that consume API routes, add or
 identify the OpenAPI/Swagger workflow and document the exact command here.
+If adding new API routes, ensure they are documented in `docs/openapi.yaml` and
+that the contract tests pass.
 
 ## Deployment
 
