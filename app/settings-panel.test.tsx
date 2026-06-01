@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { afterEach, describe, it } from "node:test";
 import { JSDOM } from "jsdom";
 import { act } from "react";
@@ -8,6 +9,7 @@ import { ThemeProvider } from "./theme-provider";
 
 let root: Root | null = null;
 let dom: JSDOM | null = null;
+const settingsPanelSource = readFileSync("app/settings-panel.tsx", "utf8");
 
 function setupDom() {
   dom = new JSDOM("<!doctype html><html><body></body></html>", {
@@ -61,6 +63,7 @@ function setupDom() {
       super(type, props);
     }
   } as unknown as typeof PointerEvent;
+  window.PointerEvent = globalThis.PointerEvent;
 
   // Mock URL.createObjectURL and revokeObjectURL
   globalThis.URL.createObjectURL = () => "blob:test";
@@ -75,7 +78,15 @@ function flushEffects() {
 
 async function clickElement(element: Element) {
   await act(async () => {
-    element.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+    element.dispatchEvent(
+      new window.PointerEvent("pointerdown", {
+        bubbles: true,
+        cancelable: true
+      })
+    );
+    element.dispatchEvent(
+      new window.MouseEvent("click", { bubbles: true, cancelable: true })
+    );
     await flushEffects();
   });
 }
@@ -125,6 +136,57 @@ describe("SettingsPanel Interaction Evidence", () => {
       const element = document.querySelector(`[data-testid="${id}"]`);
       assert.ok(element, `Missing element with data-testid="${id}"`);
     }
+  });
+
+  it("exposes file import as a keyboard-operable button with a named input", async () => {
+    setupDom();
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    root = createRoot(container);
+
+    await act(async () => {
+      root?.render(
+        <ThemeProvider attribute="class" defaultTheme="system">
+          <SettingsPanel />
+        </ThemeProvider>
+      );
+      await flushEffects();
+    });
+
+    const importInput = document.querySelector<HTMLInputElement>(
+      '[data-testid="settings-import-json"]'
+    );
+    assert.ok(importInput);
+    assert.equal(importInput.getAttribute("aria-label"), "Import JSON file");
+
+    let pickerOpened = false;
+    importInput.click = () => {
+      pickerOpened = true;
+    };
+
+    const importButton = Array.from(document.querySelectorAll("button")).find(
+      (button) => button.textContent?.includes("Import JSON")
+    );
+    assert.ok(importButton, "Import JSON action should be a real button");
+
+    await clickElement(importButton);
+    assert.equal(pickerOpened, true, "Button should open the hidden file input");
+  });
+
+  it("labels the pasted JSON textarea", () => {
+    assert.match(
+      settingsPanelSource,
+      /<Label htmlFor="settings-import-paste-text">[\s\S]*Export JSON[\s\S]*<\/Label>/
+    );
+    assert.match(
+      settingsPanelSource,
+      /<Textarea[\s\S]*id="settings-import-paste-text"/
+    );
+    assert.match(
+      settingsPanelSource,
+      /<Textarea[\s\S]*data-testid="settings-import-paste-textarea"/
+    );
   });
 
   it("updates the theme class on documentElement when a theme toggle item is clicked", async () => {
