@@ -329,7 +329,8 @@ export function StreakDashboard() {
                   type="button"
                   data-testid="streak-item-all"
                   variant={selectedHabitId === null ? "default" : "outline"}
-                  size="sm"
+                  size="lg"
+                  className="sm:min-h-9 sm:px-3 sm:text-xs"
                   onClick={() => setSelectedItemId(null)}
                 >
                   All Habits

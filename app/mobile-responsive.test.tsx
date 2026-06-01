@@ -109,6 +109,15 @@ describe("Mobile Responsive Layout Polish", () => {
       );
       await flushEffects();
     });
+    
+    // Switch to the specific habit so rename/delete buttons render
+    const habitBtn = Array.from(document.querySelectorAll("button")).find(b => b.textContent?.includes("Initial Habit"));
+    if (habitBtn) {
+      await act(async () => {
+        habitBtn.dispatchEvent(new window.MouseEvent("click", { bubbles: true }));
+        await flushEffects();
+      });
+    }
 
     // Check streak grid cell sizes
     const gridCells = document.querySelectorAll('button[aria-label^="May"]');
