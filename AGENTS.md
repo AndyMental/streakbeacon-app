@@ -47,10 +47,10 @@ npm install
 npm run preview:preflight
 ```
 
-`npm run preview:preflight` runs `npm run lint && npm run test && npm run
-build` in the same order as the `Preview Preflight` GitHub Actions workflow
-(`.github/workflows/preview-preflight.yml`), so passing it locally matches
-the deploy-adjacent CI gate.
+`npm run preview:preflight` runs `npm run format:check && npm run lint && npm
+run test && npm run build` in the same order as the `Preview Preflight` GitHub
+Actions workflow (`.github/workflows/preview-preflight.yml`), so passing it
+locally matches the deploy-adjacent CI gate.
 
 ### Deploy blocker — admin input required
 
