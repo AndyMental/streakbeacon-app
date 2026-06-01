@@ -1,6 +1,7 @@
 import { CalendarCheck, Flame, ShieldCheck, Target } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { buildSoftwareApplicationJsonLd } from "@/lib/seo/json-ld";
 import { SettingsPanel } from "./settings-panel";
 import { StreakDashboard } from "./streak-dashboard";
 import { ThemeToggle } from "./theme-toggle";
@@ -18,12 +19,19 @@ const signals = [
 ];
 
 export default function Home() {
+  const jsonLd = buildSoftwareApplicationJsonLd();
+
   return (
     <main
       id="main-content"
       tabIndex={-1}
       className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 px-5 py-6 sm:px-8 lg:px-10"
     >
+      <script
+        type="application/ld+json"
+        data-testid="home-jsonld"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <header className="flex flex-col gap-4 border-b pb-6 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <p className="text-sm font-medium uppercase text-muted-foreground">
