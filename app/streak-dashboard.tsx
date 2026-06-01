@@ -345,21 +345,22 @@ export function StreakDashboard() {
                   variant={
                     item.id === selectedHabitId ? "default" : "outline"
                   }
-                  size="sm"
-                  className="max-w-full truncate sm:max-w-48"
+                  size="lg"
+                  className="max-w-full truncate sm:min-h-9 sm:px-3 sm:text-xs sm:max-w-48"
                   onClick={() => setSelectedItemId(item.id)}
                 >
                   {item.name}
                 </Button>
               ))}
               {model.activeItem ? (
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <AlertDialog open={isRenameOpen} onOpenChange={setIsRenameOpen}>
                     <AlertDialogTrigger asChild>
                       <Button
                         type="button"
                         variant="outline"
-                        size="sm"
+                        size="lg"
+                        className="sm:min-h-9 sm:px-3 sm:text-xs"
                         data-testid="dashboard-rename-trigger"
                         aria-label={`Rename ${model.activeItem.name}`}
                         disabled={!isReady || Boolean(storageError)}
@@ -420,7 +421,8 @@ export function StreakDashboard() {
                       <Button
                         type="button"
                         variant="outline"
-                        size="sm"
+                        size="lg"
+                        className="sm:min-h-9 sm:px-3 sm:text-xs"
                         aria-label={`Archive ${model.activeItem.name}`}
                         disabled={!isReady || Boolean(storageError)}
                       >
@@ -453,7 +455,8 @@ export function StreakDashboard() {
                       <Button
                         type="button"
                         variant="outline"
-                        size="sm"
+                        size="lg"
+                        className="sm:min-h-9 sm:px-3 sm:text-xs"
                         aria-label={`Delete ${model.activeItem.name}`}
                         disabled={!isReady || Boolean(storageError)}
                       >
@@ -519,7 +522,8 @@ export function StreakDashboard() {
                 />
                 <Button
                   type="submit"
-                  className="w-full sm:w-auto"
+                  size="lg"
+                  className="w-full sm:min-h-10 sm:px-4 sm:py-2 sm:text-sm sm:w-auto"
                   disabled={!isReady || Boolean(storageError) || !newItemName.trim()}
                 >
                   {!isReady ? (
@@ -573,7 +577,7 @@ export function StreakDashboard() {
             aria-label="Recent completion history"
           >
             <TooltipProvider>
-              <div className="grid w-max min-w-full grid-flow-col auto-cols-[1.35rem] gap-1">
+              <div className="grid w-max min-w-full grid-flow-col auto-cols-[2.75rem] gap-1 sm:auto-cols-[1.35rem]">
                 {model.weeks.map((week) => (
                   <div key={week.key} className="grid grid-rows-7 gap-1">
                     {week.days.map((day) => (
@@ -588,7 +592,7 @@ export function StreakDashboard() {
                             aria-current={day.isSelected ? "true" : undefined}
                             onClick={() => selectDay(day)}
                             className={cn(
-                              "h-5 w-5 rounded-sm border outline-none transition-transform motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+                              "h-11 w-11 rounded-sm border outline-none transition-transform motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:h-5 sm:w-5",
                               day.isSelected &&
                                 "scale-110 border-foreground motion-reduce:scale-100",
                               getDayClassName(day.intensity)
@@ -659,6 +663,7 @@ export function StreakDashboard() {
             <Button
               type="button"
               className="mt-4 w-full"
+              size="lg"
               variant={model.selectedDay.isComplete ? "outline" : "default"}
               onClick={toggleSelectedDay}
               disabled={!model.activeItem || !isReady || Boolean(storageError)}

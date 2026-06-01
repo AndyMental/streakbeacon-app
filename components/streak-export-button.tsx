@@ -142,7 +142,8 @@ export function StreakExportButton({ model, disabled }: StreakExportButtonProps)
     <Button
       type="button"
       variant="outline"
-      size="sm"
+      size="lg"
+      className="sm:min-h-9 sm:px-3 sm:text-xs"
       data-testid="dashboard-export-button"
       onClick={handleExport}
       disabled={disabled || isExporting || !model.activeItem}
