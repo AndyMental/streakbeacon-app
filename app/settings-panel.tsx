@@ -1,9 +1,21 @@
 "use client";
 
-import { AlertCircle, CheckCircle2, ClipboardPaste, Download, FileJson, Info, Loader2, Monitor, Moon, RotateCcw, Sun, Upload } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  ClipboardPaste,
+  Download,
+  FileJson,
+  Info,
+  Loader2,
+  Monitor,
+  Moon,
+  RotateCcw,
+  Sun,
+  Upload
+} from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   AlertDialog,
@@ -146,6 +158,10 @@ export function SettingsPanel() {
     setMessage("Export downloaded.");
   }
 
+  function openImportFilePicker() {
+    importInputRef.current?.click();
+  }
+
   async function handleImportFile(file: File | undefined) {
     if (!file) {
       return;
@@ -249,7 +265,10 @@ export function SettingsPanel() {
         <CardContent>
           {storageError ? (
             <Alert variant="destructive" className="relative mb-4 pl-10">
-              <AlertCircle className="absolute left-4 top-4 h-4 w-4" />
+              <AlertCircle
+                className="absolute left-4 top-4 h-4 w-4"
+                aria-hidden="true"
+              />
               <AlertTitle>Storage unavailable</AlertTitle>
               <AlertDescription>{storageError}</AlertDescription>
             </Alert>
@@ -293,7 +312,10 @@ export function SettingsPanel() {
         <CardContent>
           {storageError ? (
             <Alert variant="destructive" className="relative mb-5 pl-10">
-              <AlertCircle className="absolute left-4 top-4 h-4 w-4" />
+              <AlertCircle
+                className="absolute left-4 top-4 h-4 w-4"
+                aria-hidden="true"
+              />
               <AlertTitle>Storage unavailable</AlertTitle>
               <AlertDescription>{storageError}</AlertDescription>
             </Alert>
@@ -340,26 +362,30 @@ export function SettingsPanel() {
               <Download className="h-4 w-4" aria-hidden="true" />
               Export JSON
             </Button>
-            <Button asChild variant="outline" size="lg" disabled={isActionDisabled}>
-              <Label className={cn("cursor-pointer", isActionDisabled && "opacity-50 pointer-events-none")}>
-                {isImporting ? (
-                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
-                ) : (
-                  <Upload className="h-4 w-4" aria-hidden="true" />
-                )}
-                {isImporting ? "Reading file..." : "Import JSON"}
-                <Input
-                  ref={importInputRef}
-                  type="file"
-                  accept="application/json,.json"
-                  className="sr-only"
-                  disabled={isActionDisabled}
-                  onChange={(event) =>
-                    handleImportFile(event.target.files?.[0])
-                  }
-                  data-testid="settings-import-json"
-                />
-              </Label>
+            <Input
+              ref={importInputRef}
+              id="settings-import-json-file"
+              type="file"
+              accept="application/json,.json"
+              className="sr-only"
+              disabled={isActionDisabled}
+              aria-label="Import JSON file"
+              onChange={(event) => handleImportFile(event.target.files?.[0])}
+              data-testid="settings-import-json"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="lg"
+              disabled={isActionDisabled}
+              onClick={openImportFilePicker}
+            >
+              {isImporting ? (
+                <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+              ) : (
+                <Upload className="h-4 w-4" aria-hidden="true" />
+              )}
+              {isImporting ? "Reading file..." : "Import JSON"}
             </Button>
             <AlertDialog open={isPasteOpen} onOpenChange={setIsPasteOpen}>
               <AlertDialogTrigger asChild>
@@ -382,9 +408,13 @@ export function SettingsPanel() {
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <div className="py-4">
+                  <Label htmlFor="settings-import-paste-text">
+                    Export JSON
+                  </Label>
                   <Textarea
+                    id="settings-import-paste-text"
                     placeholder='{"format": "streakbeacon.export", ...}'
-                    className="min-h-32 font-mono text-xs"
+                    className="mt-2 min-h-32 font-mono text-xs"
                     value={pasteValue}
                     onChange={(e) => setPasteValue(e.target.value)}
                     data-testid="settings-import-paste-textarea"
@@ -439,7 +469,10 @@ export function SettingsPanel() {
 
           {preview ? (
             <Alert variant="muted" role="status" className="relative mt-5 pl-10">
-              <Info className="absolute left-4 top-4 h-4 w-4 text-primary" />
+              <Info
+                className="absolute left-4 top-4 h-4 w-4 text-primary"
+                aria-hidden="true"
+              />
               <AlertTitle>Import preview</AlertTitle>
               <AlertDescription>
                 {preview.itemCount} items, {preview.completionCount} completed
@@ -475,7 +508,10 @@ export function SettingsPanel() {
 
           {importError ? (
             <Alert variant="destructive" className="relative mt-4 pl-10">
-              <AlertCircle className="absolute left-4 top-4 h-4 w-4" />
+              <AlertCircle
+                className="absolute left-4 top-4 h-4 w-4"
+                aria-hidden="true"
+              />
               <AlertTitle>Import Error</AlertTitle>
               <AlertDescription className="mt-0">
                 {importError}

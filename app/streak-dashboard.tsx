@@ -250,6 +250,7 @@ export function StreakDashboard() {
                   }
                   size="sm"
                   className="max-w-full truncate sm:max-w-48"
+                  aria-pressed={item.id === model.activeItem?.id}
                   onClick={() => setSelectedItemId(item.id)}
                 >
                   {item.name}
@@ -351,7 +352,10 @@ export function StreakDashboard() {
 
           {storageError ? (
             <Alert variant="destructive" className="relative mb-4 pl-10">
-              <AlertCircle className="absolute left-4 top-4 h-4 w-4" />
+              <AlertCircle
+                className="absolute left-4 top-4 h-4 w-4"
+                aria-hidden="true"
+              />
               <AlertTitle>Storage unavailable</AlertTitle>
               <AlertDescription>{storageError}</AlertDescription>
             </Alert>
@@ -359,7 +363,10 @@ export function StreakDashboard() {
 
           {isReady && !hasItems ? (
             <Alert variant="muted" role="status" className="relative mb-4 pl-10">
-              <Info className="absolute left-4 top-4 h-4 w-4 text-primary" />
+              <Info
+                className="absolute left-4 top-4 h-4 w-4 text-primary"
+                aria-hidden="true"
+              />
               <AlertTitle>No streaks yet</AlertTitle>
               <AlertDescription>
                 Add a habit to start filling the local completion grid. Until
@@ -387,7 +394,7 @@ export function StreakDashboard() {
                               day.isComplete ? "completed" : "not completed"
                             }`}
                             aria-pressed={day.isComplete}
-                            aria-current={day.isSelected ? "true" : undefined}
+                            aria-current={day.isSelected ? "date" : undefined}
                             onClick={() => selectDay(day)}
                             className={cn(
                               "h-5 w-5 rounded-sm border outline-none transition-transform motion-reduce:transition-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
@@ -464,6 +471,9 @@ export function StreakDashboard() {
               variant={model.selectedDay.isComplete ? "outline" : "default"}
               onClick={toggleSelectedDay}
               disabled={!model.activeItem || !isReady || Boolean(storageError)}
+              aria-label={`${
+                model.selectedDay.isComplete ? "Mark open" : "Mark complete"
+              } for ${model.selectedDay.label}`}
             >
               {!isReady
                 ? "Loading"
