@@ -344,6 +344,7 @@ export function StreakDashboard() {
                   <Input
                     type="search"
                     data-testid="streak-search-input"
+                    aria-label="Search habits"
                     placeholder="Search habits..."
                     className="h-9 pl-9 sm:text-xs"
                     value={searchQuery}
