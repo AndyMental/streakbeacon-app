@@ -1,6 +1,7 @@
 import {
   addStreakItem,
   deleteStreakItem,
+  mergeStreaks,
   renameStreakItem,
   setDayCompletion,
   updatePreferences,
@@ -55,6 +56,10 @@ export class StreakStore {
 
   replaceData(data: StreakData, now = new Date()): StreakData {
     return this.storage.replace(data, now);
+  }
+
+  mergeData(data: StreakData, now = new Date()): StreakData {
+    return this.commit(mergeStreaks(this.storage.load(), data, now), now);
   }
 
   reset(): void {

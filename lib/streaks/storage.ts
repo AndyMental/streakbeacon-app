@@ -242,15 +242,8 @@ function normalizeItem(value: unknown, lenient = false): StreakItem {
     throw new Error("Every item must be an object.");
   }
 
-  const id =
-    lenient && (typeof value.id !== "string" || !value.id.trim())
-      ? Math.random().toString(36).slice(2)
-      : requireString(value.id, "item.id", 128);
-
-  const name =
-    lenient && (typeof value.name !== "string" || !value.name.trim())
-      ? "Unnamed Streak"
-      : requireString(value.name, "item.name", 80);
+  const id = requireString(value.id, "item.id", 128);
+  const name = requireString(value.name, "item.name", 80);
 
   return {
     id,

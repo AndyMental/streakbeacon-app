@@ -51,7 +51,7 @@ describe("Parser Hardening Regression", () => {
     assert.equal(item.archivedAt, null, "Item should not be archived");
   });
 
-  it("recovers partially from malformed items and missing IDs in lenient mode", () => {
+  it("skips malformed items and items missing IDs, recovering the rest in lenient mode", () => {
     const storage = new MemoryStorage();
     const adapter = new LocalStreakStorageAdapter(storage);
 
@@ -72,8 +72,7 @@ describe("Parser Hardening Regression", () => {
 
     const loaded = adapter.load();
 
-    assert.equal(loaded.items.length, 2, "Should recover 2 items");
-    assert.ok(loaded.items.find(i => i.name === "Missing ID"), "Should recover item with missing ID");
+    assert.equal(loaded.items.length, 1, "Should recover 1 valid item and skip the malformed ones");
     assert.ok(loaded.items.find(i => i.id === "valid"), "Should recover valid item");
 
     assert.ok(!Number.isNaN(Date.parse(loaded.createdAt)), "Should fall back to a valid createdAt date");
@@ -125,7 +124,7 @@ describe("Parser Hardening Regression", () => {
     assert.equal(item.archivedAt, null, "Malformed archivedAt should default to null in lenient mode to keep item active");
   });
 
-  it("handles blank IDs and names in lenient mode", () => {
+  it("skips items with blank IDs or names in lenient mode", () => {
     const storage = new MemoryStorage();
     const adapter = new LocalStreakStorageAdapter(storage);
 
@@ -139,9 +138,7 @@ describe("Parser Hardening Regression", () => {
     storage.setItem(STREAK_STORAGE_KEY, JSON.stringify(blankData));
 
     const loaded = adapter.load();
-    assert.equal(loaded.items.length, 2, "Should recover 2 items with blank fields");
-    assert.ok(loaded.items[0].id.trim().length > 0, "Should generate a new ID for blank ID");
-    assert.equal(loaded.items[1].name, "Unnamed Streak", "Should fall back to default name for blank name");
+    assert.equal(loaded.items.length, 0, "Should skip items with blank fields");
   });
 
   it("initializes empty completions for all items when field is missing in lenient mode", () => {
