@@ -10,6 +10,7 @@ import {
   type IsoDate,
   type StreakData,
 } from "@/lib/streaks/model";
+import { buildStreakGridModel } from "@/lib/streaks/grid";
 import { WeeklyOverview } from "@/components/weekly-overview";
 
 let root: Root | null = null;
@@ -162,6 +163,27 @@ describe("WeeklyOverview", () => {
     assert.equal(countDayStates("Reading", "Completed"), 0);
   });
 
+  it("marks the selected overview day from the grid model", async () => {
+    const now = new Date("2026-05-27T12:00:00.000Z");
+    let data = createEmptyStreakData(now);
+    data = addStreakItem(data, { id: "test-habit", name: "Test Habit", now });
+    data = setDayCompletion(data, "test-habit", "2026-05-24", true, now);
+
+    await renderWeeklyOverview(data, now, "2026-05-24");
+
+    assert.ok(
+      document.querySelector(
+        '[aria-label="Test Habit on Sunday, May 24: Completed"][aria-current="date"]'
+      ),
+      "selected non-today completion should be marked as the current date"
+    );
+    assert.equal(
+      document.querySelectorAll('[aria-current="date"]').length,
+      2,
+      "the selected day should be marked in the header and habit row"
+    );
+  });
+
   it("returns null when there are no active habits", async () => {
     const now = new Date("2026-05-27T12:00:00.000Z");
     const data = createEmptyStreakData(now);
@@ -204,7 +226,11 @@ function buildWeeklyData(
   }, createEmptyStreakData(now));
 }
 
-async function renderWeeklyOverview(data: StreakData, asOf: Date) {
+async function renderWeeklyOverview(
+  data: StreakData,
+  asOf: Date,
+  selectedDay: IsoDate | null = null
+) {
   if (!dom) {
     setupDom();
   }
@@ -215,8 +241,14 @@ async function renderWeeklyOverview(data: StreakData, asOf: Date) {
     root = createRoot(container);
   }
 
+  const selectedItemId =
+    data.items.find((item) => !item.archivedAt)?.id ?? null;
+  const model = buildStreakGridModel(data, selectedItemId, selectedDay, asOf);
+
   await act(async () => {
-    root?.render(<WeeklyOverview data={data} asOf={asOf} />);
+    root?.render(
+      <WeeklyOverview data={data} overview={model.weeklyOverview} />
+    );
     await flushEffects();
   });
 }
