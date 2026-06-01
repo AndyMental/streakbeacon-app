@@ -124,4 +124,41 @@ describe("Parser Hardening Regression", () => {
     assert.ok(item, "Item should be loaded");
     assert.equal(item.archivedAt, null, "Malformed archivedAt should default to null in lenient mode to keep item active");
   });
+
+  it("handles blank IDs and names in lenient mode", () => {
+    const storage = new MemoryStorage();
+    const adapter = new LocalStreakStorageAdapter(storage);
+
+    const blankData = {
+      items: [
+        { id: "  ", name: "Valid Name", order: 0 },
+        { id: "valid-id", name: "", order: 1 }
+      ]
+    };
+
+    storage.setItem(STREAK_STORAGE_KEY, JSON.stringify(blankData));
+
+    const loaded = adapter.load();
+    assert.equal(loaded.items.length, 2, "Should recover 2 items with blank fields");
+    assert.ok(loaded.items[0].id.trim().length > 0, "Should generate a new ID for blank ID");
+    assert.equal(loaded.items[1].name, "Unnamed Streak", "Should fall back to default name for blank name");
+  });
+
+  it("initializes empty completions for all items when field is missing in lenient mode", () => {
+    const storage = new MemoryStorage();
+    const adapter = new LocalStreakStorageAdapter(storage);
+
+    const noCompletionsData = {
+      items: [
+        { id: "item-1", name: "Item 1", order: 0 }
+      ]
+      // completions field is missing
+    };
+
+    storage.setItem(STREAK_STORAGE_KEY, JSON.stringify(noCompletionsData));
+
+    const loaded = adapter.load();
+    assert.ok(loaded.completions["item-1"], "Should initialize empty completions for item-1");
+    assert.deepEqual(loaded.completions["item-1"], {}, "Completions for item-1 should be empty object");
+  });
 });

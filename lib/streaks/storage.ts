@@ -243,12 +243,12 @@ function normalizeItem(value: unknown, lenient = false): StreakItem {
   }
 
   const id =
-    lenient && typeof value.id !== "string"
+    lenient && (typeof value.id !== "string" || !value.id.trim())
       ? Math.random().toString(36).slice(2)
       : requireString(value.id, "item.id", 128);
 
   const name =
-    lenient && typeof value.name !== "string"
+    lenient && (typeof value.name !== "string" || !value.name.trim())
       ? "Unnamed Streak"
       : requireString(value.name, "item.name", 80);
 
@@ -293,17 +293,17 @@ function normalizeCompletions(
   itemIds: Set<string>,
   lenient = false
 ): Record<string, Record<IsoDate, Completion>> {
-  if (!isRecord(value)) {
-    if (lenient) {
-      return {};
-    }
-    throw new Error("completions must be an object.");
-  }
-
   const completions: Record<string, Record<IsoDate, Completion>> = {};
 
   for (const itemId of itemIds) {
     completions[itemId] = {};
+  }
+
+  if (!isRecord(value)) {
+    if (lenient) {
+      return completions;
+    }
+    throw new Error("completions must be an object.");
   }
 
   for (const [itemId, days] of Object.entries(value)) {
