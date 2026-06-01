@@ -1,12 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 type GlobalErrorPageProps = {
   error: Error & { digest?: string };
@@ -15,7 +10,7 @@ type GlobalErrorPageProps = {
 
 export default function GlobalErrorPage({
   error,
-  reset
+  reset,
 }: GlobalErrorPageProps) {
   return (
     <html lang="en">

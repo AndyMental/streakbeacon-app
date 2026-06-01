@@ -4,7 +4,8 @@ import "./globals.css";
 import { ThemeProvider } from "./theme-provider";
 
 const title = "StreakBeacon";
-const description = "Local-first streak tracking for habits that need visibility.";
+const description =
+  "Local-first streak tracking for habits that need visibility.";
 
 export const metadata: Metadata = {
   applicationName: "StreakBeacon",
@@ -16,13 +17,13 @@ export const metadata: Metadata = {
     description,
     type: "website",
     siteName: "StreakBeacon",
-    locale: "en_US"
+    locale: "en_US",
   },
   twitter: {
     card: "summary",
     title,
-    description
-  }
+    description,
+  },
 };
 
 export const viewport: Viewport = {
@@ -31,12 +32,12 @@ export const viewport: Viewport = {
   colorScheme: "light dark",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
-    { media: "(prefers-color-scheme: dark)", color: "#1E1E1E" }
-  ]
+    { media: "(prefers-color-scheme: dark)", color: "#1E1E1E" },
+  ],
 };
 
 export default function RootLayout({
-  children
+  children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {

@@ -35,21 +35,21 @@ describe("Data Migration", () => {
           createdAt: "2026-05-01T10:00:00.000Z",
           updatedAt: "2026-05-01T10:00:00.000Z",
           order: 0,
-          archivedAt: null
-        }
+          archivedAt: null,
+        },
       ],
       completions: {
         "task-1": {
-          "2026-05-01": { completedAt: "2026-05-01T10:00:00.000Z" }
-        }
+          "2026-05-01": { completedAt: "2026-05-01T10:00:00.000Z" },
+        },
       },
       preferences: {
         theme: "light",
         weekStartsOn: 0,
         gridWindowDays: 365,
         showArchived: false,
-        accentColor: "#27AE60"
-      }
+        accentColor: "#27AE60",
+      },
     };
 
     storage.setItem(STREAK_STORAGE_KEY, JSON.stringify(v0Data));
@@ -70,7 +70,7 @@ describe("Data Migration", () => {
       updatedAt: "2026-05-01T10:00:00.000Z",
       items: [],
       completions: {},
-      preferences: {}
+      preferences: {},
     };
 
     storage.setItem(STREAK_STORAGE_KEY, JSON.stringify(v1Data));

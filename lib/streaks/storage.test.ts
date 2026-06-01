@@ -6,13 +6,13 @@ import {
   mergeStreaks,
   setDayCompletion,
   STREAK_DATA_VERSION,
-  updatePreferences
+  updatePreferences,
 } from "./model";
 import {
   assertStorageWritable,
   LocalStreakStorageAdapter,
   STREAK_STORAGE_KEY,
-  validateImportText
+  validateImportText,
 } from "./storage";
 
 class MemoryStorage {
@@ -59,7 +59,7 @@ function createSampleData() {
       addStreakItem(createEmptyStreakData(now), {
         id: "read",
         name: "Read",
-        now
+        now,
       }),
       { theme: "dark" },
       now
@@ -95,7 +95,7 @@ describe("LocalStreakStorageAdapter", () => {
       STREAK_STORAGE_KEY,
       JSON.stringify({
         ...createEmptyStreakData(),
-        schemaVersion: 99
+        schemaVersion: 99,
       })
     );
     const adapter = new LocalStreakStorageAdapter(storage);
@@ -115,7 +115,7 @@ describe("LocalStreakStorageAdapter", () => {
       STREAK_STORAGE_KEY,
       JSON.stringify({
         ...createEmptyStreakData(),
-        items: "not an array"
+        items: "not an array",
       })
     );
 
@@ -127,10 +127,10 @@ describe("LocalStreakStorageAdapter", () => {
         ...createEmptyStreakData(),
         items: [
           {
-            id: "missing-fields"
+            id: "missing-fields",
             // name, createdAt, etc missing
-          }
-        ]
+          },
+        ],
       })
     );
 
@@ -146,9 +146,9 @@ describe("LocalStreakStorageAdapter", () => {
             name: "Invalid ID Type",
             createdAt: "not a date",
             updatedAt: "not a date",
-            order: "not a number"
-          }
-        ]
+            order: "not a number",
+          },
+        ],
       })
     );
 
@@ -162,7 +162,7 @@ describe("LocalStreakStorageAdapter", () => {
       addStreakItem(createEmptyStreakData(now), {
         id: "streak-1",
         name: "Streak 1",
-        now
+        now,
       }),
       "streak-1",
       "2026-05-26",
@@ -174,7 +174,7 @@ describe("LocalStreakStorageAdapter", () => {
       addStreakItem(createEmptyStreakData(now), {
         id: "streak-1",
         name: "Streak 1 Updated",
-        now: later
+        now: later,
       }),
       "streak-1",
       "2026-05-27",
@@ -186,15 +186,21 @@ describe("LocalStreakStorageAdapter", () => {
     const withSecond = addStreakItem(incoming, {
       id: "streak-2",
       name: "Streak 2",
-      now: later
+      now: later,
     });
 
     const merged = mergeStreaks(existing, withSecond, later);
 
     assert.equal(merged.items.length, 2);
     // Updated name because later > now
-    assert.equal(merged.items.find((i) => i.id === "streak-1")?.name, "Streak 1 Updated");
-    assert.equal(merged.items.find((i) => i.id === "streak-2")?.name, "Streak 2");
+    assert.equal(
+      merged.items.find((i) => i.id === "streak-1")?.name,
+      "Streak 1 Updated"
+    );
+    assert.equal(
+      merged.items.find((i) => i.id === "streak-2")?.name,
+      "Streak 2"
+    );
 
     // Union of completions
     assert.ok(merged.completions["streak-1"]["2026-05-26"]);
@@ -286,8 +292,8 @@ describe("LocalStreakStorageAdapter", () => {
           ...exported,
           data: {
             ...exported.data,
-            items: [exported.data.items[0], exported.data.items[0]]
-          }
+            items: [exported.data.items[0], exported.data.items[0]],
+          },
         })
       ).ok,
       false
@@ -300,9 +306,9 @@ describe("LocalStreakStorageAdapter", () => {
             ...exported.data,
             completions: {
               ...exported.data.completions,
-              missing: {}
-            }
-          }
+              missing: {},
+            },
+          },
         })
       ).ok,
       false
@@ -315,12 +321,12 @@ describe("LocalStreakStorageAdapter", () => {
     const first = addStreakItem(createEmptyStreakData(now), {
       id: "read-a",
       name: "Read",
-      now
+      now,
     });
     const data = addStreakItem(first, {
       id: "read-b",
       name: "read",
-      now
+      now,
     });
     const result = validateImportText(JSON.stringify(adapter.export(data)));
 

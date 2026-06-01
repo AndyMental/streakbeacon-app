@@ -11,7 +11,7 @@ import {
   renameStreakItem,
   setDayCompletion,
   unarchiveStreakItem,
-  updatePreferences
+  updatePreferences,
 } from "./model";
 
 describe("streak domain model", () => {
@@ -22,7 +22,7 @@ describe("streak domain model", () => {
     data = addStreakItem(data, {
       id: "morning-walk",
       name: "  Morning walk  ",
-      now
+      now,
     });
 
     assert.equal(data.items[0]?.name, "Morning walk");
@@ -32,7 +32,7 @@ describe("streak domain model", () => {
     data = renameStreakItem(data, {
       id: "morning-walk",
       name: "Daily walk",
-      now: new Date("2026-05-27T13:00:00.000Z")
+      now: new Date("2026-05-27T13:00:00.000Z"),
     });
 
     data = archiveStreakItem(data, "morning-walk", now);
@@ -41,41 +41,11 @@ describe("streak domain model", () => {
     data = unarchiveStreakItem(data, "morning-walk", now);
     assert.equal(data.items[0]?.archivedAt, null);
 
-    data = setDayCompletion(
-      data,
-      "morning-walk",
-      "2026-05-24",
-      true,
-      now
-    );
-    data = setDayCompletion(
-      data,
-      "morning-walk",
-      "2026-05-25",
-      true,
-      now
-    );
-    data = setDayCompletion(
-      data,
-      "morning-walk",
-      "2026-05-26",
-      true,
-      now
-    );
-    data = setDayCompletion(
-      data,
-      "morning-walk",
-      "2026-05-27",
-      true,
-      now
-    );
-    data = setDayCompletion(
-      data,
-      "morning-walk",
-      "2026-05-25",
-      false,
-      now
-    );
+    data = setDayCompletion(data, "morning-walk", "2026-05-24", true, now);
+    data = setDayCompletion(data, "morning-walk", "2026-05-25", true, now);
+    data = setDayCompletion(data, "morning-walk", "2026-05-26", true, now);
+    data = setDayCompletion(data, "morning-walk", "2026-05-27", true, now);
+    data = setDayCompletion(data, "morning-walk", "2026-05-25", false, now);
 
     const item = data.items[0];
     assert.ok(item);
@@ -83,9 +53,12 @@ describe("streak domain model", () => {
     assert.deepEqual(Object.keys(data.completions[item.id]), [
       "2026-05-24",
       "2026-05-26",
-      "2026-05-27"
+      "2026-05-27",
     ]);
-    assert.equal(calculateCurrentStreak(data.completions[item.id], "2026-05-27"), 2);
+    assert.equal(
+      calculateCurrentStreak(data.completions[item.id], "2026-05-27"),
+      2
+    );
     assert.equal(calculateLongestStreak(data.completions[item.id]), 2);
 
     data = deleteStreakItem(data, "morning-walk", now);
@@ -100,7 +73,7 @@ describe("streak domain model", () => {
       addStreakItem(createEmptyStreakData(now), {
         id: "ship",
         name: "Ship",
-        now
+        now,
       }),
       "ship",
       "2026-05-26",
@@ -108,7 +81,10 @@ describe("streak domain model", () => {
       now
     );
 
-    assert.equal(calculateCurrentStreak(data.completions.ship, "2026-05-27"), 1);
+    assert.equal(
+      calculateCurrentStreak(data.completions.ship, "2026-05-27"),
+      1
+    );
   });
 
   it("persists theme and display preferences in the data model", () => {
@@ -116,7 +92,7 @@ describe("streak domain model", () => {
       theme: "dark",
       weekStartsOn: 1,
       gridWindowDays: 180,
-      showArchived: true
+      showArchived: true,
     });
 
     assert.equal(data.preferences.theme, "dark");
@@ -130,13 +106,13 @@ describe("streak domain model", () => {
 
     assert.equal(
       updatePreferences(createEmptyStreakData(), {
-        gridWindowDays: 1
+        gridWindowDays: 1,
       }).preferences.gridWindowDays,
       7
     );
     assert.equal(
       updatePreferences(createEmptyStreakData(), {
-        gridWindowDays: 999
+        gridWindowDays: 999,
       }).preferences.gridWindowDays,
       365
     );
@@ -151,9 +127,9 @@ describe("streak domain model", () => {
       formatVersion: 2,
       exportedAt: "2026-05-27T12:00:00.000Z",
       app: {
-        name: "StreakBeacon"
+        name: "StreakBeacon",
       },
-      data
+      data,
     });
   });
 });

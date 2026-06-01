@@ -12,7 +12,10 @@ interface StreakExportButtonProps {
   disabled?: boolean;
 }
 
-export function StreakExportButton({ model, disabled }: StreakExportButtonProps) {
+export function StreakExportButton({
+  model,
+  disabled,
+}: StreakExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
   const { resolvedTheme } = useTheme();
 
@@ -42,8 +45,13 @@ export function StreakExportButton({ model, disabled }: StreakExportButtonProps)
       const numWeeks = model.weeks.length;
       const numDaysInWeek = 7;
 
-      const canvasWidth = padding * 2 + numWeeks * (cellSize + cellGap) - cellGap;
-      const canvasHeight = padding * 2 + headerHeight + numDaysInWeek * (cellSize + cellGap) - cellGap;
+      const canvasWidth =
+        padding * 2 + numWeeks * (cellSize + cellGap) - cellGap;
+      const canvasHeight =
+        padding * 2 +
+        headerHeight +
+        numDaysInWeek * (cellSize + cellGap) -
+        cellGap;
 
       const canvas = document.createElement("canvas");
       canvas.width = canvasWidth * 2; // High DPI
@@ -95,7 +103,8 @@ export function StreakExportButton({ model, disabled }: StreakExportButtonProps)
             colors.streak4,
           ];
           const intensityColor = intensityColors[day.intensity];
-          const borderColor = day.intensity === 0 ? colors.streakEmptyBorder : intensityColor;
+          const borderColor =
+            day.intensity === 0 ? colors.streakEmptyBorder : intensityColor;
 
           ctx.fillStyle = intensityColor;
           // draw rounded rect
@@ -105,7 +114,12 @@ export function StreakExportButton({ model, disabled }: StreakExportButtonProps)
           ctx.lineTo(x + cellSize - r, y);
           ctx.quadraticCurveTo(x + cellSize, y, x + cellSize, y + r);
           ctx.lineTo(x + cellSize, y + cellSize - r);
-          ctx.quadraticCurveTo(x + cellSize, y + cellSize, x + cellSize - r, y + cellSize);
+          ctx.quadraticCurveTo(
+            x + cellSize,
+            y + cellSize,
+            x + cellSize - r,
+            y + cellSize
+          );
           ctx.lineTo(x + r, y + cellSize);
           ctx.quadraticCurveTo(x, y + cellSize, x, y + cellSize - r);
           ctx.lineTo(x, y + r);
@@ -121,14 +135,16 @@ export function StreakExportButton({ model, disabled }: StreakExportButtonProps)
 
       // Download
       const link = document.createElement("a");
-      const safeName = model.activeItem.name.toLowerCase().replace(/[^a-z0-9]/g, "-");
+      const safeName = model.activeItem.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "-");
       const filename = `${safeName}-streak-${new Date().toISOString().slice(0, 10)}.png`;
       link.download = filename;
       link.href = canvas.toDataURL("image/png");
       link.click();
 
       toast.success("Grid exported as PNG", {
-        description: `Saved as ${filename}`
+        description: `Saved as ${filename}`,
       });
     } catch (error) {
       console.error("Export failed", error);

@@ -4,12 +4,12 @@ import { addStreakItem, createEmptyStreakData } from "./model";
 import {
   cancelResetAllData,
   confirmResetAllData,
-  dispatchStreakDataReset
+  dispatchStreakDataReset,
 } from "./reset";
 import {
   LocalStreakStorageAdapter,
   STREAK_DATA_CHANGED_EVENT,
-  STREAK_STORAGE_KEY
+  STREAK_STORAGE_KEY,
 } from "./storage";
 import { StreakStore } from "./store";
 
@@ -52,7 +52,7 @@ describe("reset-all-data flow", () => {
     const current = addStreakItem(createEmptyStreakData(now), {
       id: "ship",
       name: "Ship",
-      now
+      now,
     });
 
     store.replaceData(current, now);

@@ -73,7 +73,7 @@ export const defaultPreferences: StreakPreferences = {
   weekStartsOn: 0,
   gridWindowDays: DEFAULT_GRID_WINDOW_DAYS,
   showArchived: false,
-  accentColor: DEFAULT_ACCENT_COLOR
+  accentColor: DEFAULT_ACCENT_COLOR,
 };
 
 export function createEmptyStreakData(now = new Date()): StreakData {
@@ -85,7 +85,7 @@ export function createEmptyStreakData(now = new Date()): StreakData {
     updatedAt: timestamp,
     items: [],
     completions: {},
-    preferences: { ...defaultPreferences }
+    preferences: { ...defaultPreferences },
   };
 }
 
@@ -103,7 +103,7 @@ export function createStreakItem(
     createdAt: timestamp,
     updatedAt: timestamp,
     order,
-    archivedAt: null
+    archivedAt: null,
   };
 }
 
@@ -123,8 +123,8 @@ export function addStreakItem(
       items: [...data.items, item],
       completions: {
         ...data.completions,
-        [item.id]: {}
-      }
+        [item.id]: {},
+      },
     },
     input.now
   );
@@ -146,8 +146,9 @@ export function renameStreakItem(
         input.description === undefined
           ? item.description
           : normalizeOptionalString(input.description, 240),
-      color: input.color === undefined ? item.color : normalizeColor(input.color),
-      updatedAt: input.now.toISOString()
+      color:
+        input.color === undefined ? item.color : normalizeColor(input.color),
+      updatedAt: input.now.toISOString(),
     }),
     input.now
   );
@@ -164,7 +165,7 @@ export function archiveStreakItem(
     (item) => ({
       ...item,
       archivedAt: now.toISOString(),
-      updatedAt: now.toISOString()
+      updatedAt: now.toISOString(),
     }),
     now
   );
@@ -181,7 +182,7 @@ export function unarchiveStreakItem(
     (item) => ({
       ...item,
       archivedAt: null,
-      updatedAt: now.toISOString()
+      updatedAt: now.toISOString(),
     }),
     now
   );
@@ -199,7 +200,7 @@ export function deleteStreakItem(
     {
       ...data,
       items: data.items.filter((item) => item.id !== id),
-      completions
+      completions,
     },
     now
   );
@@ -223,7 +224,7 @@ export function setDayCompletion(
   if (isComplete) {
     itemCompletions[day] = {
       completedAt: now.toISOString(),
-      source: "manual"
+      source: "manual",
     };
   } else {
     delete itemCompletions[day];
@@ -234,8 +235,8 @@ export function setDayCompletion(
       ...data,
       completions: {
         ...data.completions,
-        [id]: itemCompletions
-      }
+        [id]: itemCompletions,
+      },
     },
     now
   );
@@ -251,8 +252,8 @@ export function updatePreferences(
       ...data,
       preferences: normalizePreferences({
         ...data.preferences,
-        ...preferences
-      })
+        ...preferences,
+      }),
     },
     now
   );
@@ -307,9 +308,9 @@ export function createExportEnvelope(
     formatVersion: STREAK_DATA_VERSION,
     exportedAt: exportedAt.toISOString(),
     app: {
-      name: "StreakBeacon"
+      name: "StreakBeacon",
     },
-    data
+    data,
   };
 }
 
@@ -324,7 +325,7 @@ export function normalizePreferences(value: unknown): StreakPreferences {
     accentColor:
       typeof record.accentColor === "string" && record.accentColor.trim()
         ? record.accentColor.trim()
-        : DEFAULT_ACCENT_COLOR
+        : DEFAULT_ACCENT_COLOR,
   };
 }
 
@@ -370,7 +371,7 @@ export function mergeStreaks(
 
     mergedCompletions[itemId] = {
       ...existingCompletions,
-      ...incomingCompletions
+      ...incomingCompletions,
     };
   }
 
@@ -378,7 +379,7 @@ export function mergeStreaks(
     ...existing,
     items: mergedItems,
     completions: mergedCompletions,
-    updatedAt: now.toISOString()
+    updatedAt: now.toISOString(),
   };
 }
 
@@ -408,7 +409,7 @@ function updateItem(
 function touch(data: StreakData, now: Date): StreakData {
   return {
     ...data,
-    updatedAt: now.toISOString()
+    updatedAt: now.toISOString(),
   };
 }
 

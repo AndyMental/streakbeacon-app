@@ -3,7 +3,7 @@ import { describe, it } from "node:test";
 import {
   addStreakItem,
   createEmptyStreakData,
-  setDayCompletion
+  setDayCompletion,
 } from "./model";
 import { LocalStreakStorageAdapter } from "./storage";
 import { StreakStore } from "./store";
@@ -69,16 +69,22 @@ describe("StreakStore", () => {
     const incoming = addStreakItem(createEmptyStreakData(later), {
       id: "walk",
       name: "Walk",
-      now: later
+      now: later,
     });
-    const withCompletion = setDayCompletion(incoming, "walk", "2026-05-27", true, later);
+    const withCompletion = setDayCompletion(
+      incoming,
+      "walk",
+      "2026-05-27",
+      true,
+      later
+    );
 
     store.mergeData(withCompletion, later);
 
     const snapshot = store.getSnapshot();
     assert.equal(snapshot.items.length, 2);
-    assert.ok(snapshot.items.find(i => i.id === "hydrate"));
-    assert.ok(snapshot.items.find(i => i.id === "walk"));
+    assert.ok(snapshot.items.find((i) => i.id === "hydrate"));
+    assert.ok(snapshot.items.find((i) => i.id === "walk"));
     assert.ok(snapshot.completions.hydrate["2026-05-27"]);
     assert.ok(snapshot.completions.walk["2026-05-27"]);
   });
@@ -134,7 +140,7 @@ describe("StreakStore", () => {
     const demo = addStreakItem(createEmptyStreakData(now), {
       id: "ship-useful-change",
       name: "Ship one useful change",
-      now
+      now,
     });
 
     const toggled = setDayCompletion(

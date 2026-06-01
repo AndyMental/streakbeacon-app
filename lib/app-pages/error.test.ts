@@ -37,7 +37,7 @@ describe("error page fallbacks", () => {
     const markup = renderToStaticMarkup(
       createElement(ErrorPage, {
         error: new Error("route failure"),
-        reset: () => undefined
+        reset: () => undefined,
       })
     );
 
@@ -63,7 +63,7 @@ describe("error page fallbacks", () => {
         error: new Error("route failure"),
         reset: () => {
           resetCalls += 1;
-        }
+        },
       })
     );
 
@@ -82,9 +82,9 @@ describe("error page fallbacks", () => {
     const markup = renderToStaticMarkup(
       createElement(GlobalErrorPage, {
         error: Object.assign(new Error("global failure"), {
-          digest: "global-digest"
+          digest: "global-digest",
         }),
-        reset: () => undefined
+        reset: () => undefined,
       })
     );
 
@@ -101,7 +101,7 @@ describe("error page fallbacks", () => {
       error: new Error("global failure"),
       reset: () => {
         resetCalls += 1;
-      }
+      },
     }) as ReactElement;
 
     const resetButton = findElementByTestId(tree, "error-reset");

@@ -8,13 +8,13 @@ import { ThemeToggle } from "./theme-toggle";
 const habits = [
   { name: "Morning walk", streak: "12 days", status: "Done today" },
   { name: "Ship one useful change", streak: "5 days", status: "Queued" },
-  { name: "Evening shutdown", streak: "8 days", status: "Due tonight" }
+  { name: "Evening shutdown", streak: "8 days", status: "Due tonight" },
 ];
 
 const signals = [
   { label: "Export format", value: "v1", icon: ShieldCheck },
   { label: "Storage", value: "Local", icon: Flame },
-  { label: "Grid window", value: "365", icon: Target }
+  { label: "Grid window", value: "365", icon: Target },
 ];
 
 export default function Home() {
@@ -36,7 +36,10 @@ export default function Home() {
         <div className="flex flex-wrap items-center gap-3">
           <ThemeToggle />
           <Badge variant="outline" className="gap-2 text-muted-foreground">
-            <CalendarCheck className="h-4 w-4 text-primary" aria-hidden="true" />
+            <CalendarCheck
+              className="h-4 w-4 text-primary"
+              aria-hidden="true"
+            />
             Browser-local settings
           </Badge>
         </div>
@@ -53,7 +56,10 @@ export default function Home() {
                   <p className="min-w-0 truncate text-sm text-muted-foreground">
                     {signal.label}
                   </p>
-                  <Icon className="h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
+                  <Icon
+                    className="h-5 w-5 shrink-0 text-primary"
+                    aria-hidden="true"
+                  />
                 </div>
                 <p className="mt-3 truncate text-2xl font-semibold">
                   {signal.value}

@@ -19,7 +19,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     {
       url: new URL("/", baseUrl).toString(),
       changeFrequency: "daily",
-      priority: 1
-    }
+      priority: 1,
+    },
   ];
 }

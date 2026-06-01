@@ -22,25 +22,25 @@ describe("validateImportText", () => {
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
           order: 0,
-          archivedAt: null
-        }
+          archivedAt: null,
+        },
       ],
       completions: {
         "test-item": {
           "2026-05-31": {
             completedAt: new Date().toISOString(),
-            source: "manual"
-          }
-        }
+            source: "manual",
+          },
+        },
       },
       preferences: {
         theme: "dark",
         weekStartsOn: 0,
         gridWindowDays: 365,
         showArchived: false,
-        accentColor: "#27AE60"
-      }
-    }
+        accentColor: "#27AE60",
+      },
+    },
   };
 
   it("accepts a valid export JSON", () => {
@@ -58,7 +58,7 @@ describe("validateImportText", () => {
     const result = validateImportText("not json");
     assert.equal(result.ok, false);
     if (!result.ok) {
-      assert.ok(result.errors.some(e => e.includes("valid JSON")));
+      assert.ok(result.errors.some((e) => e.includes("valid JSON")));
     }
   });
 
@@ -67,7 +67,9 @@ describe("validateImportText", () => {
     const result = validateImportText(JSON.stringify(invalid));
     assert.equal(result.ok, false);
     if (!result.ok) {
-      assert.ok(result.errors.some(e => e.includes("not a StreakBeacon export")));
+      assert.ok(
+        result.errors.some((e) => e.includes("not a StreakBeacon export"))
+      );
     }
   });
 
@@ -76,7 +78,9 @@ describe("validateImportText", () => {
     const result = validateImportText(JSON.stringify(invalid));
     assert.equal(result.ok, false);
     if (!result.ok) {
-      assert.ok(result.errors.some(e => e.includes("version is not supported")));
+      assert.ok(
+        result.errors.some((e) => e.includes("version is not supported"))
+      );
     }
   });
 
@@ -84,7 +88,7 @@ describe("validateImportText", () => {
     const withDuplicates = JSON.parse(JSON.stringify(validEnvelope));
     withDuplicates.data.items.push({
       ...withDuplicates.data.items[0],
-      id: "another-id"
+      id: "another-id",
     });
     const result = validateImportText(JSON.stringify(withDuplicates));
     assert.equal(result.ok, true);

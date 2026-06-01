@@ -7,12 +7,12 @@ const alertVariants = cva("relative w-full rounded-md border p-3 text-sm", {
     variant: {
       default: "bg-card text-card-foreground",
       destructive: "border-destructive bg-card text-destructive",
-      muted: "bg-muted text-muted-foreground"
-    }
+      muted: "bg-muted text-muted-foreground",
+    },
   },
   defaultVariants: {
-    variant: "default"
-  }
+    variant: "default",
+  },
 });
 
 const Alert = React.forwardRef<

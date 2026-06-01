@@ -58,7 +58,7 @@ describe("useHabitSelection", () => {
 
 function setupDom() {
   dom = new JSDOM("<!doctype html><html><body></body></html>", {
-    url: "https://streakbeacon.test"
+    url: "https://streakbeacon.test",
   });
 
   const { window } = dom;

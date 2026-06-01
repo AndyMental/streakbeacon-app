@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   applyThemePreference,
-  readThemePreference
+  readThemePreference,
 } from "@/lib/streaks/theme-preference";
 import type { ThemePreference } from "@/lib/streaks/model";
 
@@ -17,7 +17,7 @@ const OPTIONS: ReadonlyArray<{
 }> = [
   { value: "light", label: "Light theme", icon: Sun },
   { value: "dark", label: "Dark theme", icon: Moon },
-  { value: "system", label: "System theme", icon: Monitor }
+  { value: "system", label: "System theme", icon: Monitor },
 ];
 
 export function ThemeToggle() {
@@ -61,9 +61,7 @@ export function ThemeToggle() {
     }
   }
 
-  const value: ThemePreference = mounted
-    ? normalizeTheme(theme)
-    : "system";
+  const value: ThemePreference = mounted ? normalizeTheme(theme) : "system";
 
   return (
     <ToggleGroup
