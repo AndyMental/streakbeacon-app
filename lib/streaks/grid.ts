@@ -3,7 +3,6 @@ import {
   calculateLongestStreak,
   MAX_GRID_WINDOW_DAYS,
   MIN_GRID_WINDOW_DAYS,
-  type Completion,
   type IsoDate,
   type StreakData,
   type StreakItem
@@ -44,10 +43,9 @@ export function buildStreakGridModel(
   const activeItems = data.items
     .filter((item) => !item.archivedAt)
     .sort((a, b) => a.order - b.order);
-  const activeItem =
-    activeItems.find((item) => item.id === selectedItemId) ??
-    activeItems[0] ??
-    null;
+  const activeItem = selectedItemId
+    ? activeItems.find((item) => item.id === selectedItemId) ?? null
+    : null;
   const days = buildGridDays(
     data,
     activeItem?.id ?? null,
@@ -102,13 +100,29 @@ function buildGridDays(
   );
   const end = parseIsoDay(formatIsoDay(asOf));
   const start = addDays(end, -(windowDays - 1));
-  const completions = itemId ? data.completions[itemId] ?? {} : {};
+  const activeItems = data.items.filter((item) => !item.archivedAt);
   const days: GridDay[] = [];
 
   for (let index = 0; index < windowDays; index += 1) {
     const date = addDays(start, index);
     const day = formatIsoDay(date);
-    const completion = completions[day];
+
+    let completedCount = 0;
+    if (itemId) {
+      if (data.completions[itemId]?.[day]) {
+        completedCount = 1;
+      }
+    } else {
+      for (const item of activeItems) {
+        if (data.completions[item.id]?.[day]) {
+          completedCount += 1;
+        }
+      }
+    }
+
+    const isComplete = itemId
+      ? completedCount > 0
+      : activeItems.length > 0 && completedCount === activeItems.length;
 
     days.push({
       day,
@@ -118,8 +132,8 @@ function buildGridDays(
         timeZone: "UTC",
         weekday: "short"
       }),
-      isComplete: Boolean(completion),
-      intensity: getIntensity(completion, index),
+      isComplete,
+      intensity: getIntensity(completedCount, itemId !== null),
       isSelected: day === selectedDay
     });
   }
@@ -128,14 +142,18 @@ function buildGridDays(
 }
 
 function getIntensity(
-  completion: Completion | undefined,
-  index: number
+  completedCount: number,
+  isSingleHabit: boolean
 ): 0 | 1 | 2 | 3 | 4 {
-  if (!completion) {
+  if (completedCount === 0) {
     return 0;
   }
 
-  return ((index % 4) + 1) as 1 | 2 | 3 | 4;
+  if (isSingleHabit) {
+    return 1;
+  }
+
+  return Math.min(completedCount, 4) as 1 | 2 | 3 | 4;
 }
 
 function chunkWeeks(days: GridDay[]): GridWeek[] {

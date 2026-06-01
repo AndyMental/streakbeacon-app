@@ -66,7 +66,7 @@ describe("streak grid model", () => {
     assert.equal(getNextSelectedCompletion(model), true);
   });
 
-  it("renders dense data with distinguishable intensity levels", () => {
+  it("renders dense data with binary intensity levels for single habits", () => {
     let data = addStreakItem(createEmptyStreakData(AS_OF), {
       id: "ship",
       name: "Ship",
@@ -93,9 +93,52 @@ describe("streak grid model", () => {
     assert.equal(model.completedDays, 28);
     assert.deepEqual(
       [...new Set(completed.map((day) => day.intensity))].sort(),
-      [1, 2, 3, 4]
+      [1]
     );
     assert.equal(getNextSelectedCompletion(model), false);
+  });
+
+  it("renders cumulative intensity based on the number of active habits", () => {
+    let data = createEmptyStreakData(AS_OF);
+    data = addStreakItem(data, { id: "h1", name: "H1", now: AS_OF });
+    data = addStreakItem(data, { id: "h2", name: "H2", now: AS_OF });
+    data = addStreakItem(data, { id: "h3", name: "H3", now: AS_OF });
+    data = addStreakItem(data, { id: "h4", name: "H4", now: AS_OF });
+    data = addStreakItem(data, { id: "h5", name: "H5", now: AS_OF });
+
+    // Day with 1 completion -> intensity 1
+    data = setDayCompletion(data, "h1", "2026-05-20", true, AS_OF);
+
+    // Day with 3 completions -> intensity 3
+    data = setDayCompletion(data, "h1", "2026-05-21", true, AS_OF);
+    data = setDayCompletion(data, "h2", "2026-05-21", true, AS_OF);
+    data = setDayCompletion(data, "h3", "2026-05-21", true, AS_OF);
+
+    // Day with 5 completions -> intensity 4 (capped)
+    data = setDayCompletion(data, "h1", "2026-05-22", true, AS_OF);
+    data = setDayCompletion(data, "h2", "2026-05-22", true, AS_OF);
+    data = setDayCompletion(data, "h3", "2026-05-22", true, AS_OF);
+    data = setDayCompletion(data, "h4", "2026-05-22", true, AS_OF);
+    data = setDayCompletion(data, "h5", "2026-05-22", true, AS_OF);
+
+    const model = buildStreakGridModel(data, null, null, AS_OF);
+    const days = model.weeks.flatMap((w) => w.days);
+
+    const d20 = days.find((d) => d.day === "2026-05-20");
+    const d21 = days.find((d) => d.day === "2026-05-21");
+    const d22 = days.find((d) => d.day === "2026-05-22");
+    const d23 = days.find((d) => d.day === "2026-05-23");
+
+    assert.equal(d20?.intensity, 1);
+    assert.equal(d20?.isComplete, false); // only 1/5 done
+
+    assert.equal(d21?.intensity, 3);
+    assert.equal(d21?.isComplete, false); // only 3/5 done
+
+    assert.equal(d22?.intensity, 4);
+    assert.equal(d22?.isComplete, true); // 5/5 done
+
+    assert.equal(d23?.intensity, 0);
   });
 });
 
