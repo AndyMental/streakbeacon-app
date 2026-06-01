@@ -214,19 +214,18 @@ describe("LocalStreakStorageAdapter", () => {
     assert.deepEqual(adapter.load().items, []);
   });
 
-  it("keeps storage API failures non-fatal", () => {
+  it("bubbles storage API failures to the caller", () => {
     const adapter = new LocalStreakStorageAdapter(new ThrowingStorage());
     const data = createSampleData();
 
     assert.deepEqual(adapter.load(), createEmptyStreakData());
-    assert.doesNotThrow(() =>
+    assert.throws(() =>
       adapter.save(data, new Date("2026-05-27T12:00:00.000Z"))
     );
-    assert.deepEqual(
-      adapter.replace(data, new Date("2026-05-27T12:00:00.000Z")),
-      data
+    assert.throws(() =>
+      adapter.replace(data, new Date("2026-05-27T12:00:00.000Z"))
     );
-    assert.doesNotThrow(() => adapter.reset());
+    assert.throws(() => adapter.reset());
   });
 
   it("detects writable storage and removes a new probe key", () => {

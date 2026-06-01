@@ -3,6 +3,7 @@
 import { AlertCircle, CheckCircle2, ClipboardPaste, Download, FileJson, Info, Loader2, Monitor, Moon, RotateCcw, Sun, Upload } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -34,6 +35,7 @@ import {
 } from "@/lib/streaks/model";
 import {
   assertStorageWritable,
+  isQuotaExceededError,
   LocalStreakStorageAdapter,
   STREAK_DATA_CHANGED_EVENT,
   validateImportText,
@@ -41,13 +43,20 @@ import {
 } from "@/lib/streaks/storage";
 import { StreakStore } from "@/lib/streaks/store";
 
-function createBrowserStore() {
-  assertStorageWritable(window.localStorage);
-  return new StreakStore(new LocalStreakStorageAdapter(window.localStorage));
+function createBrowserStore(onError?: (err: unknown) => void) {
+  try {
+    assertStorageWritable(window.localStorage);
+  } catch (error) {
+    onError?.(error);
+    throw error;
+  }
+  return new StreakStore(new LocalStreakStorageAdapter(window.localStorage), onError);
 }
 
 const STORAGE_ERROR_MESSAGE =
   "Browser storage is unavailable. Settings and import changes cannot be saved right now.";
+const STORAGE_FULL_MESSAGE =
+  "Browser storage is full. Your changes will not be saved. Clear some space to continue tracking habits.";
 
 export function SettingsPanel() {
   const importInputRef = useRef<HTMLInputElement>(null);
@@ -62,13 +71,24 @@ export function SettingsPanel() {
   const [pasteValue, setPasteValue] = useState("");
   const [isPasteOpen, setIsPasteOpen] = useState(false);
 
+  const handleStorageError = (error: unknown) => {
+    if (isQuotaExceededError(error)) {
+      setStorageError(STORAGE_FULL_MESSAGE);
+      toast.error("Storage full", {
+        description: "Unable to save changes. Please clear some space."
+      });
+    } else {
+      setStorageError(STORAGE_ERROR_MESSAGE);
+    }
+  };
+
   const store = useMemo(() => {
     if (typeof window === "undefined") {
       return null;
     }
 
     try {
-      return createBrowserStore();
+      return createBrowserStore(handleStorageError);
     } catch {
       return null;
     }
@@ -96,7 +116,7 @@ export function SettingsPanel() {
         setData(store.getSnapshot());
         setStorageError(null);
       } catch {
-        setStorageError(STORAGE_ERROR_MESSAGE);
+        // Error already handled by handleStorageError or is fatal to load
       } finally {
         setIsReady(true);
       }
@@ -117,14 +137,10 @@ export function SettingsPanel() {
       return;
     }
 
-    try {
-      const next = store.updatePreferences({ theme });
-      setData(next);
-      setStorageError(null);
-      setMessage("Theme preference saved.");
-    } catch {
-      setStorageError(STORAGE_ERROR_MESSAGE);
-    }
+    const next = store.updatePreferences({ theme });
+    setData(next);
+    setStorageError(null);
+    setMessage("Theme preference saved.");
   }
 
   function exportData() {
@@ -190,16 +206,12 @@ export function SettingsPanel() {
       return;
     }
 
-    try {
-      const next = store.replaceData(preview.data);
-      setData(next);
-      setPreview(null);
-      setStorageError(null);
-      setMessage("Import complete. Local data was replaced.");
-      window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
-    } catch {
-      setStorageError(STORAGE_ERROR_MESSAGE);
-    }
+    const next = store.replaceData(preview.data);
+    setData(next);
+    setPreview(null);
+    setStorageError(null);
+    setMessage("Import complete. Local data was replaced.");
+    window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
 
     if (importInputRef.current) {
       importInputRef.current.value = "";
@@ -222,18 +234,14 @@ export function SettingsPanel() {
       return;
     }
 
-    try {
-      const next = confirmResetAllData(store);
-      setData(next);
-      setTheme(next.preferences.theme);
-      setPreview(null);
-      setImportError(null);
-      setStorageError(null);
-      setMessage("Local data cleared.");
-      dispatchStreakDataReset(window);
-    } catch {
-      setStorageError(STORAGE_ERROR_MESSAGE);
-    }
+    const next = confirmResetAllData(store);
+    setData(next);
+    setTheme(next.preferences.theme);
+    setPreview(null);
+    setImportError(null);
+    setStorageError(null);
+    setMessage("Local data cleared.");
+    dispatchStreakDataReset(window);
   }
 
   const StatusIcon = resolvedTheme === "dark" ? Moon : Sun;
