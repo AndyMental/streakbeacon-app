@@ -15,13 +15,13 @@ export default function GlobalErrorPage({
   return (
     <html lang="en">
       <body>
-        <a
-          href="#main-content"
+        <Button
+          asChild
           data-testid="skip-link"
           className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-beacon focus:px-4 focus:py-2 focus:text-primary-foreground focus:outline-hidden focus:ring-2 focus:ring-sky focus:ring-offset-2"
         >
-          Skip to main content
-        </a>
+          <a href="#main-content">Skip to main content</a>
+        </Button>
         <main
           id="main-content"
           tabIndex={-1}

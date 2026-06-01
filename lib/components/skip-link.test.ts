@@ -19,7 +19,11 @@ describe("skip-to-main-content link", () => {
     );
     assert.match(
       layoutSource,
-      /<a\s+href="#main-content"[\s\S]*data-testid="skip-link"/
+      /import \{ Button \} from "@\/components\/ui\/button";/
+    );
+    assert.match(
+      layoutSource,
+      /<Button\s+[\s\S]*asChild[\s\S]*data-testid="skip-link"[\s\S]*>\s*<a href="#main-content">/
     );
     assert.match(layoutSource, /className="[^"]*\bsr-only\b[^"]*"/);
     assert.match(layoutSource, /className="[^"]*\bfocus:not-sr-only\b[^"]*"/);
