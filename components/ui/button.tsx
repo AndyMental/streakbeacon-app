@@ -13,23 +13,24 @@ const buttonVariants = cva(
           "bg-destructive text-destructive-foreground hover:opacity-90",
         outline: "border bg-card hover:bg-muted",
         secondary: "bg-secondary text-secondary-foreground hover:opacity-90",
-        ghost: "hover:bg-muted"
+        ghost: "hover:bg-muted",
       },
       size: {
         default: "px-4 py-2",
         sm: "min-h-9 px-3",
-        lg: "min-h-11 px-4"
-      }
+        lg: "min-h-11 px-4",
+      },
     },
     defaultVariants: {
       variant: "default",
-      size: "default"
-    }
+      size: "default",
+    },
   }
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+  extends
+    React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
 }

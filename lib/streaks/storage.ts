@@ -9,7 +9,7 @@ import {
   type IsoDate,
   type StreakData,
   type StreakExportEnvelope,
-  type StreakItem
+  type StreakItem,
 } from "./model";
 
 export const STREAK_STORAGE_KEY = "streakbeacon:data:v1";
@@ -84,7 +84,7 @@ export class LocalStreakStorageAdapter {
   save(data: StreakData, savedAt = new Date()): void {
     const normalized = {
       ...parseStreakData(data),
-      updatedAt: savedAt.toISOString()
+      updatedAt: savedAt.toISOString(),
     };
 
     try {
@@ -97,7 +97,7 @@ export class LocalStreakStorageAdapter {
   replace(data: StreakData, savedAt = new Date()): StreakData {
     const normalized = {
       ...parseStreakData(data),
-      updatedAt: savedAt.toISOString()
+      updatedAt: savedAt.toISOString(),
     };
 
     try {
@@ -130,7 +130,7 @@ export function validateImportText(input: string): ImportValidationResult {
   } catch {
     return {
       ok: false,
-      errors: ["The selected file is not valid JSON."]
+      errors: ["The selected file is not valid JSON."],
     };
   }
 
@@ -144,13 +144,13 @@ export function validateImportText(input: string): ImportValidationResult {
         itemCount: envelope.data.items.length,
         completionCount: countCompletions(envelope.data.completions),
         preferenceCount: Object.keys(envelope.data.preferences).length,
-        warnings
-      }
+        warnings,
+      },
     };
   } catch (error) {
     return {
       ok: false,
-      errors: [error instanceof Error ? error.message : "Import failed."]
+      errors: [error instanceof Error ? error.message : "Import failed."],
     };
   }
 }
@@ -184,11 +184,11 @@ export function parseExportEnvelope(value: unknown): {
       formatVersion: STREAK_DATA_VERSION,
       exportedAt: requireIsoTimestamp(value.exportedAt, "exportedAt"),
       app: {
-        name: "StreakBeacon"
+        name: "StreakBeacon",
       },
-      data
+      data,
     },
-    warnings
+    warnings,
   };
 }
 
@@ -216,7 +216,7 @@ export function parseStreakData(value: unknown): StreakData {
     updatedAt: requireIsoTimestamp(raw.updatedAt, "updatedAt"),
     items,
     completions: normalizeCompletions(raw.completions, itemIds),
-    preferences: normalizePreferences(raw.preferences)
+    preferences: normalizePreferences(raw.preferences),
   };
 }
 
@@ -228,7 +228,7 @@ function migrateData(value: unknown): Record<string, unknown> {
       updatedAt: new Date().toISOString(),
       items: [],
       completions: {},
-      preferences: {}
+      preferences: {},
     };
   }
 
@@ -240,7 +240,10 @@ function migrateData(value: unknown): Record<string, unknown> {
   }
 
   // Phase 2: Sequential migrations
-  while (typeof data.schemaVersion === "number" && data.schemaVersion < STREAK_DATA_VERSION) {
+  while (
+    typeof data.schemaVersion === "number" &&
+    data.schemaVersion < STREAK_DATA_VERSION
+  ) {
     const currentVersion: number = data.schemaVersion;
 
     if (currentVersion === 1) {
@@ -279,7 +282,7 @@ function migrateData(value: unknown): Record<string, unknown> {
 function migrateV1ToV2(data: Record<string, unknown>): Record<string, unknown> {
   return {
     ...data,
-    schemaVersion: 2
+    schemaVersion: 2,
   };
 }
 
@@ -305,7 +308,7 @@ function normalizeItem(value: unknown): StreakItem {
     archivedAt:
       value.archivedAt === null
         ? null
-        : requireIsoTimestamp(value.archivedAt, "item.archivedAt")
+        : requireIsoTimestamp(value.archivedAt, "item.archivedAt"),
   };
 }
 
@@ -350,7 +353,7 @@ function normalizeCompletion(value: unknown): Completion {
 
   return {
     completedAt: requireIsoTimestamp(value.completedAt, "completedAt"),
-    source
+    source,
   };
 }
 
@@ -380,7 +383,11 @@ function countCompletions(
   );
 }
 
-function requireString(value: unknown, label: string, maxLength?: number): string {
+function requireString(
+  value: unknown,
+  label: string,
+  maxLength?: number
+): string {
   if (typeof value !== "string") {
     throw new Error(`${label} must be a string.`);
   }
@@ -402,7 +409,11 @@ function requireMaxLength(value: string, label: string, maxLength?: number) {
   return trimmed;
 }
 
-function requireOptionalString(value: string, label: string, maxLength: number) {
+function requireOptionalString(
+  value: string,
+  label: string,
+  maxLength: number
+) {
   const trimmed = value.trim();
 
   if (trimmed.length > maxLength) {

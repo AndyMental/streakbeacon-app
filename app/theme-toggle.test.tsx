@@ -64,7 +64,7 @@ describe("ThemeToggle", () => {
 
 function setupDom() {
   dom = new JSDOM("<!doctype html><html><body></body></html>", {
-    url: "https://streakbeacon.test"
+    url: "https://streakbeacon.test",
   });
 
   const { window } = dom;
@@ -75,7 +75,7 @@ function setupDom() {
   globalThis.Node = window.Node;
   Object.defineProperty(globalThis, "navigator", {
     configurable: true,
-    value: window.navigator
+    value: window.navigator,
   });
   globalThis.localStorage = window.localStorage;
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -87,7 +87,7 @@ function setupDom() {
     removeListener: () => undefined,
     addEventListener: () => undefined,
     removeEventListener: () => undefined,
-    dispatchEvent: () => false
+    dispatchEvent: () => false,
   });
 }
 

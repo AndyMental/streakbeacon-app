@@ -13,8 +13,14 @@ describe("skip-to-main-content link", () => {
 
     assert.ok(linkIndex > -1, "skip link must exist in the root layout");
     assert.ok(childrenIndex > -1, "layout must render children");
-    assert.ok(linkIndex < childrenIndex, "skip link must render before children");
-    assert.match(layoutSource, /<a\s+href="#main-content"[\s\S]*data-testid="skip-link"/);
+    assert.ok(
+      linkIndex < childrenIndex,
+      "skip link must render before children"
+    );
+    assert.match(
+      layoutSource,
+      /<a\s+href="#main-content"[\s\S]*data-testid="skip-link"/
+    );
     assert.match(layoutSource, /className="[^"]*\bsr-only\b[^"]*"/);
     assert.match(layoutSource, /className="[^"]*\bfocus:not-sr-only\b[^"]*"/);
     assert.doesNotMatch(layoutSource, /<SkipLink\s*\/>/);

@@ -10,7 +10,7 @@ import {
   Pencil,
   Plus,
   Trash2,
-  Trophy
+  Trophy,
 } from "lucide-react";
 import type { FormEvent } from "react";
 import { useEffect, useMemo, useState } from "react";
@@ -25,7 +25,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger
+  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -36,24 +36,24 @@ import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
-  TooltipTrigger
+  TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import {
   createEmptyStreakData,
   setDayCompletion,
   type IsoDate,
-  type StreakData
+  type StreakData,
 } from "@/lib/streaks/model";
 import {
   buildStreakGridModel,
   getNextSelectedCompletion,
-  type GridDay
+  type GridDay,
 } from "@/lib/streaks/grid";
 import {
   assertStorageWritable,
   LocalStreakStorageAdapter,
-  STREAK_DATA_CHANGED_EVENT
+  STREAK_DATA_CHANGED_EVENT,
 } from "@/lib/streaks/storage";
 import { StreakStore } from "@/lib/streaks/store";
 import { StreakExportButton } from "@/components/streak-export-button";
@@ -75,7 +75,8 @@ export function StreakDashboard() {
   );
   const [isReady, setIsReady] = useState(false);
   const [storageError, setStorageError] = useState<string | null>(null);
-  const { selectedHabitId, selectHabit: setSelectedItemId } = useHabitSelection(null);
+  const { selectedHabitId, selectHabit: setSelectedItemId } =
+    useHabitSelection(null);
   const [selectedDay, setSelectedDay] = useState<IsoDate | null>(null);
   const [newItemName, setNewItemName] = useState("");
   const [createError, setCreateError] = useState<string | null>(null);
@@ -157,7 +158,7 @@ export function StreakDashboard() {
     toast.success(
       selectedCompletion ? "Marked complete" : "Completion cleared",
       {
-        description: `${model.activeItem.name} - ${model.selectedDay.label}`
+        description: `${model.activeItem.name} - ${model.selectedDay.label}`,
       }
     );
   }
@@ -181,7 +182,7 @@ export function StreakDashboard() {
       const next = createBrowserStore().renameItem({
         id,
         name,
-        now
+        now,
       });
 
       setData(next);
@@ -190,7 +191,7 @@ export function StreakDashboard() {
       setRenameError(null);
       window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
       toast.success("Habit renamed", {
-        description: `New name: ${name}`
+        description: `New name: ${name}`,
       });
     } catch (error) {
       setRenameError(
@@ -229,7 +230,7 @@ export function StreakDashboard() {
     setSelectedDay(null);
     window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
     toast.success("Habit archived", {
-      description: `${archivedName} was moved to archives.`
+      description: `${archivedName} was moved to archives.`,
     });
   }
 
@@ -259,7 +260,7 @@ export function StreakDashboard() {
     setSelectedDay(null);
     window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
     toast.success("Habit deleted", {
-      description: `${removedName} was removed from local storage.`
+      description: `${removedName} was removed from local storage.`,
     });
   }
 
@@ -280,7 +281,7 @@ export function StreakDashboard() {
       const next = createBrowserStore().createItem({
         id,
         name,
-        now
+        now,
       });
 
       setData(next);
@@ -290,7 +291,7 @@ export function StreakDashboard() {
       setStorageError(null);
       window.dispatchEvent(new Event(STREAK_DATA_CHANGED_EVENT));
       toast.success("Habit added", {
-        description: `${name} is ready to track.`
+        description: `${name} is ready to track.`,
       });
     } catch (error) {
       setCreateError(
@@ -316,7 +317,8 @@ export function StreakDashboard() {
               >
                 {!isReady
                   ? "Loading local streak data"
-                  : model.activeItem?.name ?? (hasItems ? "All Habits" : "No active streak")}
+                  : (model.activeItem?.name ??
+                    (hasItems ? "All Habits" : "No active streak"))}
               </p>
             </div>
             <div
@@ -341,21 +343,24 @@ export function StreakDashboard() {
                 .map((item) => (
                   <Button
                     key={item.id}
-                  type="button"
-                  data-testid={`streak-item-${item.id}`}
-                  variant={
-                    item.id === selectedHabitId ? "default" : "outline"
-                  }
-                  size="lg"
-                  className="max-w-full truncate sm:min-h-9 sm:px-3 sm:text-xs sm:max-w-48"
-                  onClick={() => setSelectedItemId(item.id)}
-                >
-                  {item.name}
-                </Button>
-              ))}
+                    type="button"
+                    data-testid={`streak-item-${item.id}`}
+                    variant={
+                      item.id === selectedHabitId ? "default" : "outline"
+                    }
+                    size="lg"
+                    className="max-w-full truncate sm:min-h-9 sm:px-3 sm:text-xs sm:max-w-48"
+                    onClick={() => setSelectedItemId(item.id)}
+                  >
+                    {item.name}
+                  </Button>
+                ))}
               {model.activeItem ? (
                 <div className="flex flex-wrap items-center gap-2">
-                  <AlertDialog open={isRenameOpen} onOpenChange={setIsRenameOpen}>
+                  <AlertDialog
+                    open={isRenameOpen}
+                    onOpenChange={setIsRenameOpen}
+                  >
                     <AlertDialogTrigger asChild>
                       <Button
                         type="button"
@@ -409,7 +414,10 @@ export function StreakDashboard() {
                           <AlertDialogCancel type="button">
                             Cancel
                           </AlertDialogCancel>
-                          <Button type="submit" data-testid="dashboard-rename-save">
+                          <Button
+                            type="submit"
+                            data-testid="dashboard-rename-save"
+                          >
                             Save changes
                           </Button>
                         </AlertDialogFooter>
@@ -525,7 +533,9 @@ export function StreakDashboard() {
                   type="submit"
                   size="lg"
                   className="w-full sm:min-h-10 sm:px-4 sm:py-2 sm:text-sm sm:w-auto"
-                  disabled={!isReady || Boolean(storageError) || !newItemName.trim()}
+                  disabled={
+                    !isReady || Boolean(storageError) || !newItemName.trim()
+                  }
                 >
                   {!isReady ? (
                     "Loading"
@@ -561,7 +571,11 @@ export function StreakDashboard() {
           ) : null}
 
           {isReady && !hasItems ? (
-            <Alert variant="muted" role="status" className="relative mb-4 pl-10">
+            <Alert
+              variant="muted"
+              role="status"
+              className="relative mb-4 pl-10"
+            >
               <Info className="absolute left-4 top-4 h-4 w-4 text-primary" />
               <AlertTitle>No streaks yet</AlertTitle>
               <AlertDescription>
@@ -601,8 +615,7 @@ export function StreakDashboard() {
                           />
                         </TooltipTrigger>
                         <TooltipContent>
-                          {day.label} -{" "}
-                          {day.isComplete ? "Complete" : "Open"}
+                          {day.label} - {day.isComplete ? "Complete" : "Open"}
                         </TooltipContent>
                       </Tooltip>
                     ))}
@@ -655,7 +668,9 @@ export function StreakDashboard() {
             <CardTitle>Selected day</CardTitle>
           </CardHeader>
           <CardContent>
-            <Badge variant={model.selectedDay.isComplete ? "default" : "outline"}>
+            <Badge
+              variant={model.selectedDay.isComplete ? "default" : "outline"}
+            >
               {model.selectedDay.isComplete ? "Complete" : "Open"}
             </Badge>
             <p className="mt-3 text-sm text-muted-foreground">
@@ -707,7 +722,7 @@ function SummaryCard({
   label,
   value,
   suffix,
-  icon: Icon
+  icon: Icon,
 }: {
   label: string;
   value: number;

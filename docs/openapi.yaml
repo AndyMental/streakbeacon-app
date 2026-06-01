@@ -20,13 +20,13 @@ paths:
       tags:
         - Sync
       responses:
-        '200':
+        "200":
           description: Successful response
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StreakData'
-        '401':
+                $ref: "#/components/schemas/StreakData"
+        "401":
           description: Unauthorized
     post:
       summary: Upsert streak data
@@ -39,17 +39,17 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/StreakData'
+              $ref: "#/components/schemas/StreakData"
       responses:
-        '200':
+        "200":
           description: Data successfully synced
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/StreakData'
-        '400':
+                $ref: "#/components/schemas/StreakData"
+        "400":
           description: Invalid data provided
-        '401':
+        "401":
           description: Unauthorized
 security:
   - bearerAuth: []
@@ -81,17 +81,17 @@ components:
         items:
           type: array
           items:
-            $ref: '#/components/schemas/StreakItem'
+            $ref: "#/components/schemas/StreakItem"
         completions:
           type: object
           additionalProperties:
             type: object
             description: Map of IsoDate (YYYY-MM-DD) to Completion
             additionalProperties:
-              $ref: '#/components/schemas/Completion'
+              $ref: "#/components/schemas/Completion"
           description: Map of streak ID to a map of IsoDate to Completion
         preferences:
-          $ref: '#/components/schemas/StreakPreferences'
+          $ref: "#/components/schemas/StreakPreferences"
     StreakItem:
       type: object
       required:

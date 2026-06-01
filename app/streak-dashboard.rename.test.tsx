@@ -11,7 +11,7 @@ let dom: JSDOM | null = null;
 
 function setupDom() {
   dom = new JSDOM("<!doctype html><html><body></body></html>", {
-    url: "https://streakbeacon.test"
+    url: "https://streakbeacon.test",
   });
 
   const { window } = dom;
@@ -28,11 +28,13 @@ function setupDom() {
 
   Object.defineProperty(globalThis, "navigator", {
     configurable: true,
-    value: window.navigator
+    value: window.navigator,
   });
   globalThis.localStorage = window.localStorage;
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-  (window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+  (
+    window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
+  ).IS_REACT_ACT_ENVIRONMENT = true;
 
   window.matchMedia = (query) => ({
     matches: false,
@@ -42,7 +44,7 @@ function setupDom() {
     removeListener: () => undefined,
     addEventListener: () => undefined,
     removeEventListener: () => undefined,
-    dispatchEvent: () => false
+    dispatchEvent: () => false,
   });
 
   window.requestAnimationFrame = (callback) => setTimeout(callback, 0);
@@ -69,9 +71,15 @@ function flushEffects() {
 
 async function clickElement(element: Element) {
   await act(async () => {
-    element.dispatchEvent(new window.MouseEvent("mousedown", { bubbles: true, cancelable: true }));
-    element.dispatchEvent(new window.MouseEvent("mouseup", { bubbles: true, cancelable: true }));
-    element.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+    element.dispatchEvent(
+      new window.MouseEvent("mousedown", { bubbles: true, cancelable: true })
+    );
+    element.dispatchEvent(
+      new window.MouseEvent("mouseup", { bubbles: true, cancelable: true })
+    );
+    element.dispatchEvent(
+      new window.MouseEvent("click", { bubbles: true, cancelable: true })
+    );
     await flushEffects();
   });
 }
@@ -104,12 +112,29 @@ describe("StreakDashboard Rename UI Affordance", () => {
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
       items: [
-        { id: "habit-1", name: "Initial Name", color: "#27AE60", createdAt: now.toISOString(), updatedAt: now.toISOString(), order: 0, archivedAt: null }
+        {
+          id: "habit-1",
+          name: "Initial Name",
+          color: "#27AE60",
+          createdAt: now.toISOString(),
+          updatedAt: now.toISOString(),
+          order: 0,
+          archivedAt: null,
+        },
       ],
       completions: { "habit-1": {} },
-      preferences: { theme: "system", weekStartsOn: 0, gridWindowDays: 365, showArchived: false, accentColor: "#27AE60" }
+      preferences: {
+        theme: "system",
+        weekStartsOn: 0,
+        gridWindowDays: 365,
+        showArchived: false,
+        accentColor: "#27AE60",
+      },
     };
-    window.localStorage.setItem("streakbeacon:data:v1", JSON.stringify(initialData));
+    window.localStorage.setItem(
+      "streakbeacon:data:v1",
+      JSON.stringify(initialData)
+    );
 
     const container = document.createElement("div");
     document.body.append(container);
@@ -124,7 +149,9 @@ describe("StreakDashboard Rename UI Affordance", () => {
       await flushEffects();
     });
 
-    const habitButton = document.querySelector('[data-testid="streak-item-habit-1"]');
+    const habitButton = document.querySelector(
+      '[data-testid="streak-item-habit-1"]'
+    );
     assert.ok(habitButton, "Habit button should be present");
     await clickElement(habitButton);
 
@@ -132,12 +159,12 @@ describe("StreakDashboard Rename UI Affordance", () => {
       '[data-testid="dashboard-rename-trigger"]'
     );
     assert.ok(renameTrigger, "Rename trigger should be visible");
-    
+
     await clickElement(renameTrigger);
-    
+
     assert.equal(
-      renameTrigger.getAttribute("data-state"), 
-      "open", 
+      renameTrigger.getAttribute("data-state"),
+      "open",
       "Dialog should transition to open state after click"
     );
   });

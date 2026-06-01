@@ -11,7 +11,7 @@ let dom: JSDOM | null = null;
 
 function setupDom() {
   dom = new JSDOM("<!doctype html><html><body></body></html>", {
-    url: "https://streakbeacon.test"
+    url: "https://streakbeacon.test",
   });
 
   const { window } = dom;
@@ -28,11 +28,13 @@ function setupDom() {
 
   Object.defineProperty(globalThis, "navigator", {
     configurable: true,
-    value: window.navigator
+    value: window.navigator,
   });
   globalThis.localStorage = window.localStorage;
   globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-  (window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+  (
+    window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
+  ).IS_REACT_ACT_ENVIRONMENT = true;
 
   window.matchMedia = (query) => ({
     matches: false,
@@ -42,7 +44,7 @@ function setupDom() {
     removeListener: () => undefined,
     addEventListener: () => undefined,
     removeEventListener: () => undefined,
-    dispatchEvent: () => false
+    dispatchEvent: () => false,
   });
 
   window.requestAnimationFrame = (callback) => setTimeout(callback, 0);
@@ -75,7 +77,9 @@ function flushEffects() {
 
 async function clickElement(element: Element) {
   await act(async () => {
-    element.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+    element.dispatchEvent(
+      new window.MouseEvent("click", { bubbles: true, cancelable: true })
+    );
     await flushEffects();
   });
 }
@@ -118,7 +122,7 @@ describe("SettingsPanel Interaction Evidence", () => {
       "settings-export-json",
       "settings-import-json",
       "settings-import-paste",
-      "settings-reset-data"
+      "settings-reset-data",
     ];
 
     for (const id of testIds) {
@@ -149,7 +153,11 @@ describe("SettingsPanel Interaction Evidence", () => {
     assert.ok(lightToggle);
 
     await clickElement(lightToggle);
-    assert.equal(document.documentElement.classList.contains("light"), true, "Document should have 'light' class");
+    assert.equal(
+      document.documentElement.classList.contains("light"),
+      true,
+      "Document should have 'light' class"
+    );
 
     const darkToggle = document.querySelector<HTMLButtonElement>(
       '[data-testid="settings-theme-dark"]'
@@ -157,7 +165,11 @@ describe("SettingsPanel Interaction Evidence", () => {
     assert.ok(darkToggle);
 
     await clickElement(darkToggle);
-    assert.equal(document.documentElement.classList.contains("dark"), true, "Document should have 'dark' class");
+    assert.equal(
+      document.documentElement.classList.contains("dark"),
+      true,
+      "Document should have 'dark' class"
+    );
   });
 
   it("triggers a download with valid filename when Export JSON is clicked", async () => {
@@ -167,7 +179,7 @@ describe("SettingsPanel Interaction Evidence", () => {
       href: "",
       download: "",
       click: () => {},
-      remove: () => {}
+      remove: () => {},
     } as unknown as HTMLAnchorElement;
 
     const originalCreate = document.createElement.bind(document);
@@ -197,7 +209,10 @@ describe("SettingsPanel Interaction Evidence", () => {
     await clickElement(exportButton);
 
     assert.ok(link.href.startsWith("blob:"), "Should create a blob URL");
-    assert.ok(link.download.startsWith("streakbeacon-export-"), "Should set correct download filename prefix");
+    assert.ok(
+      link.download.startsWith("streakbeacon-export-"),
+      "Should set correct download filename prefix"
+    );
 
     document.createElement = originalCreate;
   });
@@ -211,16 +226,46 @@ describe("SettingsPanel Interaction Evidence", () => {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       items: [
-        { id: "i1", name: "Habit 1", color: "#27AE60", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), order: 0, archivedAt: null },
-        { id: "i2", name: "Habit 2", color: "#27AE60", createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), order: 1, archivedAt: null }
+        {
+          id: "i1",
+          name: "Habit 1",
+          color: "#27AE60",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          order: 0,
+          archivedAt: null,
+        },
+        {
+          id: "i2",
+          name: "Habit 2",
+          color: "#27AE60",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          order: 1,
+          archivedAt: null,
+        },
       ],
       completions: {
-        i1: { "2026-05-31": { completedAt: new Date().toISOString(), source: "manual" } },
-        i2: {}
+        i1: {
+          "2026-05-31": {
+            completedAt: new Date().toISOString(),
+            source: "manual",
+          },
+        },
+        i2: {},
       },
-      preferences: { theme: "system", weekStartsOn: 0, gridWindowDays: 365, showArchived: false, accentColor: "#27AE60" }
+      preferences: {
+        theme: "system",
+        weekStartsOn: 0,
+        gridWindowDays: 365,
+        showArchived: false,
+        accentColor: "#27AE60",
+      },
     };
-    window.localStorage.setItem("streakbeacon:data:v1", JSON.stringify(testData));
+    window.localStorage.setItem(
+      "streakbeacon:data:v1",
+      JSON.stringify(testData)
+    );
 
     const container = document.createElement("div");
     document.body.append(container);

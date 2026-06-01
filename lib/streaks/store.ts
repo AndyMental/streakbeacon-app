@@ -11,7 +11,7 @@ import {
   type IsoDate,
   type RenameStreakInput,
   type StreakData,
-  type StreakPreferences
+  type StreakPreferences,
 } from "./model";
 import { LocalStreakStorageAdapter } from "./storage";
 

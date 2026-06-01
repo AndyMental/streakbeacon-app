@@ -3,18 +3,20 @@ import { describe, it } from "node:test";
 import {
   addStreakItem,
   createEmptyStreakData,
-  setDayCompletion
+  setDayCompletion,
 } from "./model";
-import {
-  buildStreakGridModel,
-  getNextSelectedCompletion
-} from "./grid";
+import { buildStreakGridModel, getNextSelectedCompletion } from "./grid";
 
 const AS_OF = new Date("2026-05-27T12:00:00.000Z");
 
 describe("streak grid model", () => {
   it("renders an empty data view with stable weeks and zero summaries", () => {
-    const model = buildStreakGridModel(createEmptyStreakData(AS_OF), null, null, AS_OF);
+    const model = buildStreakGridModel(
+      createEmptyStreakData(AS_OF),
+      null,
+      null,
+      AS_OF
+    );
 
     assert.equal(model.activeItem, null);
     assert.equal(model.currentStreak, 0);
@@ -34,7 +36,7 @@ describe("streak grid model", () => {
     const data = addStreakItem(createEmptyStreakData(AS_OF), {
       id: "walk",
       name: "Morning walk",
-      now: AS_OF
+      now: AS_OF,
     });
     const model = buildStreakGridModel(data, "walk", "2026-05-27", AS_OF);
     const visibleDays = model.weeks.flatMap((week) => week.days);
@@ -49,7 +51,7 @@ describe("streak grid model", () => {
     let data = addStreakItem(createEmptyStreakData(AS_OF), {
       id: "walk",
       name: "Morning walk",
-      now: AS_OF
+      now: AS_OF,
     });
 
     data = setDayCompletion(data, "walk", "2026-05-25", true, AS_OF);
@@ -70,17 +72,11 @@ describe("streak grid model", () => {
     let data = addStreakItem(createEmptyStreakData(AS_OF), {
       id: "ship",
       name: "Ship",
-      now: AS_OF
+      now: AS_OF,
     });
 
     for (let offset = 0; offset < 28; offset += 1) {
-      data = setDayCompletion(
-        data,
-        "ship",
-        isoOffset(offset),
-        true,
-        AS_OF
-      );
+      data = setDayCompletion(data, "ship", isoOffset(offset), true, AS_OF);
     }
 
     const model = buildStreakGridModel(data, "ship", "2026-05-27", AS_OF);
@@ -100,7 +96,7 @@ describe("streak grid model", () => {
 
   it("renders cumulative data with scaled intensity levels", () => {
     let data = createEmptyStreakData(AS_OF);
-    
+
     // Add 4 habits
     const habits = ["ship", "walk", "read", "code"];
     for (const id of habits) {
@@ -124,11 +120,11 @@ describe("streak grid model", () => {
 
     const model = buildStreakGridModel(data, null, "2026-05-27", AS_OF);
     const visibleDays = model.weeks.flatMap((week) => week.days);
-    
-    const day0 = visibleDays.find(d => d.day === isoOffset(0));
-    const day1 = visibleDays.find(d => d.day === isoOffset(1));
-    const day2 = visibleDays.find(d => d.day === isoOffset(2));
-    const day3 = visibleDays.find(d => d.day === isoOffset(3));
+
+    const day0 = visibleDays.find((d) => d.day === isoOffset(0));
+    const day1 = visibleDays.find((d) => d.day === isoOffset(1));
+    const day2 = visibleDays.find((d) => d.day === isoOffset(2));
+    const day3 = visibleDays.find((d) => d.day === isoOffset(3));
 
     assert.equal(day0?.intensity, 1);
     assert.equal(day1?.intensity, 2);

@@ -13,10 +13,7 @@ export default function Loading() {
       className="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-8 px-5 py-6 sm:px-8 lg:px-10"
     >
       <span className="sr-only">Loading StreakBeacon</span>
-      <div
-        aria-hidden="true"
-        className="flex w-full flex-col gap-8"
-      >
+      <div aria-hidden="true" className="flex w-full flex-col gap-8">
         <Card>
           <CardHeader className="gap-3 border-b">
             <Skeleton className="h-4 w-28" />

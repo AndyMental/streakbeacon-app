@@ -10,12 +10,12 @@ const toggleGroupItemVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-card text-foreground"
-      }
+        default: "bg-card text-foreground",
+      },
     },
     defaultVariants: {
-      variant: "default"
-    }
+      variant: "default",
+    },
   }
 );
 

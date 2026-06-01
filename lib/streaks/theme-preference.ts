@@ -10,9 +10,7 @@ export function applyThemePreference(
   return store.updatePreferences({ theme }).preferences.theme;
 }
 
-export function readThemePreference(
-  storage: KeyValueStorage
-): ThemePreference {
+export function readThemePreference(storage: KeyValueStorage): ThemePreference {
   const store = new StreakStore(new LocalStreakStorageAdapter(storage));
   return store.getSnapshot().preferences.theme;
 }

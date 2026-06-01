@@ -5,7 +5,7 @@ import {
   MIN_GRID_WINDOW_DAYS,
   type IsoDate,
   type StreakData,
-  type StreakItem
+  type StreakItem,
 } from "./model";
 
 export type GridDay = {
@@ -55,7 +55,7 @@ export function buildStreakGridModel(
     selectedDay ?? formatIsoDay(asOf),
     asOf
   );
-  const completions = activeItem ? data.completions[activeItem.id] ?? {} : {};
+  const completions = activeItem ? (data.completions[activeItem.id] ?? {}) : {};
   const completedDays = Object.keys(completions).length;
   const selected =
     days.find((day) => day.day === selectedDay) ??
@@ -77,7 +77,7 @@ export function buildStreakGridModel(
     longestStreak: activeItem ? calculateLongestStreak(completions) : 0,
     selectedDay: selected,
     totalDays: days.length,
-    weeks: chunkWeeks(days)
+    weeks: chunkWeeks(days),
   };
 }
 
@@ -103,7 +103,9 @@ function buildGridDays(
   );
   const end = parseIsoDay(formatIsoDay(asOf));
   const start = addDays(end, -(windowDays - 1));
-  const activeItemIds = data.items.filter((i) => !i.archivedAt).map((i) => i.id);
+  const activeItemIds = data.items
+    .filter((i) => !i.archivedAt)
+    .map((i) => i.id);
   const days: GridDay[] = [];
 
   for (let index = 0; index < windowDays; index += 1) {
@@ -133,11 +135,11 @@ function buildGridDays(
         month: "short",
         day: "numeric",
         timeZone: "UTC",
-        weekday: "short"
+        weekday: "short",
       }),
       isComplete,
       intensity,
-      isSelected: day === selectedDay
+      isSelected: day === selectedDay,
     });
   }
 
@@ -151,7 +153,7 @@ function chunkWeeks(days: GridDay[]): GridWeek[] {
     const weekDays = days.slice(index, index + WEEK_DAYS);
     weeks.push({
       key: weekDays[0]?.day ?? String(index),
-      days: weekDays
+      days: weekDays,
     });
   }
 
