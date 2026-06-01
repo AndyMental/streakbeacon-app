@@ -66,7 +66,7 @@ describe("streak grid model", () => {
     assert.equal(getNextSelectedCompletion(model), true);
   });
 
-  it("renders dense data with distinguishable intensity levels", () => {
+  it("renders single-habit data with binary intensity levels", () => {
     let data = addStreakItem(createEmptyStreakData(AS_OF), {
       id: "ship",
       name: "Ship",
@@ -93,9 +93,48 @@ describe("streak grid model", () => {
     assert.equal(model.completedDays, 28);
     assert.deepEqual(
       [...new Set(completed.map((day) => day.intensity))].sort(),
-      [1, 2, 3, 4]
+      [1]
     );
     assert.equal(getNextSelectedCompletion(model), false);
+  });
+
+  it("renders cumulative data with scaled intensity levels", () => {
+    let data = createEmptyStreakData(AS_OF);
+    
+    // Add 4 habits
+    const habits = ["ship", "walk", "read", "code"];
+    for (const id of habits) {
+      data = addStreakItem(data, { id, name: id, now: AS_OF });
+    }
+
+    // Day 0: 1 habit
+    data = setDayCompletion(data, "ship", isoOffset(0), true, AS_OF);
+    // Day 1: 2 habits
+    data = setDayCompletion(data, "ship", isoOffset(1), true, AS_OF);
+    data = setDayCompletion(data, "walk", isoOffset(1), true, AS_OF);
+    // Day 2: 3 habits
+    data = setDayCompletion(data, "ship", isoOffset(2), true, AS_OF);
+    data = setDayCompletion(data, "walk", isoOffset(2), true, AS_OF);
+    data = setDayCompletion(data, "read", isoOffset(2), true, AS_OF);
+    // Day 3: 4 habits
+    data = setDayCompletion(data, "ship", isoOffset(3), true, AS_OF);
+    data = setDayCompletion(data, "walk", isoOffset(3), true, AS_OF);
+    data = setDayCompletion(data, "read", isoOffset(3), true, AS_OF);
+    data = setDayCompletion(data, "code", isoOffset(3), true, AS_OF);
+
+    const model = buildStreakGridModel(data, null, "2026-05-27", AS_OF);
+    const visibleDays = model.weeks.flatMap((week) => week.days);
+    
+    const day0 = visibleDays.find(d => d.day === isoOffset(0));
+    const day1 = visibleDays.find(d => d.day === isoOffset(1));
+    const day2 = visibleDays.find(d => d.day === isoOffset(2));
+    const day3 = visibleDays.find(d => d.day === isoOffset(3));
+
+    assert.equal(day0?.intensity, 1);
+    assert.equal(day1?.intensity, 2);
+    assert.equal(day2?.intensity, 3);
+    assert.equal(day3?.intensity, 4);
+    assert.equal(model.activeItem, null);
   });
 });
 
