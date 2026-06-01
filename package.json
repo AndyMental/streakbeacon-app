@@ -11,7 +11,8 @@
     "start": "next start",
     "lint": "eslint .",
     "test": "node --import tsx --test lib/**/*.test.ts app/*.test.tsx",
-    "preview:preflight": "npm run lint && npm run test && npm run build"
+    "preview:preflight": "npm run lint && npm run lint:openapi && npm run test && npm run build",
+    "lint:openapi": "spectral lint docs/openapi.yaml --display-only-failures"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.1.15",
@@ -30,6 +31,7 @@
     "tailwind-merge": "^3.6.0"
   },
   "devDependencies": {
+    "@stoplight/spectral-cli": "^6.16.0",
     "@tailwindcss/postcss": "^4.3.0",
     "@types/jsdom": "^28.0.3",
     "@types/node": "^25.9.1",
