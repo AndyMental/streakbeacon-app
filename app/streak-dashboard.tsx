@@ -9,6 +9,7 @@ import {
   Info,
   Pencil,
   Plus,
+  Search,
   Trash2,
   Trophy,
 } from "lucide-react";
@@ -57,6 +58,7 @@ import {
 } from "@/lib/streaks/storage";
 import { StreakStore } from "@/lib/streaks/store";
 import { StreakExportButton } from "@/components/streak-export-button";
+import { filterStreakItems } from "@/lib/streaks/filter";
 
 import { useHabitSelection } from "@/hooks/useHabitSelection";
 
@@ -83,10 +85,15 @@ export function StreakDashboard() {
   const [isRenameOpen, setIsRenameOpen] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const [renameError, setRenameError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const model = useMemo(
     () => buildStreakGridModel(data, selectedHabitId, selectedDay, DEMO_AS_OF),
     [data, selectedDay, selectedHabitId]
   );
+  const filteredItems = useMemo(() => {
+    const activeItems = data.items.filter((item) => !item.archivedAt);
+    return filterStreakItems(activeItems, searchQuery);
+  }, [data.items, searchQuery]);
   const selectedCompletion = getNextSelectedCompletion(model);
   const hasItems = data.items.length > 0;
 
@@ -327,6 +334,22 @@ export function StreakDashboard() {
               aria-label="Streak selector"
             >
               {hasItems && (
+                <div className="relative w-full sm:w-48 lg:w-64">
+                  <Search
+                    className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
+                    aria-hidden="true"
+                  />
+                  <Input
+                    type="search"
+                    data-testid="streak-search-input"
+                    placeholder="Search habits..."
+                    className="h-9 pl-9 sm:text-xs"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              )}
+              {hasItems && (
                 <Button
                   type="button"
                   data-testid="streak-item-all"
@@ -338,23 +361,19 @@ export function StreakDashboard() {
                   All Habits
                 </Button>
               )}
-              {data.items
-                .filter((item) => !item.archivedAt)
-                .map((item) => (
-                  <Button
-                    key={item.id}
-                    type="button"
-                    data-testid={`streak-item-${item.id}`}
-                    variant={
-                      item.id === selectedHabitId ? "default" : "outline"
-                    }
-                    size="lg"
-                    className="max-w-full truncate sm:min-h-9 sm:px-3 sm:text-xs sm:max-w-48"
-                    onClick={() => setSelectedItemId(item.id)}
-                  >
-                    {item.name}
-                  </Button>
-                ))}
+              {filteredItems.map((item) => (
+                <Button
+                  key={item.id}
+                  type="button"
+                  data-testid={`streak-item-${item.id}`}
+                  variant={item.id === selectedHabitId ? "default" : "outline"}
+                  size="lg"
+                  className="max-w-full truncate sm:min-h-9 sm:px-3 sm:text-xs sm:max-w-48"
+                  onClick={() => setSelectedItemId(item.id)}
+                >
+                  {item.name}
+                </Button>
+              ))}
               {model.activeItem ? (
                 <div className="flex flex-wrap items-center gap-2">
                   <AlertDialog
