@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   calculateCurrentStreak,
   createEmptyStreakData,
@@ -59,9 +59,9 @@ export function TodayCard() {
         <CardHeader className="border-b py-3">
           <CardTitle>Today</CardTitle>
         </CardHeader>
-        <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+        <CardContent className="px-4 py-8 text-center text-sm text-muted-foreground">
           Loading...
-        </div>
+        </CardContent>
       </Card>
     );
   }
@@ -72,9 +72,9 @@ export function TodayCard() {
         <CardHeader className="border-b py-3">
           <CardTitle>Today</CardTitle>
         </CardHeader>
-        <div className="px-4 py-8 text-center text-sm text-muted-foreground">
+        <CardContent className="px-4 py-8 text-center text-sm text-muted-foreground">
           No habits tracked yet.
-        </div>
+        </CardContent>
       </Card>
     );
   }
@@ -84,33 +84,35 @@ export function TodayCard() {
       <CardHeader className="border-b py-3">
         <CardTitle>Today</CardTitle>
       </CardHeader>
-      <div className="divide-y">
-        {activeItems.map((item) => {
-          const completions = data.completions[item.id] ?? {};
-          const isDoneToday = Boolean(completions[today]);
-          const streak = calculateCurrentStreak(completions, today);
+      <CardContent className="p-0">
+        <div className="divide-y">
+          {activeItems.map((item) => {
+            const completions = data.completions[item.id] ?? {};
+            const isDoneToday = Boolean(completions[today]);
+            const streak = calculateCurrentStreak(completions, today);
 
-          return (
-            <div
-              key={item.id}
-              className="flex flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div className="min-w-0">
-                <p className="truncate font-medium">{item.name}</p>
-                <p className="truncate text-sm text-muted-foreground">
-                  {streak} day{streak === 1 ? "" : "s"}
-                </p>
-              </div>
-              <Badge
-                variant={isDoneToday ? "default" : "secondary"}
-                className="max-w-full shrink-0 truncate sm:max-w-[12rem]"
+            return (
+              <div
+                key={item.id}
+                className="flex flex-col gap-2 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
               >
-                {isDoneToday ? "Done today" : "Due tonight"}
-              </Badge>
-            </div>
-          );
-        })}
-      </div>
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{item.name}</p>
+                  <p className="truncate text-sm text-muted-foreground">
+                    {streak} day{streak === 1 ? "" : "s"}
+                  </p>
+                </div>
+                <Badge
+                  variant={isDoneToday ? "default" : "secondary"}
+                  className="max-w-full shrink-0 truncate sm:max-w-[12rem]"
+                >
+                  {isDoneToday ? "Done today" : "Due tonight"}
+                </Badge>
+              </div>
+            );
+          })}
+        </div>
+      </CardContent>
     </Card>
   );
 }
