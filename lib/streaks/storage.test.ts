@@ -5,6 +5,7 @@ import {
   createEmptyStreakData,
   mergeStreaks,
   setDayCompletion,
+  STREAK_DATA_VERSION,
   updatePreferences
 } from "./model";
 import {
@@ -99,7 +100,7 @@ describe("LocalStreakStorageAdapter", () => {
     );
     const adapter = new LocalStreakStorageAdapter(storage);
 
-    assert.equal(adapter.load().schemaVersion, 1);
+    assert.equal(adapter.load().schemaVersion, STREAK_DATA_VERSION);
     assert.deepEqual(adapter.load().items, []);
   });
 

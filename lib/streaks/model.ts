@@ -1,4 +1,4 @@
-export const STREAK_DATA_VERSION = 1;
+export const STREAK_DATA_VERSION = 2;
 export const STREAK_EXPORT_FORMAT = "streakbeacon.export";
 export const DEFAULT_ACCENT_COLOR = "#27AE60";
 export const MIN_GRID_WINDOW_DAYS = 7;
