@@ -16,18 +16,24 @@ commands that are actually present.
 - Format: `npm run format`
 - Format check: `npm run format:check`
 - Test: `npm run test`
+- Generate OpenAPI: `npm run generate:openapi`
 - Build: `npm run build`
 - Start production server after a build: `npm run start`
 - Preview/preflight gate: `npm run preview:preflight` (runs `npm run format:check && npm run lint && npm run test && npm run build` in that order; the same script is invoked by the `Preview Preflight` GitHub Actions workflow on every pull request and push)
 
 ## OpenAPI
 
-The repository uses a custom Ajv-based harness for OpenAPI contract validation.
+The OpenAPI specification is located at `docs/openapi.yaml`.
+
+Run `npm run generate:openapi` to rebuild `docs/openapi.yaml` from `@openapi`
+JSDoc comments in API route handlers. Run this command whenever API route
+documentation changes.
+
+The repository also uses a custom Ajv-based harness for OpenAPI contract
+validation.
 
 - Run contract tests: `npm run test:contract`
 
-Before adding frontend code or black-box tests that consume API routes, add or
-identify the OpenAPI/Swagger workflow and document the exact command here.
 If adding new API routes, ensure they are documented in `docs/openapi.yaml` and
 that the contract tests pass.
 

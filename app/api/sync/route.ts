@@ -21,6 +21,27 @@ function hasBearerAuth(request: Request): boolean {
   return scheme?.toLowerCase() === "bearer" && Boolean(token?.trim());
 }
 
+/**
+ * @openapi
+ * /sync:
+ *   get:
+ *     summary: Fetch the latest synced streak data
+ *     description: Retrieves the full streak data set including items, completions, and preferences from the remote backup.
+ *     operationId: getSync
+ *     tags:
+ *       - Sync
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       "200":
+ *         description: Successful response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/StreakData"
+ *       "401":
+ *         description: Unauthorized
+ */
 export function GET(request: NextRequest) {
   if (!hasBearerAuth(request)) {
     return unauthorizedResponse();
@@ -29,6 +50,35 @@ export function GET(request: NextRequest) {
   return NextResponse.json(createEmptyStreakData());
 }
 
+/**
+ * @openapi
+ * /sync:
+ *   post:
+ *     summary: Upsert streak data
+ *     description: Updates or inserts streak data to the remote backup.
+ *     operationId: postSync
+ *     tags:
+ *       - Sync
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: "#/components/schemas/StreakData"
+ *     responses:
+ *       "200":
+ *         description: Data successfully synced
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/StreakData"
+ *       "400":
+ *         description: Invalid data provided
+ *       "401":
+ *         description: Unauthorized
+ */
 export async function POST(request: NextRequest) {
   if (!hasBearerAuth(request)) {
     return unauthorizedResponse();
