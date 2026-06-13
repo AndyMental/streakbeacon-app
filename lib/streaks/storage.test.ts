@@ -313,6 +313,25 @@ describe("LocalStreakStorageAdapter", () => {
       ).ok,
       false
     );
+    assert.deepEqual(
+      validateImportText(
+        JSON.stringify({
+          ...exported,
+          data: {
+            ...exported.data,
+            completions: {
+              [exported.data.items[0].id]: {
+                "2026-99-99": {
+                  completedAt: "2026-05-27T12:00:00.000Z",
+                  source: "manual",
+                },
+              },
+            },
+          },
+        })
+      ).ok,
+      false
+    );
   });
 
   it("allows duplicate imported names as preview warnings", () => {
