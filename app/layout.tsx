@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 import { ThemeProvider } from "./theme-provider";
@@ -50,13 +51,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <a
-            href="#main-content"
+          <Button
+            asChild
             data-testid="skip-link"
             className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-beacon focus:px-4 focus:py-2 focus:text-primary-foreground focus:outline-hidden focus:ring-2 focus:ring-sky focus:ring-offset-2"
           >
-            Skip to main content
-          </a>
+            <a href="#main-content">Skip to main content</a>
+          </Button>
           {children}
           <Toaster richColors />
         </ThemeProvider>
