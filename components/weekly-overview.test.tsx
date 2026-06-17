@@ -2,7 +2,10 @@ import assert from "node:assert/strict";
 import { afterEach, describe, it } from "node:test";
 import { JSDOM } from "jsdom";
 import { act } from "react";
-import { createRoot, type Root } from "react-dom/client";
+import { createRoot, hydrateRoot, type Root } from "react-dom/client";
+import { renderToString } from "react-dom/server";
+import { StreakDashboard } from "@/app/streak-dashboard";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   addStreakItem,
   createEmptyStreakData,
@@ -10,6 +13,7 @@ import {
   type IsoDate,
   type StreakData,
 } from "@/lib/streaks/model";
+import { STREAK_STORAGE_KEY } from "@/lib/streaks/storage";
 import { WeeklyOverview } from "@/components/weekly-overview";
 
 let root: Root | null = null;
@@ -170,6 +174,61 @@ describe("WeeklyOverview", () => {
 
     assert.equal(document.body.innerHTML, "<div></div>");
   });
+
+  it("hydrates the dashboard without errors before local streak data loads", async () => {
+    const now = new Date("2026-05-27T12:00:00.000Z");
+    let storedData = createEmptyStreakData(now);
+    storedData = addStreakItem(storedData, {
+      id: "hydrated-habit",
+      name: "Hydrated Habit",
+      now,
+    });
+    storedData = setDayCompletion(
+      storedData,
+      "hydrated-habit",
+      "2026-05-27",
+      true,
+      now
+    );
+
+    const serverHtml = renderToString(
+      <TooltipProvider>
+        <StreakDashboard />
+      </TooltipProvider>
+    );
+    setupDom(`<div id="root">${serverHtml}</div>`);
+    window.localStorage.setItem(STREAK_STORAGE_KEY, JSON.stringify(storedData));
+
+    const errors: string[] = [];
+    const originalError = console.error;
+    console.error = (...args: unknown[]) => {
+      errors.push(args.map(String).join(" "));
+    };
+
+    try {
+      const container = document.querySelector("#root");
+      assert.ok(container, "server-rendered root should exist");
+
+      await act(async () => {
+        root = hydrateRoot(
+          container,
+          <TooltipProvider>
+            <StreakDashboard />
+          </TooltipProvider>
+        );
+        await flushHydration();
+      });
+    } finally {
+      console.error = originalError;
+    }
+
+    assert.match(document.body.textContent ?? "", /Hydrated Habit/);
+    assert.deepEqual(
+      errors.filter((message) => /hydration|did not match/i.test(message)),
+      [],
+      "dashboard should not log hydration mismatch errors"
+    );
+  });
 });
 
 const weeklyWindowDays: IsoDate[] = [
@@ -236,8 +295,8 @@ function countDayStates(habitName: string, state: "Completed" | "Open") {
   );
 }
 
-function setupDom() {
-  dom = new JSDOM("<!doctype html><html><body></body></html>", {
+function setupDom(body = "") {
+  dom = new JSDOM(`<!doctype html><html><body>${body}</body></html>`, {
     url: "https://streakbeacon.test",
   });
 
@@ -247,6 +306,10 @@ function setupDom() {
   globalThis.document = window.document;
   globalThis.HTMLElement = window.HTMLElement;
   globalThis.Node = window.Node;
+  globalThis.Event = window.Event;
+  globalThis.CustomEvent = window.CustomEvent;
+  globalThis.MouseEvent = window.MouseEvent;
+  globalThis.localStorage = window.localStorage;
   Object.defineProperty(globalThis, "navigator", {
     configurable: true,
     value: window.navigator,
@@ -255,12 +318,6 @@ function setupDom() {
   (
     window as unknown as { IS_REACT_ACT_ENVIRONMENT: boolean }
   ).IS_REACT_ACT_ENVIRONMENT = true;
-
-  globalThis.ResizeObserver = class ResizeObserver {
-    observe() {}
-    unobserve() {}
-    disconnect() {}
-  };
 
   window.matchMedia = (query) => ({
     matches: false,
@@ -272,10 +329,31 @@ function setupDom() {
     removeEventListener: () => undefined,
     dispatchEvent: () => false,
   });
+
+  window.requestAnimationFrame = (callback) => setTimeout(callback, 0);
+  window.cancelAnimationFrame = (id) => clearTimeout(id);
+
+  globalThis.ResizeObserver = class ResizeObserver {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+
+  globalThis.PointerEvent = class PointerEvent extends window.MouseEvent {
+    constructor(type: string, props: MouseEventInit = {}) {
+      super(type, props);
+    }
+  } as unknown as typeof PointerEvent;
 }
 
 function flushEffects() {
   return new Promise((resolve) => {
     queueMicrotask(resolve);
+  });
+}
+
+function flushHydration() {
+  return new Promise((resolve) => {
+    setTimeout(resolve, 50);
   });
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { CheckCircle2, Circle } from "lucide-react";
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Tooltip,
@@ -13,7 +14,7 @@ import { cn } from "@/lib/utils";
 
 interface WeeklyOverviewProps {
   data: StreakData;
-  asOf?: Date;
+  asOf: Date;
   className?: string;
 }
 
@@ -46,18 +47,16 @@ function buildOverviewDays(asOf: Date): OverviewDay[] {
   });
 }
 
-export function WeeklyOverview({
-  data,
-  asOf = new Date(),
-  className,
-}: WeeklyOverviewProps) {
-  const activeItems = data.items.filter((item) => !item.archivedAt);
+export function WeeklyOverview({ data, asOf, className }: WeeklyOverviewProps) {
+  const activeItems = useMemo(
+    () => data.items.filter((item) => !item.archivedAt),
+    [data.items]
+  );
+  const days = useMemo(() => buildOverviewDays(asOf), [asOf]);
 
   if (activeItems.length === 0) {
     return null;
   }
-
-  const days = buildOverviewDays(asOf);
 
   return (
     <Card className={className}>
