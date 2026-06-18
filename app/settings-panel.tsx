@@ -432,8 +432,12 @@ export function SettingsPanel() {
                     preview the import.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
-                <div className="py-4">
+                <div className="grid gap-2 py-4">
+                  <Label htmlFor="settings-import-paste-textarea">
+                    Export JSON
+                  </Label>
                   <Textarea
+                    id="settings-import-paste-textarea"
                     placeholder='{"format": "streakbeacon.export", ...}'
                     className="min-h-32 font-mono text-xs"
                     value={pasteValue}
