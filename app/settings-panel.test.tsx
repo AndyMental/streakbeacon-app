@@ -75,6 +75,7 @@ function flushEffects() {
   });
 }
 
+
 async function clickElement(element: Element) {
   await act(async () => {
     element.dispatchEvent(
@@ -284,4 +285,55 @@ describe("SettingsPanel Interaction Evidence", () => {
     assert.equal(dds[0]?.textContent, "2", "Should show 2 items count");
     assert.equal(dds[1]?.textContent, "1", "Should show 1 days count");
   });
+
+  it("does not flash system theme on mount if storage is dark", async () => {
+    setupDom();
+
+    // Seed dark theme into the store
+    const testData = {
+      schemaVersion: 2,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      items: [],
+      completions: {},
+      preferences: { theme: "dark", weekStartsOn: 0, gridWindowDays: 365, showArchived: false, accentColor: "#27AE60" }
+    };
+    window.localStorage.setItem("streakbeacon:data:v1", JSON.stringify(testData));
+    window.localStorage.setItem("theme", "dark");
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    root = createRoot(container);
+
+    // Track class changes on documentElement
+    const classes: string[][] = [];
+    const observer = new window.MutationObserver(() => {
+      classes.push([...document.documentElement.classList]);
+    });
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+
+    await act(async () => {
+      root?.render(
+        <ThemeProvider attribute="class" defaultTheme="system">
+          <SettingsPanel />
+        </ThemeProvider>
+      );
+    });
+
+    // Wait for microtasks
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 100));
+    });
+
+    // It should never contain "light" or be empty (if it was dark).
+    // In JSDOM with default matchMedia, system resolves to light.
+    // If it flashes system, it would be "light".
+    const containsLight = classes.some(c => c.includes("light"));
+    assert.equal(containsLight, false, "Should not flash light theme");
+    
+    // Final state should be dark
+    assert.equal(document.documentElement.classList.contains("dark"), true, "Final state should be dark");
+  });
 });
+
+
