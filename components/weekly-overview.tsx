@@ -9,11 +9,12 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { IsoDate, StreakData } from "@/lib/streaks/model";
+import type { WeeklyOverview as WeeklyOverviewModel } from "@/lib/streaks/grid";
 import { cn } from "@/lib/utils";
 
 interface WeeklyOverviewProps {
   data: StreakData;
-  asOf?: Date;
+  overview: WeeklyOverviewModel;
   className?: string;
 }
 
@@ -21,17 +22,15 @@ type OverviewDay = {
   day: IsoDate;
   label: string;
   shortLabel: string;
+  isSelected: boolean;
 };
 
-function buildOverviewDays(asOf: Date): OverviewDay[] {
-  const end = new Date(`${asOf.toISOString().slice(0, 10)}T00:00:00.000Z`);
-
-  return Array.from({ length: 7 }, (_, index) => {
-    const date = new Date(end);
-    date.setUTCDate(date.getUTCDate() - (6 - index));
+function buildOverviewDays(overview: WeeklyOverviewModel): OverviewDay[] {
+  return overview.days.map((day) => {
+    const date = new Date(`${day.day}T00:00:00.000Z`);
 
     return {
-      day: date.toISOString().slice(0, 10) as IsoDate,
+      day: day.day,
       label: date.toLocaleDateString("en", {
         weekday: "long",
         month: "short",
@@ -42,13 +41,14 @@ function buildOverviewDays(asOf: Date): OverviewDay[] {
         weekday: "narrow",
         timeZone: "UTC",
       }),
+      isSelected: day.isSelected,
     };
   });
 }
 
 export function WeeklyOverview({
   data,
-  asOf = new Date(),
+  overview,
   className,
 }: WeeklyOverviewProps) {
   const activeItems = data.items.filter((item) => !item.archivedAt);
@@ -57,7 +57,7 @@ export function WeeklyOverview({
     return null;
   }
 
-  const days = buildOverviewDays(asOf);
+  const days = buildOverviewDays(overview);
 
   return (
     <Card className={className}>
@@ -75,7 +75,15 @@ export function WeeklyOverview({
               <div className="truncate">Habit</div>
               {days.map((day) => (
                 <div key={day.day} className="text-center">
-                  {day.shortLabel}
+                  <span
+                    className={cn(
+                      "inline-flex h-6 w-6 items-center justify-center rounded-full",
+                      day.isSelected && "bg-primary text-primary-foreground"
+                    )}
+                    aria-current={day.isSelected ? "date" : undefined}
+                  >
+                    {day.shortLabel}
+                  </span>
                 </div>
               ))}
             </div>
@@ -102,11 +110,14 @@ export function WeeklyOverview({
                                 "flex h-6 w-6 items-center justify-center rounded-full transition-colors",
                                 isComplete
                                   ? "bg-primary text-primary-foreground"
-                                  : "bg-muted/50 text-muted-foreground/40"
+                                  : "bg-muted/50 text-muted-foreground/40",
+                                day.isSelected &&
+                                  "ring-2 ring-ring ring-offset-1"
                               )}
                               aria-label={`${item.name} on ${day.label}: ${
                                 isComplete ? "Completed" : "Open"
                               }`}
+                              aria-current={day.isSelected ? "date" : undefined}
                             >
                               {isComplete ? (
                                 <CheckCircle2

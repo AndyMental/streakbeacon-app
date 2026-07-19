@@ -21,6 +21,12 @@ export type GridWeek = {
   days: GridDay[];
 };
 
+export type WeeklyOverview = {
+  days: GridDay[];
+  completedCount: number;
+  totalCount: number;
+};
+
 export type StreakGridModel = {
   activeItem: StreakItem | null;
   completedDays: number;
@@ -29,6 +35,7 @@ export type StreakGridModel = {
   longestStreak: number;
   selectedDay: GridDay;
   totalDays: number;
+  weeklyOverview: WeeklyOverview;
   weeks: GridWeek[];
 };
 
@@ -77,6 +84,7 @@ export function buildStreakGridModel(
     longestStreak: activeItem ? calculateLongestStreak(completions) : 0,
     selectedDay: selected,
     totalDays: days.length,
+    weeklyOverview: buildWeeklyOverview(days, selected),
     weeks: chunkWeeks(days),
   };
 }
@@ -89,6 +97,25 @@ export function getNextSelectedCompletion(
   }
 
   return !model.selectedDay.isComplete;
+}
+
+function buildWeeklyOverview(
+  days: GridDay[],
+  selectedDay: GridDay
+): WeeklyOverview {
+  const selectedIndex = Math.max(
+    0,
+    days.findIndex((day) => day.day === selectedDay.day)
+  );
+  const endIndex = Math.min(days.length, selectedIndex + 1);
+  const startIndex = Math.max(0, endIndex - WEEK_DAYS);
+  const overviewDays = days.slice(startIndex, endIndex);
+
+  return {
+    days: overviewDays,
+    completedCount: overviewDays.filter((day) => day.isComplete).length,
+    totalCount: overviewDays.length,
+  };
 }
 
 function buildGridDays(

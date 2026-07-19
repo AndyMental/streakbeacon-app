@@ -65,6 +65,10 @@ describe("streak grid model", () => {
     assert.equal(model.longestStreak, 1);
     assert.equal(model.selectedDay.day, "2026-05-26");
     assert.equal(model.selectedDay.isComplete, false);
+    assert.equal(model.weeklyOverview.days.at(-1)?.day, "2026-05-26");
+    assert.equal(model.weeklyOverview.days.at(-1)?.isSelected, true);
+    assert.equal(model.weeklyOverview.totalCount, 7);
+    assert.equal(model.weeklyOverview.completedCount, 1);
     assert.equal(getNextSelectedCompletion(model), true);
   });
 
@@ -131,6 +135,25 @@ describe("streak grid model", () => {
     assert.equal(day2?.intensity, 3);
     assert.equal(day3?.intensity, 4);
     assert.equal(model.activeItem, null);
+  });
+
+  it("anchors weekly overview to the selected non-today day", () => {
+    let data = addStreakItem(createEmptyStreakData(AS_OF), {
+      id: "read",
+      name: "Read",
+      now: AS_OF,
+    });
+
+    data = setDayCompletion(data, "read", "2026-05-18", true, AS_OF);
+    data = setDayCompletion(data, "read", "2026-05-20", true, AS_OF);
+    data = setDayCompletion(data, "read", "2026-05-27", true, AS_OF);
+
+    const model = buildStreakGridModel(data, "read", "2026-05-20", AS_OF);
+
+    assert.equal(model.weeklyOverview.days[0].day, "2026-05-14");
+    assert.equal(model.weeklyOverview.days.at(-1)?.day, "2026-05-20");
+    assert.equal(model.weeklyOverview.days.at(-1)?.isSelected, true);
+    assert.equal(model.weeklyOverview.completedCount, 2);
   });
 });
 
