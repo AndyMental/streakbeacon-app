@@ -540,6 +540,7 @@ export function SettingsPanel() {
           <p
             role="status"
             aria-live="polite"
+            aria-atomic="true"
             className="mt-4 flex min-h-5 items-center gap-2 text-sm text-muted-foreground font-medium"
           >
             {message ? (

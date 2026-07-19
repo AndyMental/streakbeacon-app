@@ -217,6 +217,33 @@ describe("SettingsPanel Interaction Evidence", () => {
     document.createElement = originalCreate;
   });
 
+  it("announces settings success messages as an atomic live region", async () => {
+    setupDom();
+
+    const container = document.createElement("div");
+    document.body.append(container);
+    root = createRoot(container);
+
+    await act(async () => {
+      root?.render(
+        <ThemeProvider attribute="class" defaultTheme="system">
+          <SettingsPanel />
+        </ThemeProvider>
+      );
+      await flushEffects();
+    });
+
+    const status = document.querySelector(
+      '[role="status"][aria-live="polite"]'
+    );
+    assert.ok(status, "Settings success status region should render");
+    assert.equal(
+      status.getAttribute("aria-atomic"),
+      "true",
+      "Settings success status should announce message updates atomically"
+    );
+  });
+
   it("renders data counts from storage snapshot", async () => {
     setupDom();
 
