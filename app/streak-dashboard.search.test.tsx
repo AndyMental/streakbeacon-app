@@ -143,5 +143,10 @@ describe("StreakDashboard Search UI", () => {
       searchInput,
       "Search input should be rendered when habits are present"
     );
+    assert.equal(
+      searchInput?.getAttribute("aria-label"),
+      "Search habits",
+      "Search input should expose a programmatic label"
+    );
   });
 });
